@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,8 +22,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -34,39 +35,37 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
+import java.time.LocalDate
 
 @Composable
 fun DrawMainPage(navController: NavController) {
-    var movies by remember { mutableStateOf<JSONArray?>(null) }
 
-    LaunchedEffect(true) {
-        movies = getMoviesData()
-    }
-
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        Column (modifier = Modifier.padding(innerPadding)){
+    Scaffold {innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding)) {
             Text(
                 text = "Trending Movies",
                 fontSize = 24.sp,
                 modifier = Modifier.padding(16.dp)
             )
 
-            if (movies != null) {
-                LazyRow (
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                ) {
-                    Log.d("Movies", "Size: ${movies!!.length()}")
-                    items(movies!!.length()) { index ->
-                        val item = movies!!.getJSONObject(index)
-                        val title = item.getString("original_title")
-                        val imageUrl = item.getString("poster_path")
+            TrendingMovies()
 
-                        DisplayMovie(title = title, imageUrl = imageUrl)
-                    }
-                }
-            } else {
-                Log.e("Movies", "Movies is null!")
-            }
+            HorizontalDivider(thickness = 2.dp)
+
+            Text(
+                text = "New Releases",
+                fontSize = 24.sp,
+                modifier = Modifier.padding(16.dp)
+            )
+
+            NewMovies()
+
+            Text(
+                text = "For You ",
+                fontSize = 24.sp,
+                modifier = Modifier.padding(16.dp)
+            )
+
         }
 
         Box(
@@ -78,7 +77,7 @@ fun DrawMainPage(navController: NavController) {
             // Row to place buttons horizontally next to each other
             Row(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
+                                    .align(Alignment.BottomCenter)
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -94,6 +93,53 @@ fun DrawMainPage(navController: NavController) {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun TrendingMovies() {
+    var movies by remember { mutableStateOf<JSONArray?>(null) }
+
+    LaunchedEffect(true) {
+        movies = getMoviesData("https://api.themoviedb.org/3/movie/popular?language=en-US&page=1")
+    }
+
+    DisplayMoviesRow(movies);
+}
+
+@Composable
+fun NewMovies() {
+    var movies by remember { mutableStateOf<JSONArray?>(null) }
+
+    val minDate = LocalDate.now()
+    val maxDate = minDate.plusMonths(6)
+
+    Log.d("Date", minDate.toString() + " " + maxDate)
+
+    LaunchedEffect(true) {
+        movies = getMoviesData("https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&primary_release_date.gte=$minDate&primary_release_date.lte=$maxDate&sort_by=popularity.desc")
+    }
+
+    DisplayMoviesRow(movies)
+}
+
+@Composable
+fun DisplayMoviesRow(movies : JSONArray?) {
+    if (movies != null) {
+        LazyRow(
+            modifier = Modifier.padding(horizontal = 8.dp)
+        ) {
+            Log.d("Movies", "Size: ${movies!!.length()}")
+            items(movies!!.length()) { index ->
+                val item = movies!!.getJSONObject(index)
+                val title = item.getString("original_title")
+                val imageUrl = item.getString("poster_path")
+
+                DisplayMovie(title = title, imageUrl = imageUrl)
+            }
+        }
+    } else {
+        Log.e("Movies", "Movies is null!")
     }
 }
 
@@ -126,7 +172,8 @@ fun DisplayMovie(title: String, imageUrl: String) {
     }
 }
 
-suspend fun getMoviesData() : JSONArray? {
+
+suspend fun getMoviesData(url : String) : JSONArray? {
     return withContext(Dispatchers.IO) {
         val client = OkHttpClient()
 
@@ -138,7 +185,7 @@ suspend fun getMoviesData() : JSONArray? {
         val API_KEY = dotenv["MOVIES_ACCESS_API_KEY"]
 
         val request = Request.Builder()
-            .url("https://api.themoviedb.org/3/movie/popular?language=en-US&page=1")
+            .url(url)
             .get()
             .addHeader("accept", "application/json")
             .addHeader(
