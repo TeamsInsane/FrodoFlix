@@ -85,12 +85,12 @@ fun DrawMainPage(navController: NavController) {
                 Button(
                     onClick = { }
                 ) {
-                    Text(text = "Go to New Screen")
+                    Text(text = "Nedela")
                 }
                 Button(
-                    onClick = { }
+                    onClick = { navController.navigate("profile") }
                 ) {
-                    Text(text = "Click Me Too")
+                    Text(text = "Profile")
                 }
             }
         }
