@@ -1,5 +1,6 @@
 package com.frodo.frodoflix.screens.profile
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -24,12 +27,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.frodo.frodoflix.R
-
 import androidx.compose.runtime.*
-
+import com.frodo.frodoflix.data.TMDB
+import org.json.JSONArray
 
 @Composable
-fun Genres(navController: NavController) {
+fun GenresPage(navController: NavController) {
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Box(
             modifier = Modifier
@@ -41,83 +44,88 @@ fun Genres(navController: NavController) {
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                // Top Row with Settings Icon
-                Row(
-                    modifier = Modifier
-                        .padding(top = 16.dp, bottom = 64.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.arrow_back),
-                        contentDescription = "back",
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clickable {
-                                navController.navigate("profile")
-                            }
-                    )
-                }
+                GoBackToProfile(navController)
 
-                val genres =
-                    listOf("Animation", "Action", "Drama", "Comedy", "Horror") // List of genres
-                val checkedStates =
-                    remember { mutableStateOf(genres.map { true }) } // List of boolean values for each genre, starting with `true` (checked)
+                GenresList()
 
-                Column {
-                    genres.forEachIndexed { index, genre ->
-                        val isChecked = checkedStates.value[index]
-
-                        Box(
-                            modifier = Modifier
-                                .padding(2.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .padding(6.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = genre, // Display the genre name
-                                    fontSize = 18.sp,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                // Clickable Box for each genre
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .clickable {
-                                            // Toggle the checked state of the corresponding genre
-                                            checkedStates.value =
-                                                checkedStates.value.toMutableList().apply {
-                                                    this[index] =
-                                                        !this[index] // Toggle the state for this specific genre
-                                                }
-                                        }
-                                ) {
-                                    // Display checkmark or unchecked based on the state
-                                    if (isChecked) {
-                                        Image(
-                                            painter = painterResource(id = R.drawable.check),
-                                            contentDescription = "Checkmark",
-                                            modifier = Modifier.size(32.dp)
-                                        )
-                                    } else {
-                                        Image(
-                                            painter = painterResource(id = R.drawable.unchecked),
-                                            contentDescription = "Unchecked",
-                                            modifier = Modifier.size(32.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                //TODO:Bottom menu
             }
+        }
+    }
+}
+
+@Composable
+fun GoBackToProfile(navController: NavController) {
+    Image(
+        painter = painterResource(id = R.drawable.arrow_back),
+        contentDescription = "back",
+        modifier = Modifier
+            .size(96.dp)
+            .padding(bottom = 64.dp, end= 64.dp)
+            .clickable {  navController.navigate("profile") }
+    )
+}
+
+@Composable
+fun GenresList() {
+    var genresList by remember { mutableStateOf<JSONArray?>(null) }
+
+    LaunchedEffect(true) {
+        genresList = TMDB.getDataFromTMDB(
+            "https://api.themoviedb.org/3/genre/movie/list?language=en",
+            "genres"
+        )
+    }
+
+    DisplayGenresColumn(genresList)
+}
+
+@Composable
+fun DisplayGenresColumn(genres : JSONArray?) {
+    if (genres != null) {
+        LazyColumn (
+            modifier = Modifier.padding(vertical = 8.dp)
+        ) {
+            items(genres.length()) { index ->
+                val item = genres.getJSONObject(index)
+                val id = item.getString("id")
+                val genre = item.getString("name")
+
+                DisplayGenre(id, genre)
+            }
+        }
+    } else {
+        //TODO:Let the user know
+        Log.e("Movies", "Movies is null!")
+    }
+}
+
+@Composable
+fun DisplayGenre(id : String, genre : String){
+    var isChecked = remember { mutableStateOf(true) }
+
+    Box(
+        modifier = Modifier
+            .padding(2.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(6.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = genre,
+                fontSize = 18.sp,
+                modifier = Modifier.weight(1f)
+            )
+
+            Checkbox(
+                checked = isChecked.value,
+                onCheckedChange = { isChecked.value = !isChecked.value}
+            )
         }
     }
 }

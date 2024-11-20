@@ -4,12 +4,16 @@ import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,15 +30,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
-import io.github.cdimascio.dotenv.dotenv
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import com.frodo.frodoflix.data.TMDB
 import org.json.JSONArray
-import org.json.JSONObject
 import java.time.LocalDate
 
 @Composable
@@ -53,12 +54,14 @@ fun DrawMainPage(navController: NavController) {
             HorizontalDivider(thickness = 2.dp)
 
             Text(
-                text = "New Releases",
+                text = "Upcoming Movies",
                 fontSize = 24.sp,
                 modifier = Modifier.padding(16.dp)
             )
 
-            NewMovies()
+            UpcomingMovies()
+
+            HorizontalDivider(thickness = 2.dp)
 
             Text(
                 text = "For You ",
@@ -68,70 +71,48 @@ fun DrawMainPage(navController: NavController) {
 
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-
-            // Row to place buttons horizontally next to each other
-            Row(
-                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Button(
-                    onClick = { }
-                ) {
-                    Text(text = "Nedela")
-                }
-                Button(
-                    onClick = { navController.navigate("profile") }
-                ) {
-                    Text(text = "Profile")
-                }
-            }
-        }
+        BottomMenuBar(innerPadding, navController)
     }
 }
 
+//Trending Movies
 @Composable
 fun TrendingMovies() {
     var movies by remember { mutableStateOf<JSONArray?>(null) }
 
     LaunchedEffect(true) {
-        movies = getMoviesData("https://api.themoviedb.org/3/movie/popular?language=en-US&page=1")
-    }
-
-    DisplayMoviesRow(movies);
-}
-
-@Composable
-fun NewMovies() {
-    var movies by remember { mutableStateOf<JSONArray?>(null) }
-
-    val minDate = LocalDate.now()
-    val maxDate = minDate.plusMonths(6)
-
-    Log.d("Date", minDate.toString() + " " + maxDate)
-
-    LaunchedEffect(true) {
-        movies = getMoviesData("https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&primary_release_date.gte=$minDate&primary_release_date.lte=$maxDate&sort_by=popularity.desc")
+        movies = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/movie/popular?language=en-US&page=1", "results")
     }
 
     DisplayMoviesRow(movies)
 }
 
+//Upcoming Movies
+@Composable
+fun UpcomingMovies() {
+    var movies by remember { mutableStateOf<JSONArray?>(null) }
+
+    val minDate = LocalDate.now()
+    val maxDate = minDate.plusMonths(6)
+
+    //Fetch movie data from the TMDB API
+    LaunchedEffect(true) {
+        movies = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en&page=1&primary_release_date.gte=$minDate&primary_release_date.lte=$maxDate&sort_by=popularity.desc", "results")
+    }
+
+    DisplayMoviesRow(movies)
+}
+
+//Display the entire row of movies
 @Composable
 fun DisplayMoviesRow(movies : JSONArray?) {
     if (movies != null) {
         LazyRow(
             modifier = Modifier.padding(horizontal = 8.dp)
         ) {
-            Log.d("Movies", "Size: ${movies!!.length()}")
-            items(movies!!.length()) { index ->
-                val item = movies!!.getJSONObject(index)
+            Log.d("Movies", "Size: ${movies.length()}")
+            items(movies.length()) { index ->
+                val item = movies.getJSONObject(index)
                 val title = item.getString("original_title")
                 val imageUrl = item.getString("poster_path")
 
@@ -139,10 +120,12 @@ fun DisplayMoviesRow(movies : JSONArray?) {
             }
         }
     } else {
+        //TODO:Let the user know
         Log.e("Movies", "Movies is null!")
     }
 }
 
+//Display each movie poster and title
 @Composable
 fun DisplayMovie(title: String, imageUrl: String) {
     Log.d("Movies", "$title $imageUrl")
@@ -153,15 +136,32 @@ fun DisplayMovie(title: String, imageUrl: String) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data("https://image.tmdb.org/t/p/w500/$imageUrl") // Construct the URL for the image
-                .crossfade(true)
-                .build(),
-            contentDescription = "$title poster",
-            modifier = Modifier.width(140.dp)
-        )
+        Box(
+            modifier = Modifier.width(140.dp).height(200.dp)
+        ) {
+            // Loading states for images (loading image before the image is loaded...)
+            SubcomposeAsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data("https://image.tmdb.org/t/p/w500/$imageUrl")
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "$title poster",
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Progress indicator
+                when (painter.state) {
+                    is AsyncImagePainter.State.Loading -> {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    }
+                    is AsyncImagePainter.State.Success -> {
+                        SubcomposeAsyncImageContent()
+                    }
+                    else -> {}
+                }
+            }
+        }
 
+        //Movie title
         Text(
             text = title,
             fontSize = 16.sp,
@@ -172,45 +172,32 @@ fun DisplayMovie(title: String, imageUrl: String) {
     }
 }
 
+@Composable
+fun BottomMenuBar(innerPadding : PaddingValues, navController : NavController) {
+    //TODO: Bottom Menu Bar
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+    ) {
 
-suspend fun getMoviesData(url : String) : JSONArray? {
-    return withContext(Dispatchers.IO) {
-        val client = OkHttpClient()
-
-        val dotenv = dotenv {
-            directory = "/assets"
-            filename = "env"
-        }
-
-        val API_KEY = dotenv["MOVIES_ACCESS_API_KEY"]
-
-        val request = Request.Builder()
-            .url(url)
-            .get()
-            .addHeader("accept", "application/json")
-            .addHeader(
-                "Authorization",
-                "Bearer $API_KEY"
-            )
-            .build()
-
-        val response = client.newCall(request).execute()
-        var jsonObject: JSONObject? = null
-
-        if (response.isSuccessful) {
-            val jsonData = response.body?.string()
-            if (jsonData != null) {
-                jsonObject = JSONObject(jsonData)
-                Log.d("ResponseError", jsonObject.toString())
-            } else {
-                Log.e("ResponseError", "Response body is null")
+        // Row to place buttons horizontally next to each other
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = { }
+            ) {
+                Text(text = "Nedela")
             }
-        } else {
-            Log.e("ResponseError", "Request failed with code: ${response.code}")
+            Button(
+                onClick = { navController.navigate("profile") }
+            ) {
+                Text(text = "Profile")
+            }
         }
-
-        val arrayOfData = jsonObject?.getJSONArray("results")
-
-        arrayOfData
     }
 }
