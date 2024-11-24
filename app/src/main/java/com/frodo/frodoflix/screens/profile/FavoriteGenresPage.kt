@@ -28,11 +28,16 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.frodo.frodoflix.R
 import androidx.compose.runtime.*
-import com.frodo.frodoflix.data.TMDB
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.frodo.frodoflix.api.TMDB
+import com.frodo.frodoflix.data.GenreList
+import com.frodo.frodoflix.data.GenresViewModel
 import org.json.JSONArray
 
 @Composable
-fun GenresPage(navController: NavController) {
+fun GenresPage(navController: NavController, genresViewModel: GenresViewModel = viewModel()) {
+    val uiState = genresViewModel.uiState.collectAsState()
+
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Box(
             modifier = Modifier
@@ -46,7 +51,9 @@ fun GenresPage(navController: NavController) {
             ) {
                 GoBackToProfile(navController)
 
-                GenresList()
+                GenresList(uiState.value.genresList) { updatedList ->
+                    genresViewModel.updateGenres(updatedList)
+                }
 
                 //TODO:Bottom menu
             }
@@ -67,7 +74,7 @@ fun GoBackToProfile(navController: NavController) {
 }
 
 @Composable
-fun GenresList() {
+fun GenresList(genresList: List<GenreList>, onGenreStatusChange:  (List<GenreList>) -> Unit) {
     var genresList by remember { mutableStateOf<JSONArray?>(null) }
 
     LaunchedEffect(true) {

@@ -1,6 +1,7 @@
 package com.frodo.frodoflix.screens
 
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,7 +35,7 @@ import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
-import com.frodo.frodoflix.data.TMDB
+import com.frodo.frodoflix.api.TMDB
 import org.json.JSONArray
 import java.time.LocalDate
 
@@ -132,12 +133,17 @@ fun DisplayMovie(title: String, imageUrl: String) {
     Column (
         modifier = Modifier
             .width(150.dp)
-            .padding(8.dp),
+            .padding(8.dp)
+            .clickable {
+                Log.d("movieclick", "Clicked on movie $title $imageUrl")
+            },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
         Box(
-            modifier = Modifier.width(140.dp).height(200.dp)
+            modifier = Modifier
+                .width(140.dp)
+                .height(200.dp)
         ) {
             // Loading states for images (loading image before the image is loaded...)
             SubcomposeAsyncImage(
@@ -153,9 +159,11 @@ fun DisplayMovie(title: String, imageUrl: String) {
                     is AsyncImagePainter.State.Loading -> {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     }
+
                     is AsyncImagePainter.State.Success -> {
                         SubcomposeAsyncImageContent()
                     }
+
                     else -> {}
                 }
             }
@@ -170,6 +178,7 @@ fun DisplayMovie(title: String, imageUrl: String) {
             overflow = TextOverflow.Ellipsis
         )
     }
+
 }
 
 @Composable

@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.frodo.frodoflix.screens.DisplayMoviePage
 import com.frodo.frodoflix.screens.profile.GenresPage
 import com.frodo.frodoflix.screens.profile.Profile
 import com.frodo.frodoflix.screens.DrawMainPage
@@ -31,8 +32,12 @@ class MainActivity : ComponentActivity() {
                     }
 
                     // Favourite genres
-                    composable("favourite_genres"){
+                    composable("favourite_genres") {
                         GenresPage(navController)
+                    }
+
+                    composable("movie_page") {
+                        DisplayMoviePage(navController)
                     }
                 }
             }

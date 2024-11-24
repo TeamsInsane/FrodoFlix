@@ -1,4 +1,4 @@
-package com.frodo.frodoflix.data
+package com.frodo.frodoflix.api
 
 import android.util.Log
 import io.github.cdimascio.dotenv.dotenv
