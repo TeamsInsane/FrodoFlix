@@ -12,14 +12,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.frodo.frodoflix.R
+import com.frodo.frodoflix.viewmodels.NavControllerViewModel
 
 @Composable
-fun Profile(navController: NavController) {
+fun Profile(navControllerViewModel: NavControllerViewModel = viewModel()) {
+    val navController = navControllerViewModel.navController ?: return
+
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Box(
             modifier = Modifier

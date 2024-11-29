@@ -1,6 +1,5 @@
 package com.frodo.frodoflix.screens.profile
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,14 +28,20 @@ import androidx.navigation.NavController
 import com.frodo.frodoflix.R
 import androidx.compose.runtime.*
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.frodo.frodoflix.api.TMDB
-import com.frodo.frodoflix.data.GenreList
-import com.frodo.frodoflix.data.GenresViewModel
-import org.json.JSONArray
+import com.frodo.frodoflix.viewmodels.GenreList
+import com.frodo.frodoflix.viewmodels.GenresViewModel
+import com.frodo.frodoflix.viewmodels.NavControllerViewModel
 
 @Composable
-fun GenresPage(navController: NavController, genresViewModel: GenresViewModel = viewModel()) {
-    val uiState = genresViewModel.uiState.collectAsState()
+fun FavoriteGenresPage(navControllerViewModel: NavControllerViewModel = viewModel(), genresViewModel: GenresViewModel = viewModel()) {
+    val genresUiState by genresViewModel.genresUiState.collectAsState()
+    val navController = navControllerViewModel.navController ?: return
+
+    LaunchedEffect(Unit) {
+        if (genresUiState.genresList.isEmpty()) {
+            genresViewModel.loadGenresFromApi()
+        }
+    }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Box(
@@ -51,15 +56,21 @@ fun GenresPage(navController: NavController, genresViewModel: GenresViewModel = 
             ) {
                 GoBackToProfile(navController)
 
-                GenresList(uiState.value.genresList) { updatedList ->
-                    genresViewModel.updateGenres(updatedList)
-                }
+                GenresList(
+                    genreList = genresUiState.genresList,
+                    onCheckedChange = { index ->
+                        genresViewModel.toggleGenreStatus(index)
+                    }
+                )
 
-                //TODO:Bottom menu
             }
+
+            //TODO:Bottom menu
         }
     }
+
 }
+
 
 @Composable
 fun GoBackToProfile(navController: NavController) {
@@ -74,43 +85,23 @@ fun GoBackToProfile(navController: NavController) {
 }
 
 @Composable
-fun GenresList(genresList: List<GenreList>, onGenreStatusChange:  (List<GenreList>) -> Unit) {
-    var genresList by remember { mutableStateOf<JSONArray?>(null) }
+fun GenresList(genreList: List<GenreList>, onCheckedChange: (Int) -> Unit) {
+    LazyColumn (
+        modifier = Modifier.padding(vertical = 8.dp)
+    ) {
+        items(genreList.size) { index ->
+            val genreItem = genreList[index]
 
-    LaunchedEffect(true) {
-        genresList = TMDB.getDataFromTMDB(
-            "https://api.themoviedb.org/3/genre/movie/list?language=en",
-            "genres"
-        )
-    }
+            val genre = genreItem.genre
+            val isChecked = genreItem.status
 
-    DisplayGenresColumn(genresList)
-}
-
-@Composable
-fun DisplayGenresColumn(genres : JSONArray?) {
-    if (genres != null) {
-        LazyColumn (
-            modifier = Modifier.padding(vertical = 8.dp)
-        ) {
-            items(genres.length()) { index ->
-                val item = genres.getJSONObject(index)
-                val id = item.getString("id")
-                val genre = item.getString("name")
-
-                DisplayGenre(id, genre)
-            }
+            DisplayGenre(genre, isChecked, onCheckedChange = { onCheckedChange(index)})
         }
-    } else {
-        //TODO:Let the user know
-        Log.e("Movies", "Movies is null!")
     }
 }
 
 @Composable
-fun DisplayGenre(id : String, genre : String){
-    var isChecked = remember { mutableStateOf(true) }
-
+fun DisplayGenre(genre: String, isChecked: Boolean, onCheckedChange: () -> Unit){
     Box(
         modifier = Modifier
             .padding(2.dp)
@@ -130,8 +121,8 @@ fun DisplayGenre(id : String, genre : String){
             )
 
             Checkbox(
-                checked = isChecked.value,
-                onCheckedChange = { isChecked.value = !isChecked.value}
+                checked = isChecked,
+                onCheckedChange = { onCheckedChange() }
             )
         }
     }

@@ -30,17 +30,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.frodo.frodoflix.api.TMDB
+import com.frodo.frodoflix.data.Movie
+import com.frodo.frodoflix.viewmodels.NavControllerViewModel
 import org.json.JSONArray
 import java.time.LocalDate
 
 @Composable
-fun DrawMainPage(navController: NavController) {
+fun DrawMainPage(navControllerViewModel: NavControllerViewModel = viewModel()) {
+    val navController = navControllerViewModel.navController ?: return
 
     Scaffold {innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
@@ -114,10 +118,15 @@ fun DisplayMoviesRow(movies : JSONArray?) {
             Log.d("Movies", "Size: ${movies.length()}")
             items(movies.length()) { index ->
                 val item = movies.getJSONObject(index)
+                Log.d("movieinfo", item.toString())
+                val id = item.getString("id").toInt()
+                val overview = item.getString("overview")
                 val title = item.getString("original_title")
                 val imageUrl = item.getString("poster_path")
 
-                DisplayMovie(title = title, imageUrl = imageUrl)
+                val movie = Movie(id, title, overview, imageUrl)
+
+                DisplayMovie(movie)
             }
         }
     } else {
@@ -128,14 +137,13 @@ fun DisplayMoviesRow(movies : JSONArray?) {
 
 //Display each movie poster and title
 @Composable
-fun DisplayMovie(title: String, imageUrl: String) {
-    Log.d("Movies", "$title $imageUrl")
+fun DisplayMovie(movie: Movie) {
     Column (
         modifier = Modifier
             .width(150.dp)
             .padding(8.dp)
             .clickable {
-                Log.d("movieclick", "Clicked on movie $title $imageUrl")
+
             },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -148,10 +156,10 @@ fun DisplayMovie(title: String, imageUrl: String) {
             // Loading states for images (loading image before the image is loaded...)
             SubcomposeAsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data("https://image.tmdb.org/t/p/w500/$imageUrl")
+                    .data("https://image.tmdb.org/t/p/w500/$movie.imageUrl")
                     .crossfade(true)
                     .build(),
-                contentDescription = "$title poster",
+                contentDescription = "$movie.title poster",
                 modifier = Modifier.fillMaxWidth()
             ) {
                 // Progress indicator
@@ -171,7 +179,7 @@ fun DisplayMovie(title: String, imageUrl: String) {
 
         //Movie title
         Text(
-            text = title,
+            text = movie.title,
             fontSize = 16.sp,
             modifier = Modifier.padding(top = 8.dp),
             maxLines = 1,
