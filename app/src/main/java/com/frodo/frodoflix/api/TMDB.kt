@@ -11,7 +11,7 @@ import org.json.JSONObject
 
 class TMDB {
     companion object {
-        suspend fun getDataFromTMDB(url: String, result: String): JSONArray? {
+        suspend fun getDataFromTMDB(url: String, result: String): Any? {
             return withContext(Dispatchers.IO) {
                 val client = OkHttpClient()
 
@@ -49,9 +49,14 @@ class TMDB {
                 }
 
                 Log.d("TMDB", jsonObject.toString())
-                val arrayOfData = jsonObject?.getJSONArray(result)
 
-                arrayOfData
+                if (result != "") {
+                    val arrayOfData = jsonObject?.getJSONArray(result)
+
+                    return@withContext arrayOfData
+                }
+
+                jsonObject
             }
         }
     }

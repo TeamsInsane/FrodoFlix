@@ -30,12 +30,12 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.frodo.frodoflix.viewmodels.GenreList
 import com.frodo.frodoflix.viewmodels.GenresViewModel
-import com.frodo.frodoflix.viewmodels.NavControllerViewModel
+import com.frodo.frodoflix.viewmodels.SharedViewModel
 
 @Composable
-fun FavoriteGenresPage(navControllerViewModel: NavControllerViewModel = viewModel(), genresViewModel: GenresViewModel = viewModel()) {
+fun FavoriteGenresPage(sharedViewModel: SharedViewModel, genresViewModel: GenresViewModel = viewModel()) {
     val genresUiState by genresViewModel.genresUiState.collectAsState()
-    val navController = navControllerViewModel.navController ?: return
+    val navController = sharedViewModel.navController ?: return
 
     LaunchedEffect(Unit) {
         if (genresUiState.genresList.isEmpty()) {

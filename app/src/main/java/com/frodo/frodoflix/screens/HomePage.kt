@@ -30,7 +30,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
@@ -38,13 +37,13 @@ import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Movie
-import com.frodo.frodoflix.viewmodels.NavControllerViewModel
+import com.frodo.frodoflix.viewmodels.SharedViewModel
 import org.json.JSONArray
 import java.time.LocalDate
 
 @Composable
-fun DrawMainPage(navControllerViewModel: NavControllerViewModel = viewModel()) {
-    val navController = navControllerViewModel.navController ?: return
+fun DrawMainPage(sharedViewModel: SharedViewModel) {
+    val navController = sharedViewModel.navController ?: return
 
     Scaffold {innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
@@ -54,7 +53,7 @@ fun DrawMainPage(navControllerViewModel: NavControllerViewModel = viewModel()) {
                 modifier = Modifier.padding(16.dp)
             )
 
-            TrendingMovies()
+            TrendingMovies(sharedViewModel)
 
             HorizontalDivider(thickness = 2.dp)
 
@@ -64,7 +63,7 @@ fun DrawMainPage(navControllerViewModel: NavControllerViewModel = viewModel()) {
                 modifier = Modifier.padding(16.dp)
             )
 
-            UpcomingMovies()
+            UpcomingMovies(sharedViewModel)
 
             HorizontalDivider(thickness = 2.dp)
 
@@ -82,19 +81,19 @@ fun DrawMainPage(navControllerViewModel: NavControllerViewModel = viewModel()) {
 
 //Trending Movies
 @Composable
-fun TrendingMovies() {
+fun TrendingMovies(sharedViewModel: SharedViewModel) {
     var movies by remember { mutableStateOf<JSONArray?>(null) }
 
     LaunchedEffect(true) {
-        movies = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/movie/popular?language=en-US&page=1", "results")
+        movies = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/movie/popular?language=en-US&page=1", "results") as JSONArray?
     }
 
-    DisplayMoviesRow(movies)
+    DisplayMoviesRow(movies, sharedViewModel)
 }
 
 //Upcoming Movies
 @Composable
-fun UpcomingMovies() {
+fun UpcomingMovies(sharedViewModel: SharedViewModel) {
     var movies by remember { mutableStateOf<JSONArray?>(null) }
 
     val minDate = LocalDate.now()
@@ -102,15 +101,15 @@ fun UpcomingMovies() {
 
     //Fetch movie data from the TMDB API
     LaunchedEffect(true) {
-        movies = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en&page=1&primary_release_date.gte=$minDate&primary_release_date.lte=$maxDate&sort_by=popularity.desc", "results")
+        movies = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en&page=1&primary_release_date.gte=$minDate&primary_release_date.lte=$maxDate&sort_by=popularity.desc", "results") as JSONArray?
     }
 
-    DisplayMoviesRow(movies)
+    DisplayMoviesRow(movies, sharedViewModel)
 }
 
 //Display the entire row of movies
 @Composable
-fun DisplayMoviesRow(movies : JSONArray?) {
+fun DisplayMoviesRow(movies : JSONArray?, sharedViewModel: SharedViewModel) {
     if (movies != null) {
         LazyRow(
             modifier = Modifier.padding(horizontal = 8.dp)
@@ -126,7 +125,7 @@ fun DisplayMoviesRow(movies : JSONArray?) {
 
                 val movie = Movie(id, title, overview, imageUrl)
 
-                DisplayMovie(movie)
+                DisplayMovie(movie, sharedViewModel)
             }
         }
     } else {
@@ -137,13 +136,14 @@ fun DisplayMoviesRow(movies : JSONArray?) {
 
 //Display each movie poster and title
 @Composable
-fun DisplayMovie(movie: Movie) {
+fun DisplayMovie(movie: Movie, sharedViewModel: SharedViewModel) {
     Column (
         modifier = Modifier
             .width(150.dp)
             .padding(8.dp)
             .clickable {
-
+                sharedViewModel.selectedMovie = movie
+                sharedViewModel.navController?.navigate("movie_page")
             },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -156,7 +156,7 @@ fun DisplayMovie(movie: Movie) {
             // Loading states for images (loading image before the image is loaded...)
             SubcomposeAsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data("https://image.tmdb.org/t/p/w500/$movie.imageUrl")
+                    .data("https://image.tmdb.org/t/p/w500/${movie.posterUrl}")
                     .crossfade(true)
                     .build(),
                 contentDescription = "$movie.title poster",

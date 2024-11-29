@@ -14,14 +14,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.frodo.frodoflix.R
-import com.frodo.frodoflix.viewmodels.NavControllerViewModel
+import com.frodo.frodoflix.viewmodels.SharedViewModel
 
 @Composable
-fun Profile(navControllerViewModel: NavControllerViewModel = viewModel()) {
-    val navController = navControllerViewModel.navController ?: return
-
+fun Profile(sharedViewModel: SharedViewModel) {
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Box(
             modifier = Modifier
@@ -182,7 +180,7 @@ fun Profile(navControllerViewModel: NavControllerViewModel = viewModel()) {
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .padding(6.dp)
                         .clickable {
-                            navController.navigate("favourite_genres")
+                            sharedViewModel.navController?.navigate("favourite_genres")
                         }
                 ) {
                     Row(

@@ -25,7 +25,7 @@ class GenresViewModel: ViewModel() {
 
     fun loadGenresFromApi() {
         viewModelScope.launch {
-            val genresJSONArray: JSONArray? = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/genre/movie/list?language=en", "genres")
+            val genresJSONArray: JSONArray? = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/genre/movie/list?language=en", "genres") as JSONArray?
 
             val genresList = genresJSONArray?.let {
                 (0 until it.length()).map { index ->

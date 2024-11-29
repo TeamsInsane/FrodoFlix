@@ -13,8 +13,9 @@ import com.frodo.frodoflix.ui.theme.FrodoFlixTheme
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
+import com.frodo.frodoflix.screens.DisplayMoviePage
 import com.frodo.frodoflix.viewmodels.GenresViewModel
-import com.frodo.frodoflix.viewmodels.NavControllerViewModel
+import com.frodo.frodoflix.viewmodels.SharedViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,25 +24,29 @@ class MainActivity : ComponentActivity() {
 
         val genresViewModel: GenresViewModel = ViewModelProvider(this)[GenresViewModel::class.java]
         setContent {
-            val controllerViewModel: NavControllerViewModel = viewModel()
+            val sharedViewModel: SharedViewModel = viewModel()
             val navController = rememberNavController()
-
-            controllerViewModel.navController = navController
+            sharedViewModel.navController = navController
 
             FrodoFlixTheme {
                 NavHost(navController = navController, startDestination = "home_page") {
                     // First screen (Home Page)
                     composable("home_page") {
-                        DrawMainPage()
+                        DrawMainPage(sharedViewModel)
                     }
                     // Profile Page
                     composable("profile") {
-                        Profile()
+                        Profile(sharedViewModel)
                     }
 
                     // Favourite genres
                     composable("favourite_genres") {
-                        FavoriteGenresPage(genresViewModel = genresViewModel)
+                        FavoriteGenresPage(sharedViewModel, genresViewModel)
+                    }
+
+                    // Movie page
+                    composable("movie_page") {
+                        DisplayMoviePage(sharedViewModel)
                     }
                 }
             }
