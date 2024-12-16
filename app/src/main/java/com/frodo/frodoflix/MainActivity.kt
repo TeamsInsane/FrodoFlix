@@ -14,6 +14,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.frodo.frodoflix.screens.DisplayMoviePage
+import com.frodo.frodoflix.screens.LoginPage
+import com.frodo.frodoflix.screens.profile.SettingsScreen
 import com.frodo.frodoflix.viewmodels.GenresViewModel
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
@@ -37,6 +39,15 @@ class MainActivity : ComponentActivity() {
                     // Profile Page
                     composable("profile") {
                         Profile(sharedViewModel)
+                    }
+
+                    composable("login_page") {
+                        LoginPage()
+                    }
+
+                    // Settings
+                    composable("settings"){
+                        SettingsScreen()
                     }
 
                     // Favourite genres
