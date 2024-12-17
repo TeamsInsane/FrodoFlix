@@ -16,8 +16,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
 import com.frodo.frodoflix.database.FrodoDatabase
 import com.frodo.frodoflix.screens.DisplayMoviePage
-import com.frodo.frodoflix.screens.LoginPage
+import com.frodo.frodoflix.screens.registration.LoginPage
 import com.frodo.frodoflix.screens.profile.SettingsScreen
+import com.frodo.frodoflix.screens.registration.RegisterPage
 import com.frodo.frodoflix.viewmodels.GenresViewModel
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
@@ -50,13 +51,20 @@ class MainActivity : ComponentActivity() {
                     composable("home_page") {
                         DrawMainPage(sharedViewModel)
                     }
+
                     // Profile Page
                     composable("profile") {
                         Profile(sharedViewModel)
                     }
 
+                    //Login page
                     composable("login_page") {
-                        LoginPage()
+                        LoginPage(sharedViewModel)
+                    }
+
+                    //Register page
+                    composable("register_page") {
+                        RegisterPage(sharedViewModel)
                     }
 
                     // Settings

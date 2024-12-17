@@ -1,15 +1,15 @@
-package com.frodo.frodoflix.screens
+package com.frodo.frodoflix.screens.registration
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -25,51 +25,58 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
 import com.frodo.frodoflix.viewmodels.SharedViewModel
-@Preview
+
 @Composable
-fun LoginPage() {
+fun RegisterPage(sharedViewModel: SharedViewModel) {
+    var emailValue by remember { mutableStateOf("") }
+    var passwordValue by remember { mutableStateOf("") }
+
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .padding(40.dp), // Add padding for better spacing
+                .padding(40.dp),
         ) {
-            LoginText()
-            LoginForm()
-            DisplayLogin()
+            RegisterText(sharedViewModel)
+            RegisterForm(emailValue, { emailValue = it}, passwordValue, {passwordValue = it})
+            DisplayRegister(emailValue, passwordValue, sharedViewModel)
         }
     }
 }
 
 @Composable
-fun LoginText() {
+fun RegisterText(sharedViewModel: SharedViewModel) {
     Column(
         modifier = Modifier
             .padding(top = 100.dp)
     ) {
         Text(
-            text = "Log in",
+            text = "Register",
             color = MaterialTheme.colorScheme.onSurface,
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 8.dp)
         )
         Text(
-            text = "Don't have an account yet?",
+            modifier = Modifier.clickable {
+                sharedViewModel.navController?.navigate("login_page")
+            },
+            text = "Already have an account?",
             fontSize = 16.sp
         )
     }
 }
 
 @Composable
-fun LoginForm() {
-    var value by remember { mutableStateOf("") } // Empty initial state
-
+fun RegisterForm(
+    emailValue: String,
+    onEmailChange: (String) -> Unit,
+    passwordValue: String,
+    onPasswordChange: (String) -> Unit
+) {
     Column(
         modifier = Modifier.padding(top = 40.dp) // Add top padding for spacing
     ) {
@@ -84,8 +91,8 @@ fun LoginForm() {
 
         // Email Input Field
         TextField(
-            value = value,
-            onValueChange = { value = it },
+            value = emailValue,
+            onValueChange = { onEmailChange(it) },
             label = { Text("Enter your email") },
             singleLine = true, // Restrict to a single line for email input
             textStyle = TextStyle(color = Color.Blue, fontWeight = FontWeight.Normal),
@@ -105,8 +112,8 @@ fun LoginForm() {
 
         // Email Input Field
         TextField(
-            value = value,
-            onValueChange = { value = it },
+            value = passwordValue,
+            onValueChange = { onPasswordChange(it) },
             label = { Text("Enter your password") },
             singleLine = true, // Restrict to a single line for email input
             textStyle = TextStyle(color = Color.Blue, fontWeight = FontWeight.Normal),
@@ -118,16 +125,17 @@ fun LoginForm() {
 
 
 @Composable
-fun DisplayLogin(){
+fun DisplayRegister(emailValue: String, passwordValue: String, sharedViewModel: SharedViewModel){
     Column(
         modifier = Modifier.fillMaxHeight()
     ) {
-        Box(
+        Button(
             modifier = Modifier
                 .padding(start = 50.dp, end = 50.dp, top = 64.dp, bottom = 64.dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(6.dp)
+                .padding(6.dp),
+            onClick = { sharedViewModel.newUser("Test", emailValue, passwordValue) },
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -137,7 +145,7 @@ fun DisplayLogin(){
             ) {
 
                 Text(
-                    text = "Sign in",
+                    text = "Sign up",
                     fontSize = 18.sp,
                 )
             }
