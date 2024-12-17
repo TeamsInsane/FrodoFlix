@@ -53,31 +53,21 @@ private val DarkColors = darkColorScheme(
 
 @Composable
 fun FrodoFlixTheme(
-    darkTheme: Boolean = false,
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    darkTheme: Boolean,
     content: @Composable () -> Unit
 ) {
-    /*
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }*/
-    val colorScheme: ColorScheme = if (darkTheme){
-        DarkColors
-    }
-    else{
-        LightColors
-    }
-
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = if (darkTheme) DarkColors else LightColors,
         typography = Typography,
-        content = content
+        content = content,
+    )
+}
+
+@Composable
+fun ThemeSwitch(darkTheme: Boolean, content: @Composable () -> Unit) {
+    MaterialTheme(
+        colorScheme = if (darkTheme) DarkColors else LightColors,
+        typography = Typography,
+        content = content,
     )
 }

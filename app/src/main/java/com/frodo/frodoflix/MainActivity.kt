@@ -13,6 +13,8 @@ import com.frodo.frodoflix.ui.theme.FrodoFlixTheme
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
+import androidx.room.Room
+import com.frodo.frodoflix.database.FrodoDatabase
 import com.frodo.frodoflix.screens.DisplayMoviePage
 import com.frodo.frodoflix.screens.LoginPage
 import com.frodo.frodoflix.screens.profile.SettingsScreen
@@ -20,17 +22,29 @@ import com.frodo.frodoflix.viewmodels.GenresViewModel
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
 class MainActivity : ComponentActivity() {
+
+    companion object {
+        lateinit var frodoDatabase: FrodoDatabase
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
 
+        frodoDatabase = Room.databaseBuilder(
+            applicationContext,
+            FrodoDatabase::class.java,
+            FrodoDatabase.NAME
+        ).build()
+
+        enableEdgeToEdge()
         val genresViewModel: GenresViewModel = ViewModelProvider(this)[GenresViewModel::class.java]
+
         setContent {
             val sharedViewModel: SharedViewModel = viewModel()
             val navController = rememberNavController()
             sharedViewModel.navController = navController
 
-            FrodoFlixTheme {
+            FrodoFlixTheme (darkTheme = sharedViewModel.isDarkTheme.value){
                 NavHost(navController = navController, startDestination = "home_page") {
                     // First screen (Home Page)
                     composable("home_page") {
@@ -47,7 +61,7 @@ class MainActivity : ComponentActivity() {
 
                     // Settings
                     composable("settings"){
-                        SettingsScreen()
+                        SettingsScreen(sharedViewModel)
                     }
 
                     // Favourite genres
