@@ -37,9 +37,6 @@ class SharedViewModel : ViewModel() {
 
     fun fetchUsers() {
         viewModelScope.launch(Dispatchers.IO) {
-            val userList = frodoDao?.getAllUsers() // Fetch users from the database
-
-            Log.d("database", userList?.value.toString())
         }
     }
 
