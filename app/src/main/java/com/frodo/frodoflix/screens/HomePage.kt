@@ -158,7 +158,7 @@ fun DisplayMovie(movie: Movie, sharedViewModel: SharedViewModel) {
             .padding(8.dp)
             .clickable {
                 sharedViewModel.selectedMovie = movie
-                sharedViewModel.navController?.navigate("home_page")
+                sharedViewModel.navController?.navigate("movie_page")
             },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

@@ -129,26 +129,22 @@ fun DisplayRegister(emailValue: String, passwordValue: String, sharedViewModel: 
     Column(
         modifier = Modifier.fillMaxHeight()
     ) {
-        Button(
+        Row(
             modifier = Modifier
                 .padding(start = 50.dp, end = 50.dp, top = 64.dp, bottom = 64.dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(6.dp),
-            onClick = { sharedViewModel.newUser("Test", emailValue, passwordValue) },
+                .clickable  { sharedViewModel.newUser("Test", emailValue, passwordValue); sharedViewModel.fetchUsers(); },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
 
-            ) {
-
-                Text(
-                    text = "Sign up",
-                    fontSize = 18.sp,
-                )
-            }
+            Text(
+                text = "Sign up",
+                fontSize = 18.sp,
+            )
         }
+
     }
 }

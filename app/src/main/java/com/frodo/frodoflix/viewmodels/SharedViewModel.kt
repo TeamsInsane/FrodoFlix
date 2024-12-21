@@ -1,13 +1,17 @@
 package com.frodo.frodoflix.viewmodels
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.frodo.frodoflix.MainActivity
 import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.data.User
+import com.frodo.frodoflix.database.FrodoDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -16,8 +20,7 @@ class SharedViewModel : ViewModel() {
     var navController: NavController? = null
     private val _isDarkTheme = mutableStateOf(false)
     val isDarkTheme: State<Boolean> = _isDarkTheme
-
-    private val frodoDao = MainActivity.frodoDatabase.frodoDao()
+    var frodoDao: FrodoDao? = null;
 
     fun toggleTheme() {
         _isDarkTheme.value = !_isDarkTheme.value
@@ -26,17 +29,26 @@ class SharedViewModel : ViewModel() {
     fun newUser(username: String, email: String, password: String) {
         if (email.isNotEmpty() && password.isNotEmpty() && username.isNotEmpty()) {
             val user = User(username = username, email = email, password = password)
+            Log.d("newUser", user.toString());
 
             viewModelScope.launch(Dispatchers.IO) {
-                frodoDao.insertNewUser(user)
+                frodoDao?.insertNewUser(user)
             }
         }
 
     }
 
+    fun fetchUsers() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val userList = frodoDao?.getAllUsers() // Fetch users from the database
+
+            Log.d("database", userList?.value.toString())
+        }
+    }
+
     fun deleteUser(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            frodoDao.deleteExistingUser(id)
+            frodoDao?.deleteExistingUser(id)
         }
     }
 }

@@ -44,6 +44,7 @@ class MainActivity : ComponentActivity() {
             val sharedViewModel: SharedViewModel = viewModel()
             val navController = rememberNavController()
             sharedViewModel.navController = navController
+            sharedViewModel.frodoDao = frodoDatabase.frodoDao();
 
             FrodoFlixTheme (darkTheme = sharedViewModel.isDarkTheme.value){
                 NavHost(navController = navController, startDestination = "home_page") {
