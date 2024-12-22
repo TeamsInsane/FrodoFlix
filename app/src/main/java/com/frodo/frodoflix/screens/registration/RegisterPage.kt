@@ -133,8 +133,8 @@ fun DisplayRegister(emailValue: String, passwordValue: String, sharedViewModel: 
             modifier = Modifier
                 .padding(start = 50.dp, end = 50.dp, top = 64.dp, bottom = 64.dp)
                 .clip(RoundedCornerShape(4.dp))
-                .background(MaterialTheme.colorScheme.surface)
-                .clickable  { sharedViewModel.newUser("Test", emailValue, passwordValue); sharedViewModel.fetchUsers(); },
+                .background(MaterialTheme.colorScheme.surface),
+                //.clickable  { sharedViewModel.newUser("Test", emailValue, passwordValue); sharedViewModel.fetchUsers(); },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
 

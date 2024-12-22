@@ -28,22 +28,39 @@ import com.frodo.frodoflix.viewmodels.SharedViewModel
 fun Profile(sharedViewModel: SharedViewModel) {
     val navController = sharedViewModel.navController ?: return
 
-    Scaffold {innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        // Background Image
+        Image(
+            painter = painterResource(id = R.drawable.background_image), // Replace with your image resource
+            contentDescription = "Background Image",
+            modifier = Modifier.fillMaxSize()
+        )
 
-            DisplaySettingsIcon(navController)
-            DisplayProfileIcon()
-            DisplayUsername()
-            DisplayAllMovies()
-            DisplayFavouriteMovies()
-            DisplayRecentActivity()
-            //DisplayAdvancedStatistics()
-            DisplayFavouriteGenres(navController)
+        // Foreground Content
+        Scaffold(
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f) // Optional: Adds slight transparency
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .padding(20.dp),
+            ) {
+                DisplaySettingsIcon(navController)
+                DisplayProfileIcon()
+                DisplayUsername()
+                DisplayAllMovies()
+                DisplayFavouriteMovies()
+                DisplayRecentActivity()
+                DisplayFavouriteGenres(navController)
+            }
+            DisplayBottomRow(navController)
         }
-        DisplayBottomRow(navController)
-
     }
 }
+
 
 @Composable
 fun DisplaySettingsIcon(navController: NavController) {
@@ -105,26 +122,26 @@ fun DisplayUsername() {
 
 @Composable
 fun DisplayAllMovies() {
-    Box(
+    Row(
         modifier = Modifier
-            .padding(start = 50.dp, end = 50.dp, top = 8.dp, bottom = 8.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(6.dp)
-
+            .fillMaxWidth()
+            .padding(top = 2.dp, bottom = 2.dp),
+        horizontalArrangement = Arrangement.Center,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+        // Rate movie button
+        Button(
+            onClick = {
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary
+            ),
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
         ) {
             Text(
-                text = "Movies watched: ",
-                fontSize = 18.sp,
-            )
-            Text(
-                text = "3018",
-                fontSize = 24.sp,
+                text = "Movies watched: 3018",
+                fontSize = 22.sp
             )
         }
     }
@@ -133,29 +150,26 @@ fun DisplayAllMovies() {
 
 @Composable
 fun DisplayFavouriteMovies() {
-    Box(
+    Row(
         modifier = Modifier
-            .padding(start = 50.dp, end = 50.dp, top = 8.dp, bottom = 8.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(6.dp)
+            .fillMaxWidth()
+            .padding(top = 2.dp, bottom = 2.dp),
+        horizontalArrangement = Arrangement.Center,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-
+        // Rate movie button
+        Button(
+            onClick = {
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary
+            ),
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.favourite_movies),
-                contentDescription = "Profile Picture",
-                modifier = Modifier
-                    .size(32.dp)
-                    .padding(end = 8.dp)
-            )
             Text(
                 text = "Favourite movies",
-                fontSize = 18.sp,
+                fontSize = 22.sp
             )
         }
     }
@@ -164,62 +178,26 @@ fun DisplayFavouriteMovies() {
 
 @Composable
 fun DisplayRecentActivity() {
-    Box(
+    Row(
         modifier = Modifier
-            .padding(start = 50.dp, end = 50.dp, top = 8.dp, bottom = 64.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(6.dp)
+            .fillMaxWidth()
+            .padding(top = 2.dp, bottom = 32.dp),
+        horizontalArrangement = Arrangement.Center,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-
+        // Rate movie button
+        Button(
+            onClick = {
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary
+            ),
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.tv),
-                contentDescription = "Profile Picture",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(32.dp)
-                    .padding(end = 8.dp)
-            )
             Text(
                 text = "Recent activity",
-                fontSize = 18.sp,
-            )
-        }
-    }
-
-}
-
-
-@Composable
-fun DisplayAdvancedStatistics() {
-    Box(
-        modifier = Modifier
-            .padding(start = 50.dp, end = 50.dp, top = 8.dp, bottom = 64.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(6.dp)
-
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.advanced_statistics),
-                contentDescription = "statistics Picture",
-                modifier = Modifier
-                    .size(32.dp)
-                    .padding(end = 8.dp)
-            )
-            Text(
-                text = "Advanced statistics",
-                fontSize = 18.sp
+                fontSize = 22.sp
             )
         }
     }
@@ -228,44 +206,36 @@ fun DisplayAdvancedStatistics() {
 
 @Composable
 fun DisplayFavouriteGenres(navController : NavController) {
-    Box(
+    Row(
         modifier = Modifier
-            .padding(start = 50.dp, end = 50.dp, top = 8.dp, bottom = 130.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(6.dp)
-            .clickable {
-                navController.navigate("favourite_genres")
-            }
+            .fillMaxWidth()
+            .padding(top = 2.dp, bottom = 2.dp),
+        horizontalArrangement = Arrangement.Center,
     ) {
-        Row(
+        // Rate movie button
+        Button(
+            onClick = {
+                navController.navigate("favourite_genres")
+
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary
+            ),
             modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-
-            ) {
-            Icon(
-                painter = painterResource(id = R.drawable.eye),
-                contentDescription = "Favourite genres",
-                tint = MaterialTheme.colorScheme.primary,
-
-                modifier = Modifier
-                    .size(32.dp)
-                    .padding(end = 8.dp)
-            )
+                .padding(horizontal = 8.dp)
+        ) {
             Text(
                 text = "Favourite genres",
-                fontSize = 18.sp,
+                fontSize = 22.sp
             )
-
         }
     }
 }
 
 
 @Composable
-fun DisplayBottomRow(navController : NavController) {
+fun DisplayBottomRow(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -278,7 +248,7 @@ fun DisplayBottomRow(navController : NavController) {
                 .clickable {
                     //navController.navigate("favourite_genres")
                 }
-        ){
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -314,4 +284,5 @@ fun DisplayBottomRow(navController : NavController) {
         }
     }
 }
+
 

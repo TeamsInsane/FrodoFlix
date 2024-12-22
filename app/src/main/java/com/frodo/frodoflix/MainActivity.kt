@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
 import com.frodo.frodoflix.database.FrodoDatabase
 import com.frodo.frodoflix.screens.DisplayMoviePage
+import com.frodo.frodoflix.screens.RateMovie
 import com.frodo.frodoflix.screens.registration.LoginPage
 import com.frodo.frodoflix.screens.profile.SettingsScreen
 import com.frodo.frodoflix.screens.registration.RegisterPage
@@ -23,19 +24,19 @@ import com.frodo.frodoflix.viewmodels.GenresViewModel
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
 class MainActivity : ComponentActivity() {
-
+    /*
     companion object {
         lateinit var frodoDatabase: FrodoDatabase
-    }
+    }*/
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        frodoDatabase = Room.databaseBuilder(
+        /*frodoDatabase = Room.databaseBuilder(
             applicationContext,
             FrodoDatabase::class.java,
             FrodoDatabase.NAME
-        ).build()
+        ).build()*/
 
         enableEdgeToEdge()
         val genresViewModel: GenresViewModel = ViewModelProvider(this)[GenresViewModel::class.java]
@@ -44,7 +45,7 @@ class MainActivity : ComponentActivity() {
             val sharedViewModel: SharedViewModel = viewModel()
             val navController = rememberNavController()
             sharedViewModel.navController = navController
-            sharedViewModel.frodoDao = frodoDatabase.frodoDao();
+            //sharedViewModel.frodoDao = frodoDatabase.frodoDao();
 
             FrodoFlixTheme (darkTheme = sharedViewModel.isDarkTheme.value){
                 NavHost(navController = navController, startDestination = "home_page") {
@@ -81,6 +82,11 @@ class MainActivity : ComponentActivity() {
                     // Movie page
                     composable("movie_page") {
                         DisplayMoviePage(sharedViewModel)
+                    }
+
+                    // Rate movie
+                    composable("rate_movie"){
+                        RateMovie(sharedViewModel)
                     }
                 }
             }

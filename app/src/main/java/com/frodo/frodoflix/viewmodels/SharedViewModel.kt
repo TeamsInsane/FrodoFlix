@@ -22,7 +22,7 @@ class SharedViewModel : ViewModel() {
     fun toggleTheme() {
         _isDarkTheme.value = !_isDarkTheme.value
     }
-
+/*
     fun newUser(username: String, email: String, password: String) {
         if (email.isNotEmpty() && password.isNotEmpty() && username.isNotEmpty()) {
             val user = User(username = username, email = email, password = password)
@@ -44,5 +44,5 @@ class SharedViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             frodoDao?.deleteExistingUser(id)
         }
-    }
+    }*/
 }

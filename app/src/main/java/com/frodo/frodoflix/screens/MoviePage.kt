@@ -1,17 +1,28 @@
 package com.frodo.frodoflix.screens
 
 import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,15 +33,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
+import com.frodo.frodoflix.R
 import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Actor
 import com.frodo.frodoflix.viewmodels.SharedViewModel
@@ -41,6 +56,7 @@ import org.json.JSONObject
 fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
     var data by remember { mutableStateOf<JSONObject?>(null) }
     val movie = sharedViewModel.selectedMovie
+    val navController = sharedViewModel.navController ?: return
 
     if (movie == null) {
         Log.d("movie", "NULLLLL!")
@@ -58,45 +74,78 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
 
 
     val nonNullData = data as JSONObject
-    LazyColumn {
-        item {
-            DisplayMovieBanner(nonNullData.getString("backdrop_path"))
+    // Apply Scaffold for consistent theming and structure
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            item {
+                BackToHomePage(navController)
+                DisplayMovieBanner(nonNullData.getString("backdrop_path"))
 
-            //Title Text
-            Text(
-                text = movie.title,
-                fontSize = 28.sp,
-                modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 5.dp),
-                fontWeight = FontWeight.Bold
-            )
+                // Title Text
+                Text(
+                    text = movie.title,
+                    fontSize = 28.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
+                    fontWeight = FontWeight.Bold
+                )
 
-            //Rating and duration text
-            Text(
-                text = "Rating: ${nonNullData.getString("vote_average")}     ${nonNullData.getString("runtime")} min",
-                modifier = Modifier
-                    .padding(16.dp, 5.dp, 16.dp, 16.dp),
-            )
+                // Rating and Duration Text
+                Text(
+                    text = "Rating: ${nonNullData.getString("vote_average")}     ${nonNullData.getString("runtime")} min",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp)
+                )
 
-            //Description text
-            Text(
-                text = nonNullData.getString("overview"),
-                modifier = Modifier
-                    .padding(16.dp, 5.dp, 16.dp, 16.dp),
-            )
+                // Description Text
+                Text(
+                    text = nonNullData.getString("overview"),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp)
+                )
 
-            //Cast text
-            Text(
-                text = "Cast",
-                fontSize = 20.sp,
-                modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 16.dp),
-                fontWeight = FontWeight.Bold
-            )
+                DisplayRateMovie(navController)
 
-            CastData(movie.id)
+                // Cast Section Title
+                Text(
+                    text = "Cast",
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                    fontWeight = FontWeight.Bold
+                )
+
+                CastData(movie.id)
+            }
         }
     }
 
+
     Log.d("data", data.toString())
+}
+
+@Composable
+fun BackToHomePage(navController: NavController){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+    ){
+        Icon(
+            painter = painterResource(id = R.drawable.arrow_back),
+            contentDescription = "Back to Home Page",
+            tint = MaterialTheme.colorScheme.primary,
+
+            modifier = Modifier
+                .size(48.dp)
+                .clickable {
+                    navController.navigate("home_page")
+                }
+        )
+    }
 }
 
 @Composable
@@ -125,6 +174,56 @@ fun DisplayMovieBanner(bannerPath: String) {
         }
     }
 }
+
+
+
+@Composable
+fun DisplayRateMovie(navController: NavController) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp, bottom = 16.dp),
+        horizontalArrangement = Arrangement.Center, // Center horizontally
+        verticalAlignment = Alignment.CenterVertically // Align vertically
+    ) {
+        // Rate movie button
+        Button(
+            onClick = {
+                navController.navigate("rate_movie")
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Yellow,
+                contentColor = Color.Black
+            ),
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
+        ) {
+            Text(
+                text = "Rate Movie",
+                fontSize = 22.sp
+            )
+        }
+
+        // Add to watchlist button
+        Button(
+            onClick = {
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Yellow,
+                contentColor = Color.Black
+
+            ),
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
+        ) {
+            Text(
+                text = "Add to Watchlist",
+                fontSize = 22.sp
+            )
+        }
+    }
+}
+
 
 @Composable
 fun CastData(movieID: Int) {

@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,16 +29,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.frodo.frodoflix.R
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
 @Composable
 fun SettingsScreen(sharedViewModel: SharedViewModel) {
-    //val navController = sharedViewModel.navController ?: return
+    val navController = sharedViewModel.navController ?: return
 
     Scaffold {innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
-            BackToProfile()
+        Column(modifier = Modifier.padding(innerPadding)
+            .padding(20.dp),
+        ) {
+            BackToProfile(navController)
             DisplayDarkTheme(sharedViewModel)
             SettingsUsername()
             DisplayEmail()
@@ -47,7 +52,7 @@ fun SettingsScreen(sharedViewModel: SharedViewModel) {
 }
 
 @Composable
-fun BackToProfile(){
+fun BackToProfile(navController: NavController){
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -62,6 +67,7 @@ fun BackToProfile(){
             modifier = Modifier
                 .size(48.dp)
                 .clickable {
+                    navController.navigate("profile")
                 }
         )
     }
@@ -240,7 +246,7 @@ fun DisplayChangePassword(){
         HorizontalDivider(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp, bottom = 16.dp),
+                .padding(top = 16.dp, bottom = 400.dp),
             thickness = 1.dp,
 
             color = MaterialTheme.colorScheme.onSurface
@@ -250,29 +256,27 @@ fun DisplayChangePassword(){
 
 @Composable
 fun DisplaySignOut(){
-    Column(
-        modifier = Modifier.fillMaxHeight()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 2.dp, bottom = 2.dp),
+        horizontalArrangement = Arrangement.Center,
     ) {
-        Spacer(modifier = Modifier.weight(1f))
-        Box(
+        // Rate movie button
+        Button(
+            onClick = {
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Red,
+                contentColor = Color.Black
+            ),
             modifier = Modifier
-                .padding(start = 50.dp, end = 50.dp, top = 8.dp, bottom = 64.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color.Red)
-                .padding(6.dp)
+                .padding(horizontal = 8.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-
-            ) {
-
-                Text(
-                    text = "Sign out",
-                    fontSize = 18.sp,
-                )
-            }
+            Text(
+                text = "Sign out",
+                fontSize = 22.sp
+            )
         }
     }
 }

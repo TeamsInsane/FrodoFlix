@@ -137,7 +137,7 @@ fun DisplayLogin(emailValue: String, passwordValue: String, sharedViewModel: Sha
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(6.dp)
                 .clickable {
-                    sharedViewModel.newUser("Test", emailValue, passwordValue)
+                    //sharedViewModel.newUser("Test", emailValue, passwordValue)
                 },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
