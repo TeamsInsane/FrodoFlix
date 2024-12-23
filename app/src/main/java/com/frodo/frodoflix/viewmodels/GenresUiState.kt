@@ -1,5 +1,6 @@
 package com.frodo.frodoflix.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.frodo.frodoflix.api.TMDB
@@ -12,6 +13,7 @@ import org.json.JSONArray
 
 data class GenreList(
     val genre: String,
+    val id: Int,
     val status: Boolean
 )
 
@@ -23,7 +25,7 @@ class GenresViewModel: ViewModel() {
     private val _genresUiState = MutableStateFlow(GenresUiState())
     val genresUiState: StateFlow<GenresUiState> = _genresUiState.asStateFlow()
 
-    fun loadGenresFromApi() {
+    fun loadGenresFromApi(sharedViewModel: SharedViewModel) {
         viewModelScope.launch {
             val genresJSONArray: JSONArray? = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/genre/movie/list?language=en", "genres") as JSONArray?
 
@@ -31,6 +33,7 @@ class GenresViewModel: ViewModel() {
                 (0 until it.length()).map { index ->
                     val item = it.getJSONObject(index)
                     GenreList(
+                        id = item.getInt("id"),
                         genre = item.getString("name"),
                         status = false
                     )
@@ -40,6 +43,8 @@ class GenresViewModel: ViewModel() {
             _genresUiState.update { currentState ->
                 currentState.copy(genresList = genresList)
             }
+
+            loadSavedGenres(sharedViewModel.getUserGenres())
         }
     }
 
@@ -50,5 +55,28 @@ class GenresViewModel: ViewModel() {
             updatedList[index] = updatedGenre
             currentState.copy(genresList = updatedList)
         }
+    }
+
+    fun getFavouriteGenresList(): List<String> {
+        return genresUiState.value.genresList
+            .filter { it.status } // Filter selected genres
+            .map { it.genre }     // Map to genre names
+    }
+
+    fun getFavouriteGenreIds(): List<Int> {
+        return genresUiState.value.genresList
+            .filter { it.status } // Filter selected genres
+            .map { it.id }        // Map to genre IDs
+    }
+
+   fun loadSavedGenres(savedGenres: List<String>) {
+       viewModelScope.launch {
+           _genresUiState.update { currentState ->
+               val updatedGenresList = currentState.genresList.map { genreItem ->
+                   genreItem.copy(status = savedGenres.contains(genreItem.genre))
+               }
+               currentState.copy(genresList = updatedGenresList)
+           }
+       }
     }
 }

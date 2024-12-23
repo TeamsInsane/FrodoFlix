@@ -276,7 +276,7 @@ fun DisplayBottomRow(navController: NavController) {
                     modifier = Modifier
                         .size(48.dp)
                         .clickable {
-                            navController.navigate("login_page")
+
                         }
 
                 )

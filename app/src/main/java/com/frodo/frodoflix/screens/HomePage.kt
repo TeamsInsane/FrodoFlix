@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -57,37 +58,118 @@ fun DrawMainPage(sharedViewModel: SharedViewModel) {
     val navController = sharedViewModel.navController ?: return
 
     Scaffold {innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
-            Text(
-                text = "Trending Movies",
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 24.sp,
-                modifier = Modifier.padding(16.dp)
-            )
+        LazyColumn (modifier = Modifier.padding(innerPadding)) {
+            //Trending
+            item {
+                Text(
+                    text = "Trending Movies",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
 
-            TrendingMovies(sharedViewModel)
+            item {
+                TrendingMovies(sharedViewModel)
+            }
 
-            HorizontalDivider(thickness = 2.dp)
+            item {
+                HorizontalDivider(thickness = 2.dp)
+            }
 
-            Text(
-                text = "Upcoming Movies",
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 24.sp,
-                modifier = Modifier.padding(16.dp)
-            )
+            //Upcoming
+            item {
+                Text(
+                    text = "Upcoming Movies",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
 
-            UpcomingMovies(sharedViewModel)
+            item {
+                UpcomingMovies(sharedViewModel)
+            }
 
-            HorizontalDivider(thickness = 2.dp)
+            item {
+                HorizontalDivider(thickness = 2.dp)
+            }
 
-            Text(
-                text = "For You ",
-                color = MaterialTheme.colorScheme.onSurface,
+            //For You
+            item {
+                Text(
+                    text = "For You",
+                    color = MaterialTheme.colorScheme.onSurface,
 
-                fontSize = 24.sp,
-                modifier = Modifier.padding(16.dp)
-            )
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
 
+            item {
+                ForYouMovies(sharedViewModel)
+            }
+
+            item {
+                HorizontalDivider(thickness = 2.dp)
+            }
+
+            //Family
+            item {
+                Text(
+                    text = "Family",
+                    color = MaterialTheme.colorScheme.onSurface,
+
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
+            item {
+                FamilyMovies(sharedViewModel)
+            }
+
+            item {
+                HorizontalDivider(thickness = 2.dp)
+            }
+
+            //Horror
+            item {
+                Text(
+                    text = "Horror",
+                    color = MaterialTheme.colorScheme.onSurface,
+
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
+            item {
+                HorrorMovies(sharedViewModel)
+            }
+
+            item {
+                HorizontalDivider(thickness = 2.dp)
+            }
+
+            //Top rated
+            item {
+                Text(
+                    text = "Top Rated",
+                    color = MaterialTheme.colorScheme.onSurface,
+
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
+            item {
+                TopRatedMovies(sharedViewModel)
+            }
+
+            item {
+                HorizontalDivider(thickness = 15.dp, color = MaterialTheme.colorScheme.background)
+            }
         }
 
         BottomMenuBar(innerPadding, navController)
@@ -122,6 +204,70 @@ fun UpcomingMovies(sharedViewModel: SharedViewModel) {
     DisplayMoviesRow(movies, sharedViewModel)
 }
 
+//For You Movies
+@Composable
+fun ForYouMovies(sharedViewModel: SharedViewModel) {
+    var movies by remember { mutableStateOf<JSONArray?>(null) }
+
+    val genres = sharedViewModel.genresViewModel.getFavouriteGenreIds().joinToString("|")
+    val startDate = LocalDate.now().minusYears(3);
+    val url = "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=vote_average.desc&without_genres=99,10755&vote_count.gte=200" +
+            "&with_genres=$genres" +
+            "&primary_release_date.gte=$startDate"
+
+    LaunchedEffect(true) {
+        movies = TMDB.getDataFromTMDB(url, "results") as JSONArray?
+    }
+
+    DisplayMoviesRow(movies, sharedViewModel)
+}
+
+//Family Movies - 10751
+@Composable
+fun FamilyMovies(sharedViewModel: SharedViewModel) {
+    var movies by remember { mutableStateOf<JSONArray?>(null) }
+
+    val startDate = LocalDate.now().minusYears(2);
+    val url = "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=vote_average.desc&without_genres=99,10755&vote_count.gte=200" +
+            "&with_genres=10751" +
+            "&primary_release_date.gte=$startDate"
+
+    LaunchedEffect(true) {
+        movies = TMDB.getDataFromTMDB(url, "results") as JSONArray?
+    }
+
+    DisplayMoviesRow(movies, sharedViewModel)
+}
+
+//Horror Movies - 27
+@Composable
+fun HorrorMovies(sharedViewModel: SharedViewModel) {
+    var movies by remember { mutableStateOf<JSONArray?>(null) }
+
+    val startDate = LocalDate.now().minusYears(2);
+    val url = "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=vote_average.desc&without_genres=99,10755&vote_count.gte=200" +
+            "&with_genres=27" +
+            "&primary_release_date.gte=$startDate"
+
+    LaunchedEffect(true) {
+        movies = TMDB.getDataFromTMDB(url, "results") as JSONArray?
+    }
+
+    DisplayMoviesRow(movies, sharedViewModel)
+}
+
+//Top Rated Movies
+@Composable
+fun TopRatedMovies(sharedViewModel: SharedViewModel) {
+    var movies by remember { mutableStateOf<JSONArray?>(null) }
+
+    LaunchedEffect(true) {
+        movies = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1", "results") as JSONArray?
+    }
+
+    DisplayMoviesRow(movies, sharedViewModel)
+}
+
 //Display the entire row of movies
 @Composable
 fun DisplayMoviesRow(movies : JSONArray?, sharedViewModel: SharedViewModel) {
@@ -135,7 +281,7 @@ fun DisplayMoviesRow(movies : JSONArray?, sharedViewModel: SharedViewModel) {
                 Log.d("movieinfo", item.toString())
                 val id = item.getString("id").toInt()
                 val overview = item.getString("overview")
-                val title = item.getString("original_title")
+                val title = item.getString("title")
                 val imageUrl = item.getString("poster_path")
 
                 val movie = Movie(id, title, overview, imageUrl)

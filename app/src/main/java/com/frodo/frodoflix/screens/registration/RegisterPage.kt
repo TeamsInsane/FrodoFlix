@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -28,9 +27,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.frodo.frodoflix.viewmodels.SharedViewModel
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.commons.codec.binary.Base64
+import java.security.SecureRandom
 
 @Composable
 fun RegisterPage(sharedViewModel: SharedViewModel) {
+    var usernameValue by remember { mutableStateOf("") }
     var emailValue by remember { mutableStateOf("") }
     var passwordValue by remember { mutableStateOf("") }
 
@@ -41,8 +43,8 @@ fun RegisterPage(sharedViewModel: SharedViewModel) {
                 .padding(40.dp),
         ) {
             RegisterText(sharedViewModel)
-            RegisterForm(emailValue, { emailValue = it}, passwordValue, {passwordValue = it})
-            DisplayRegister(emailValue, passwordValue, sharedViewModel)
+            RegisterForm(usernameValue, {usernameValue = it}, emailValue, {emailValue = it}, passwordValue, {passwordValue = it})
+            DisplayRegister(usernameValue, emailValue, passwordValue, sharedViewModel)
         }
     }
 }
@@ -72,6 +74,8 @@ fun RegisterText(sharedViewModel: SharedViewModel) {
 
 @Composable
 fun RegisterForm(
+    usernameValue: String,
+    onUsernameChange: (String) -> Unit,
     emailValue: String,
     onEmailChange: (String) -> Unit,
     passwordValue: String,
@@ -80,13 +84,33 @@ fun RegisterForm(
     Column(
         modifier = Modifier.padding(top = 40.dp) // Add top padding for spacing
     ) {
+        // Username Address Label
+        Text(
+            text = "Username",
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontSize = 16.sp,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        // Username Input Field
+        TextField(
+            value = usernameValue,
+            onValueChange = { onUsernameChange(it) },
+            label = { Text("Enter your username") },
+            singleLine = true, // Restrict to a single line for email input
+            textStyle = TextStyle(color = Color.Blue, fontWeight = FontWeight.Normal),
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+
         // Email Address Label
         Text(
             text = "Email Address",
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
             fontSize = 16.sp,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 8.dp, top = 32.dp)
         )
 
         // Email Input Field
@@ -123,9 +147,8 @@ fun RegisterForm(
     }
 }
 
-
 @Composable
-fun DisplayRegister(emailValue: String, passwordValue: String, sharedViewModel: SharedViewModel){
+fun DisplayRegister(usernameValue: String, emailValue: String, passwordValue: String, sharedViewModel: SharedViewModel){
     Column(
         modifier = Modifier.fillMaxHeight()
     ) {
@@ -133,8 +156,11 @@ fun DisplayRegister(emailValue: String, passwordValue: String, sharedViewModel: 
             modifier = Modifier
                 .padding(start = 50.dp, end = 50.dp, top = 64.dp, bottom = 64.dp)
                 .clip(RoundedCornerShape(4.dp))
-                .background(MaterialTheme.colorScheme.surface),
-                //.clickable  { sharedViewModel.newUser("Test", emailValue, passwordValue); sharedViewModel.fetchUsers(); },
+                .background(MaterialTheme.colorScheme.surface)
+                .clickable  {
+                    val (hashedPassword, salt) = sharedViewModel.hashPassword(passwordValue)
+                    sharedViewModel.newUser(usernameValue, emailValue, hashedPassword, salt)
+                },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
 

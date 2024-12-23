@@ -27,19 +27,19 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.frodo.frodoflix.R
 import androidx.compose.runtime.*
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.frodo.frodoflix.viewmodels.GenreList
 import com.frodo.frodoflix.viewmodels.GenresViewModel
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
 @Composable
-fun FavoriteGenresPage(sharedViewModel: SharedViewModel, genresViewModel: GenresViewModel = viewModel()) {
+fun FavoriteGenresPage(sharedViewModel: SharedViewModel) {
+    val genresViewModel = sharedViewModel.genresViewModel
     val genresUiState by genresViewModel.genresUiState.collectAsState()
     val navController = sharedViewModel.navController ?: return
 
     LaunchedEffect(Unit) {
         if (genresUiState.genresList.isEmpty()) {
-            genresViewModel.loadGenresFromApi()
+            genresViewModel.loadGenresFromApi(sharedViewModel)
         }
     }
 
@@ -54,7 +54,7 @@ fun FavoriteGenresPage(sharedViewModel: SharedViewModel, genresViewModel: Genres
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                GoBackToProfile(navController)
+                GoBackToProfile(navController, sharedViewModel, genresViewModel)
 
                 GenresList(
                     genreList = genresUiState.genresList,
@@ -73,14 +73,17 @@ fun FavoriteGenresPage(sharedViewModel: SharedViewModel, genresViewModel: Genres
 
 
 @Composable
-fun GoBackToProfile(navController: NavController) {
+fun GoBackToProfile(navController: NavController, sharedViewModel: SharedViewModel, genresViewModel: GenresViewModel) {
     Image(
         painter = painterResource(id = R.drawable.arrow_back),
         contentDescription = "back",
         modifier = Modifier
             .size(96.dp)
             .padding(bottom = 64.dp, end= 64.dp)
-            .clickable {  navController.navigate("profile") }
+            .clickable {
+                sharedViewModel.updateUser(genresViewModel.getFavouriteGenresList())
+                navController.navigate("profile")
+            }
     )
 }
 

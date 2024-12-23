@@ -1,28 +1,56 @@
 package com.frodo.frodoflix.database;
 
-import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
+import android.util.Log
 import com.frodo.frodoflix.data.User
+import com.google.firebase.Firebase
+import com.google.firebase.database.database
+import io.github.cdimascio.dotenv.dotenv
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-@Database(entities = [User::class], version = 1)
-@TypeConverters(Converters::class)
-abstract class FrodoDatabase : RoomDatabase() {
-    abstract fun frodoDao(): UserDao
+class FrodoDatabase {
+    private val dotenv = dotenv {
+        directory = "/assets"
+        filename = "env"
+    }
 
-    companion object {
-        @Volatile
-        private var Instance: FrodoDatabase? = null
+    private val DATABASE_REFERENCE: String = dotenv["DATABASE_REFERENCE"]
+    private val database = Firebase.database(DATABASE_REFERENCE)
 
-        fun getDatabase(context: Context): FrodoDatabase {
-            // if the Instance is not null, return it, otherwise create a new database instance.
-            return Instance ?: synchronized(this) {
-                Room.databaseBuilder(context, FrodoDatabase::class.java, "FrodoDatabase")
-                    .build()
-                    .also { Instance = it }
+    fun newUser(username: String, email: String, password: String, salt: String, scope: CoroutineScope, genres: List<String> = emptyList()) {
+        scope.launch(Dispatchers.IO){
+            if (email.isNotEmpty() && password.isNotEmpty() && username.isNotEmpty()) {
+                val user = User(username = username, email = email, password = password, salt = salt, genres = genres)
+                Log.d("firebase", user.toString())
+                database.getReference("users").child(username).setValue(user)
+                    .addOnSuccessListener {
+                        Log.d("Firebase", "Ratal shrant v db")
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.e("Firebase", "Ni ratal shrant v db", exception)
+                        //TODO: Let the user know
+                    }
+            } else {
+                Log.d("Firebase", "if ne dela")
             }
         }
     }
+
+    fun fetchUser(username: String, scope: CoroutineScope, onResult: (User?) -> Unit) {
+        scope.launch(Dispatchers.IO) {
+            database.getReference("users").child(username).get()
+                .addOnSuccessListener { snapshot ->
+                    val user = snapshot.getValue(User::class.java)
+                    Log.d("Firebase", user.toString())
+                    onResult(user)
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("Firebase", "Error getting data", exception)
+                    onResult(null)
+                }
+        }
+    }
 }
+
+

@@ -1,5 +1,6 @@
 package com.frodo.frodoflix.screens.registration
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.frodo.frodoflix.data.User
+import com.frodo.frodoflix.database.FrodoDatabase
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
 @Composable
@@ -80,10 +83,9 @@ fun LoginForm(
     Column(
         modifier = Modifier.padding(top = 40.dp)
     ) {
-
         // Email Address Label
         Text(
-            text = "Email Address",
+            text = "Username",
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
             fontSize = 16.sp,
@@ -94,7 +96,7 @@ fun LoginForm(
         TextField(
             value = emailValue,
             onValueChange = { onEmailChange(it) },
-            label = { Text("Enter your email") },
+            label = { Text("Enter your username") },
             singleLine = true, // Restrict to a single line for email input
             textStyle = TextStyle(color = Color.Blue, fontWeight = FontWeight.Normal),
             modifier = Modifier
@@ -126,7 +128,7 @@ fun LoginForm(
 
 
 @Composable
-fun DisplayLogin(emailValue: String, passwordValue: String, sharedViewModel: SharedViewModel){
+fun DisplayLogin(usernameValue: String, passwordValue: String, sharedViewModel: SharedViewModel){
     Column(
         modifier = Modifier.fillMaxHeight()
     ) {
@@ -137,7 +139,7 @@ fun DisplayLogin(emailValue: String, passwordValue: String, sharedViewModel: Sha
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(6.dp)
                 .clickable {
-                    //sharedViewModel.newUser("Test", emailValue, passwordValue)
+                    sharedViewModel.checkLogin(username = usernameValue, password = passwordValue)
                 },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
