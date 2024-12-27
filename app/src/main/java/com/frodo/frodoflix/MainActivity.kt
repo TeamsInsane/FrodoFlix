@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.frodo.frodoflix.screens.profile.Profile
@@ -15,6 +16,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.frodo.frodoflix.screens.DisplayMoviePage
 import com.frodo.frodoflix.screens.RateMovie
+import com.frodo.frodoflix.screens.profile.DisplayWatchedListPage
 import com.frodo.frodoflix.screens.registration.LoginPage
 import com.frodo.frodoflix.screens.profile.SettingsScreen
 import com.frodo.frodoflix.screens.registration.RegisterPage
@@ -36,6 +38,7 @@ class MainActivity : ComponentActivity() {
             sharedViewModel.navController = navController
 
             FrodoFlixTheme (darkTheme = sharedViewModel.isDarkTheme.value){
+
                 NavHost(navController = navController, startDestination = "login_page") {
                     // First screen (Home Page)
                     composable("home_page") {
@@ -75,6 +78,11 @@ class MainActivity : ComponentActivity() {
                     // Rate movie
                     composable("rate_movie"){
                         RateMovie(sharedViewModel)
+                    }
+
+                    // Watched movies
+                    composable("movies_watched"){
+                        DisplayWatchedListPage(sharedViewModel)
                     }
                 }
             }

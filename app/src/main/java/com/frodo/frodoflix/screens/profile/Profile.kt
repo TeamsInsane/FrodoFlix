@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.frodo.frodoflix.R
 import com.frodo.frodoflix.screens.DrawMainPage
+import com.frodo.frodoflix.staticitems.BottomMenuBar
 import com.frodo.frodoflix.viewmodels.GenresViewModel
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
@@ -51,12 +53,12 @@ fun Profile(sharedViewModel: SharedViewModel) {
                 DisplaySettingsIcon(navController)
                 DisplayProfileIcon()
                 DisplayUsername()
-                DisplayAllMovies()
+                DisplayAllMovies(sharedViewModel, navController)
                 DisplayFavouriteMovies()
                 DisplayRecentActivity()
                 DisplayFavouriteGenres(navController)
             }
-            DisplayBottomRow(navController)
+            BottomMenuBar(navController)
         }
     }
 }
@@ -121,7 +123,7 @@ fun DisplayUsername() {
 
 
 @Composable
-fun DisplayAllMovies() {
+fun DisplayAllMovies(sharedViewModel: SharedViewModel, navController: NavController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -131,6 +133,7 @@ fun DisplayAllMovies() {
         // Rate movie button
         Button(
             onClick = {
+                navController.navigate("movies_watched")
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.surface,
@@ -139,8 +142,11 @@ fun DisplayAllMovies() {
             modifier = Modifier
                 .padding(horizontal = 8.dp)
         ) {
+
+            val moviesWatchCount = sharedViewModel.watchedlist.collectAsState().value.size
+
             Text(
-                text = "Movies watched: 3018",
+                text = "Movies watched: $moviesWatchCount",
                 fontSize = 22.sp
             )
         }
@@ -232,57 +238,3 @@ fun DisplayFavouriteGenres(navController : NavController) {
         }
     }
 }
-
-
-@Composable
-fun DisplayBottomRow(navController: NavController) {
-    Column(
-        modifier = Modifier
-            .fillMaxHeight()
-
-    ) {
-        Spacer(modifier = Modifier.weight(1f))
-        Box(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surface)
-                .clickable {
-                    //navController.navigate("favourite_genres")
-                }
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-
-                Icon(
-                    painter = painterResource(id = R.drawable.home),
-                    contentDescription = "Home",
-                    tint = MaterialTheme.colorScheme.primary,
-
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clickable {
-                            navController.navigate("home_page")
-                        }
-                )
-                Icon(
-                    painter = painterResource(id = R.drawable.user),
-                    tint = MaterialTheme.colorScheme.primary,
-
-                    contentDescription = "User",
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clickable {
-
-                        }
-
-                )
-            }
-        }
-    }
-}
-
-

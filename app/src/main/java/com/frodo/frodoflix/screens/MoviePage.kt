@@ -1,13 +1,11 @@
 package com.frodo.frodoflix.screens
 
 import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +47,8 @@ import coil.request.ImageRequest
 import com.frodo.frodoflix.R
 import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Actor
+import com.frodo.frodoflix.data.Movie
+import com.frodo.frodoflix.staticitems.BottomMenuBar
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 import org.json.JSONArray
 import org.json.JSONObject
@@ -108,7 +109,7 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp)
                 )
 
-                DisplayRateMovie(navController)
+                DisplayRateMovie(sharedViewModel, navController, movie)
 
                 // Cast Section Title
                 Text(
@@ -124,8 +125,7 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
         }
     }
 
-
-    Log.d("data", data.toString())
+    BottomMenuBar(navController)
 }
 
 @Composable
@@ -178,7 +178,7 @@ fun DisplayMovieBanner(bannerPath: String) {
 
 
 @Composable
-fun DisplayRateMovie(navController: NavController) {
+fun DisplayRateMovie(sharedViewModel: SharedViewModel, navController: NavController, movie: Movie) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -186,7 +186,7 @@ fun DisplayRateMovie(navController: NavController) {
         horizontalArrangement = Arrangement.Center, // Center horizontally
         verticalAlignment = Alignment.CenterVertically // Align vertically
     ) {
-        // Rate movie button
+        // Watched + rate movie button
         Button(
             onClick = {
                 navController.navigate("rate_movie")
@@ -199,26 +199,27 @@ fun DisplayRateMovie(navController: NavController) {
                 .padding(horizontal = 8.dp)
         ) {
             Text(
-                text = "Rate Movie",
-                fontSize = 22.sp
+                text = "Add to watched list",
             )
         }
 
-        // Add to watchlist button
+        //Watchlist button
+        val watchlist by sharedViewModel.watchlist.collectAsState()
+
+        val isInWatchlist = watchlist.contains(movie.id)
+
         Button(
             onClick = {
+                sharedViewModel.updateWatchlist(movie.id)
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Yellow,
+                containerColor = if (isInWatchlist) Color.Green else Color.Yellow,
                 contentColor = Color.Black
-
             ),
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
+            modifier = Modifier.padding(horizontal = 8.dp)
         ) {
             Text(
-                text = "Add to Watchlist",
-                fontSize = 22.sp
+                text = if (isInWatchlist) "Remove from Watchlist" else "Add to Watchlist"
             )
         }
     }

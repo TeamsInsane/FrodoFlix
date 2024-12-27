@@ -49,6 +49,7 @@ import coil.request.ImageRequest
 import com.frodo.frodoflix.R
 import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Movie
+import com.frodo.frodoflix.staticitems.BottomMenuBar
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 import org.json.JSONArray
 import java.time.LocalDate
@@ -172,7 +173,7 @@ fun DrawMainPage(sharedViewModel: SharedViewModel) {
             }
         }
 
-        BottomMenuBar(innerPadding, navController)
+        BottomMenuBar(navController)
     }
 }
 
@@ -348,82 +349,5 @@ fun DisplayMovie(movie: Movie, sharedViewModel: SharedViewModel) {
             overflow = TextOverflow.Ellipsis
         )
     }
-
-}
-
-@Composable
-fun BottomMenuBar(innerPadding : PaddingValues, navController : NavController) {
-    /*
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(innerPadding)
-    ) {
-
-        // Row to place buttons horizontally next to each other
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Button(
-                onClick = { }
-            ) {
-                Text(text = "Nedela")
-            }
-            Button(
-                onClick = { navController.navigate("profile") }
-            ) {
-                Text(text = "Profile")
-            }
-        }
-    }*/
-
-
-    Column(
-        modifier = Modifier
-            .fillMaxHeight()
-
-    ) {
-        Spacer(modifier = Modifier.weight(1f))
-        Box(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surface)
-                .clickable {
-                    //navController.navigate("favourite_genres")
-                }
-        ){
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-
-                Icon(
-                    painter = painterResource(id = R.drawable.home),
-                    contentDescription = "Home",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(48.dp)
-                )
-                Icon(
-                    painter = painterResource(id = R.drawable.user),
-                    contentDescription = "User",
-                    tint = MaterialTheme.colorScheme.primary,
-
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clickable {
-                            navController.navigate("profile")
-                        }
-                )
-            }
-        }
-    }
-
-
-
 
 }

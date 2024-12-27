@@ -81,7 +81,7 @@ fun GoBackToProfile(navController: NavController, sharedViewModel: SharedViewMod
             .size(96.dp)
             .padding(bottom = 64.dp, end= 64.dp)
             .clickable {
-                sharedViewModel.updateUser(genresViewModel.getFavouriteGenresList())
+                sharedViewModel.updateUserGenres(genresViewModel.getFavouriteGenresList())
                 navController.navigate("profile")
             }
     )

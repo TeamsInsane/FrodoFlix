@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.frodo.frodoflix.R
+import com.frodo.frodoflix.staticitems.BottomMenuBar
 
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
@@ -40,8 +40,10 @@ fun RateMovie(sharedViewModel: SharedViewModel){
         ) {
             DisplayBackToMoviePage(navController)
             DisplayReview()
-            DisplaySaveReview()
+            DisplaySaveReview(sharedViewModel)
         }
+
+        BottomMenuBar(navController)
     }
 }
 
@@ -87,19 +89,22 @@ fun DisplayReview() {
 }
 
 @Composable
-fun DisplaySaveReview() {
+fun DisplaySaveReview(sharedViewModel: SharedViewModel) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 2.dp, bottom = 2.dp),
         horizontalArrangement = Arrangement.Center,
     ) {
-        // Rate movie button
+        // Don't rate movie button
         Button(
             onClick = {
+                val movieID = sharedViewModel.selectedMovie!!.id
+                sharedViewModel.updateWatchedlist(movieID = movieID)
+                sharedViewModel.navController!!.navigate("movie_page")
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Green,
+                containerColor = Color.Red,
                 contentColor = Color.White
             ),
             modifier = Modifier

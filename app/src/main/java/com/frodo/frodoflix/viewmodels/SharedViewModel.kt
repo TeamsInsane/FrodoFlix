@@ -1,6 +1,8 @@
 package com.frodo.frodoflix.viewmodels
 
 import android.util.Log
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -11,6 +13,11 @@ import androidx.navigation.NavController
 import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.data.User
 import com.frodo.frodoflix.database.FrodoDatabase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.Base64
@@ -18,11 +25,34 @@ import java.util.Base64
 class SharedViewModel : ViewModel() {
     var selectedMovie: Movie? = null
     var navController: NavController? = null
-    private val _isDarkTheme = mutableStateOf(false)
-    val isDarkTheme: State<Boolean> = _isDarkTheme
     private val databaseReference = FrodoDatabase()
     private var currentUser: User? = null
     lateinit var genresViewModel: GenresViewModel
+
+    private val _isDarkTheme = mutableStateOf(false)
+    val isDarkTheme: State<Boolean> = _isDarkTheme
+
+    private val _watchlist = MutableStateFlow<List<Int>>(emptyList())
+    val watchlist: StateFlow<List<Int>> = _watchlist.asStateFlow()
+
+    private val _watchedlist = MutableStateFlow<List<Int>>(emptyList())
+    val watchedlist: StateFlow<List<Int>> = _watchedlist.asStateFlow()
+
+    fun loadDataFromDB() {
+        val currentUser = this.currentUser
+        if (currentUser == null) {
+            Log.d("user", "ERORR null")
+            return
+        }
+
+        viewModelScope.launch {
+            Log.d("firebase", currentUser.username)
+            val watchedList = databaseReference.getWatchedList(currentUser.username)
+            Log.d("watchlist", watchedList.toString())
+            _watchedlist.update { watchedList }
+            Log.d("Firebase", "Fetched watched list: $watchedList")
+        }
+    }
 
     fun initializeGenresViewModel(owner: ViewModelStoreOwner) {
         genresViewModel = ViewModelProvider(owner)[GenresViewModel::class.java]
@@ -32,7 +62,31 @@ class SharedViewModel : ViewModel() {
         _isDarkTheme.value = !_isDarkTheme.value
     }
 
-    fun updateUser(genreList: List<String>) {
+    fun updateWatchedlist(movieID: Int) {
+        _watchedlist.update { currentList ->
+            if (!currentList.contains(movieID)) {
+                currentList + movieID
+            } else {
+                currentList - movieID
+            }
+        }
+
+        databaseReference.updateWatchedList(currentUser!!.username, viewModelScope, watchedlist.value)
+    }
+
+    fun updateWatchlist(movieID: Int) {
+        _watchlist.update { currentList ->
+            if (!currentList.contains(movieID)) {
+                currentList + movieID
+            } else {
+                currentList - movieID
+            }
+        }
+
+        databaseReference.updateWatchlist(currentUser!!.username, viewModelScope, watchlist.value)
+    }
+
+    fun updateUserGenres(genreList: List<String>) {
         if (currentUser == null) {
             Log.d("Firebase", "User null")
             return
@@ -41,14 +95,7 @@ class SharedViewModel : ViewModel() {
         val tmpUser: User = currentUser as User
         currentUser = User(tmpUser.username, tmpUser.email, tmpUser.password, tmpUser.salt, genreList)
 
-        databaseReference.newUser(
-            username = tmpUser.username,
-            email = tmpUser.email,
-            password = tmpUser.password,
-            salt = tmpUser.salt,
-            viewModelScope,
-            genreList
-        )
+        databaseReference.updateGenreList(tmpUser.username, viewModelScope, genreList)
     }
 
     fun getUserGenres() : List<String>{
@@ -88,6 +135,7 @@ class SharedViewModel : ViewModel() {
             if (user != null) {
                 if (verifyPassword(password, user.password, user.salt)) {
                     setCurrentUser(user)
+                    loadDataFromDB()
                     navController?.navigate("home_page")
                 } else {
                     Log.e("Firebase", "Wrong username or password!")
