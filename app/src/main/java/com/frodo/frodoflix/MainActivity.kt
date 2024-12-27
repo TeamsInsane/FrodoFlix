@@ -16,6 +16,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.frodo.frodoflix.screens.DisplayMoviePage
 import com.frodo.frodoflix.screens.RateMovie
+import com.frodo.frodoflix.screens.profile.DisplayWantToWatchPage
 import com.frodo.frodoflix.screens.profile.DisplayWatchedListPage
 import com.frodo.frodoflix.screens.registration.LoginPage
 import com.frodo.frodoflix.screens.profile.SettingsScreen
@@ -83,6 +84,11 @@ class MainActivity : ComponentActivity() {
                     // Watched movies
                     composable("movies_watched"){
                         DisplayWatchedListPage(sharedViewModel)
+                    }
+
+                    // want to watch
+                    composable("want_to_watch"){
+                        DisplayWantToWatchPage(sharedViewModel)
                     }
                 }
             }

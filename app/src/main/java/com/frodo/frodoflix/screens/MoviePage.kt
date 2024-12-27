@@ -48,6 +48,7 @@ import com.frodo.frodoflix.R
 import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Actor
 import com.frodo.frodoflix.data.Movie
+import com.frodo.frodoflix.staticitems.BackToPreviousScreen
 import com.frodo.frodoflix.staticitems.BottomMenuBar
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 import org.json.JSONArray
@@ -83,7 +84,7 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
             modifier = Modifier.padding(innerPadding)
         ) {
             item {
-                BackToHomePage(navController)
+                BackToPreviousScreen(navController)
                 DisplayMovieBanner(nonNullData.getString("backdrop_path"))
 
                 // Title Text
@@ -128,25 +129,6 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
     BottomMenuBar(navController)
 }
 
-@Composable
-fun BackToHomePage(navController: NavController){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-    ){
-        Icon(
-            painter = painterResource(id = R.drawable.arrow_back),
-            contentDescription = "Back to Home Page",
-            tint = MaterialTheme.colorScheme.primary,
-
-            modifier = Modifier
-                .size(48.dp)
-                .clickable {
-                    navController.navigate("home_page")
-                }
-        )
-    }
-}
 
 @Composable
 fun DisplayMovieBanner(bannerPath: String) {
@@ -186,20 +168,23 @@ fun DisplayRateMovie(sharedViewModel: SharedViewModel, navController: NavControl
         horizontalArrangement = Arrangement.Center, // Center horizontally
         verticalAlignment = Alignment.CenterVertically // Align vertically
     ) {
+        val watchedlist by sharedViewModel.watchedlist.collectAsState()
+
+        val isInWatchedlist = watchedlist.contains(movie.id)
         // Watched + rate movie button
         Button(
             onClick = {
                 navController.navigate("rate_movie")
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Yellow,
+                containerColor = if (isInWatchedlist) Color.Green else Color.Yellow,
                 contentColor = Color.Black
             ),
             modifier = Modifier
                 .padding(horizontal = 8.dp)
         ) {
             Text(
-                text = "Add to watched list",
+                text = if (isInWatchedlist) "already rated" else "rate"
             )
         }
 

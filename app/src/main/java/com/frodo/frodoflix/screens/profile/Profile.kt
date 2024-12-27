@@ -1,28 +1,20 @@
 package com.frodo.frodoflix.screens.profile
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.frodo.frodoflix.R
-import com.frodo.frodoflix.screens.DrawMainPage
 import com.frodo.frodoflix.staticitems.BottomMenuBar
-import com.frodo.frodoflix.viewmodels.GenresViewModel
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
 
@@ -54,8 +46,7 @@ fun Profile(sharedViewModel: SharedViewModel) {
                 DisplayProfileIcon()
                 DisplayUsername()
                 DisplayAllMovies(sharedViewModel, navController)
-                DisplayFavouriteMovies()
-                DisplayRecentActivity()
+                DisplayWatchList(navController)
                 DisplayFavouriteGenres(navController)
             }
             BottomMenuBar(navController)
@@ -155,16 +146,17 @@ fun DisplayAllMovies(sharedViewModel: SharedViewModel, navController: NavControl
 
 
 @Composable
-fun DisplayFavouriteMovies() {
+fun DisplayWatchList(navController: NavController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 2.dp, bottom = 2.dp),
+            .padding(top = 8.dp, bottom = 32.dp),
         horizontalArrangement = Arrangement.Center,
     ) {
         // Rate movie button
         Button(
             onClick = {
+                navController.navigate("want_to_watch")
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.surface,
@@ -174,35 +166,7 @@ fun DisplayFavouriteMovies() {
                 .padding(horizontal = 8.dp)
         ) {
             Text(
-                text = "Favourite movies",
-                fontSize = 22.sp
-            )
-        }
-    }
-}
-
-
-@Composable
-fun DisplayRecentActivity() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 2.dp, bottom = 32.dp),
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        // Rate movie button
-        Button(
-            onClick = {
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.primary
-            ),
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
-        ) {
-            Text(
-                text = "Recent activity",
+                text = "Watch list",
                 fontSize = 22.sp
             )
         }

@@ -2,6 +2,7 @@ package com.frodo.frodoflix.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,12 +13,19 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -39,6 +47,7 @@ fun RateMovie(sharedViewModel: SharedViewModel){
                 .padding(20.dp),
         ) {
             DisplayBackToMoviePage(navController)
+            DisplayRatingDropdown()
             DisplayReview()
             DisplaySaveReview(sharedViewModel)
         }
@@ -80,11 +89,52 @@ fun DisplayReview() {
             onValueChange = {},
             label = { Text("Add a review...") },
             modifier = Modifier
-                .fillMaxWidth() // Takes up the full width
-                .weight(0.5f)  // Takes up half of the available height
-                .padding(16.dp) // Add some padding around the text field
+                .fillMaxWidth()
+                .weight(0.5f)
+                .padding(16.dp)
         )
 
+    }
+}
+
+@Composable
+fun DisplayRatingDropdown() {
+    var expanded by remember { mutableStateOf(false) }
+    var selectedRating by remember { mutableStateOf(0) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = true }
+                .padding(8.dp)
+                .height(56.dp)
+        ) {
+            Text(
+                text = "Rating: $selectedRating",
+                fontSize = 16.sp,
+                modifier = Modifier.align(Alignment.CenterStart)
+            )
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                (1..5).forEach { rating ->
+                    DropdownMenuItem(
+                        text = { Text(text = "⭐ $rating") },
+                        onClick = {
+                            selectedRating = rating
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -93,7 +143,7 @@ fun DisplaySaveReview(sharedViewModel: SharedViewModel) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 2.dp, bottom = 2.dp),
+            .padding(top = 50.dp, bottom = 2.dp),
         horizontalArrangement = Arrangement.Center,
     ) {
         // Don't rate movie button
@@ -104,7 +154,7 @@ fun DisplaySaveReview(sharedViewModel: SharedViewModel) {
                 sharedViewModel.navController!!.navigate("movie_page")
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Red,
+                containerColor = Color.Green,
                 contentColor = Color.White
             ),
             modifier = Modifier

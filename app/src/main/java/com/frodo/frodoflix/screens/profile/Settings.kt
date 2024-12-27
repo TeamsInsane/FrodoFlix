@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.frodo.frodoflix.R
+import com.frodo.frodoflix.staticitems.BackToPreviousScreen
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
 @Composable
@@ -41,7 +42,7 @@ fun SettingsScreen(sharedViewModel: SharedViewModel) {
         Column(modifier = Modifier.padding(innerPadding)
             .padding(20.dp),
         ) {
-            BackToProfile(navController)
+            BackToPreviousScreen(navController)
             DisplayDarkTheme(sharedViewModel)
             SettingsUsername()
             DisplayEmail()
@@ -51,27 +52,6 @@ fun SettingsScreen(sharedViewModel: SharedViewModel) {
     }
 }
 
-@Composable
-fun BackToProfile(navController: NavController){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ){
-        Icon(
-            painter = painterResource(id = R.drawable.arrow_back),
-            contentDescription = "Back to Profile",
-            tint = MaterialTheme.colorScheme.primary,
-
-            modifier = Modifier
-                .size(48.dp)
-                .clickable {
-                    navController.navigate("profile")
-                }
-        )
-    }
-}
 
 @Composable
 fun DisplayDarkTheme(sharedViewModel: SharedViewModel){

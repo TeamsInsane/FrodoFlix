@@ -31,6 +31,7 @@ import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Movie
+import com.frodo.frodoflix.staticitems.BackToPreviousScreen
 import com.frodo.frodoflix.staticitems.BottomMenuBar
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 import org.json.JSONObject
@@ -40,8 +41,15 @@ import kotlin.math.min
 fun DisplayWatchedListPage(sharedViewModel: SharedViewModel) {
     val navController = sharedViewModel.navController ?: return
 
-    DisplayMoviesColumn(sharedViewModel)
-    BottomMenuBar(navController)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        BackToPreviousScreen(navController)
+        DisplayMoviesColumn(sharedViewModel)
+        BottomMenuBar(navController)
+    }
 }
 
 @Composable

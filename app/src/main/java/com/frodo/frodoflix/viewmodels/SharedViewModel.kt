@@ -51,6 +51,8 @@ class SharedViewModel : ViewModel() {
             Log.d("watchlist", watchedList.toString())
             _watchedlist.update { watchedList }
             Log.d("Firebase", "Fetched watched list: $watchedList")
+            val watchList = databaseReference.getWatchList(currentUser.username)
+            _watchlist.update { watchList }
         }
     }
 

@@ -30,6 +30,17 @@ class FrodoDatabase {
         }
     }
 
+    suspend fun getWatchList(username: String): List<Int> {
+        return try {
+            val snapshot = database.getReference("users").child(username).child("watchlist").get().await()
+            Log.d("firebase", snapshot.toString())
+            snapshot.children.mapNotNull { it.getValue(Int::class.java) }
+        } catch (e: Exception) {
+            Log.e("Firebase", "Error getting watched list", e)
+            emptyList()
+        }
+    }
+
     fun updateWatchedList(username: String, scope: CoroutineScope, watchlist: List<Int>) {
         scope.launch(Dispatchers.IO) {
             database.getReference("users").child(username).child("watchedlist").setValue(watchlist)
