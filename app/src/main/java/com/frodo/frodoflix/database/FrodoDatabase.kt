@@ -1,6 +1,7 @@
 package com.frodo.frodoflix.database;
 
 import android.util.Log
+import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.data.User
 import com.google.firebase.Firebase
 import com.google.firebase.database.database
@@ -30,6 +31,17 @@ class FrodoDatabase {
         }
     }
 
+    suspend fun getRatingList(movieID: Int): List<Rating> {
+        return try {
+            val snapshot = database.getReference("movies").child(movieID.toString()).get().await()
+            Log.d("firebase", snapshot.toString())
+            snapshot.children.mapNotNull { it.getValue(Rating::class.java) }
+        } catch (e: Exception) {
+            Log.e("Firebase", "Error getting rating list", e)
+            emptyList()
+        }
+    }
+
     suspend fun getWatchList(username: String): List<Int> {
         return try {
             val snapshot = database.getReference("users").child(username).child("watchlist").get().await()
@@ -38,6 +50,12 @@ class FrodoDatabase {
         } catch (e: Exception) {
             Log.e("Firebase", "Error getting watched list", e)
             emptyList()
+        }
+    }
+
+    fun saveRating(ratingList: MutableList<Rating>, movieID: Int, scope: CoroutineScope) {
+        scope.launch(Dispatchers.IO) {
+            database.getReference("movies").child(movieID.toString()).setValue(ratingList)
         }
     }
 

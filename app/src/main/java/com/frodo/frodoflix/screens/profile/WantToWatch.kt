@@ -55,8 +55,6 @@ fun DisplayWantToWatchPage(sharedViewModel: SharedViewModel) {
 @Composable
 fun DisplayMoviesColumnWTW(sharedViewModel: SharedViewModel) {
     LazyColumn {
-
-
         val wantToWatchList = sharedViewModel.watchlist.value
 
         for (i in 0..wantToWatchList.size / 3) {

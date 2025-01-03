@@ -1,5 +1,6 @@
 package com.frodo.frodoflix.screens
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,7 +22,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -31,15 +34,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.frodo.frodoflix.R
+import com.frodo.frodoflix.data.User
 import com.frodo.frodoflix.staticitems.BottomMenuBar
 
 import com.frodo.frodoflix.viewmodels.SharedViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun RateMovie(sharedViewModel: SharedViewModel){
     val navController = sharedViewModel.navController ?: return
+    var selectedRating by remember { mutableIntStateOf(0) }
+    var writtenComment by remember { mutableStateOf("") }
+
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -47,9 +56,17 @@ fun RateMovie(sharedViewModel: SharedViewModel){
                 .padding(20.dp),
         ) {
             DisplayBackToMoviePage(navController)
-            DisplayRatingDropdown()
-            DisplayReview()
-            DisplaySaveReview(sharedViewModel)
+            DisplayRatingDropdown { rating ->
+                if (rating != null) {
+                    selectedRating = rating
+                }
+            }
+            DisplayReview { comment ->
+                if (comment != null) {
+                    writtenComment = comment
+                }
+            }
+            DisplaySaveReview(sharedViewModel, selectedRating, writtenComment)
         }
 
         BottomMenuBar(navController)
@@ -68,7 +85,8 @@ fun DisplayBackToMoviePage(navController: NavController){
             painter = painterResource(id = R.drawable.close),
             contentDescription = "Settings",
             tint = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier
+                .size(32.dp)
                 .clickable {
                     navController.navigate("movie_page")
                 }
@@ -77,7 +95,8 @@ fun DisplayBackToMoviePage(navController: NavController){
 }
 
 @Composable
-fun DisplayReview() {
+fun DisplayReview(onResult: (String?) -> Unit) {
+    var comment by remember { mutableStateOf("") }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -85,8 +104,11 @@ fun DisplayReview() {
             .width(300.dp)
     ) {
         TextField(
-            value = "",
-            onValueChange = {},
+            value = comment,
+            onValueChange = {
+                comment = it
+                onResult(comment )
+            },
             label = { Text("Add a review...") },
             modifier = Modifier
                 .fillMaxWidth()
@@ -98,9 +120,9 @@ fun DisplayReview() {
 }
 
 @Composable
-fun DisplayRatingDropdown() {
+fun DisplayRatingDropdown(onResult: (Int?) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    var selectedRating by remember { mutableStateOf(0) }
+    var selectedRating by remember { mutableIntStateOf(0) }
 
     Column(
         modifier = Modifier
@@ -130,6 +152,7 @@ fun DisplayRatingDropdown() {
                         onClick = {
                             selectedRating = rating
                             expanded = false
+                            onResult(selectedRating)
                         }
                     )
                 }
@@ -139,20 +162,29 @@ fun DisplayRatingDropdown() {
 }
 
 @Composable
-fun DisplaySaveReview(sharedViewModel: SharedViewModel) {
+fun DisplaySaveReview(sharedViewModel: SharedViewModel, selectedRating: Int, comment: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 50.dp, bottom = 2.dp),
         horizontalArrangement = Arrangement.Center,
     ) {
-        // Don't rate movie button
         Button(
             onClick = {
+                if (selectedRating != 0) {
+                    Log.d("rating", "$selectedRating $comment")
+                    sharedViewModel.viewModelScope.launch {
+                        sharedViewModel.saveRating(selectedRating, comment);
+
+                    }
+                }
+
                 val movieID = sharedViewModel.selectedMovie!!.id
                 sharedViewModel.updateWatchedlist(movieID = movieID)
-                sharedViewModel.navController!!.navigate("movie_page")
+                sharedViewModel.navController?.navigate("movie_page")
+
             },
+
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Green,
                 contentColor = Color.White

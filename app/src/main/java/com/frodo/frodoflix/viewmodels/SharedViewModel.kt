@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.frodo.frodoflix.data.Movie
+import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.data.User
 import com.frodo.frodoflix.database.FrodoDatabase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +39,7 @@ class SharedViewModel : ViewModel() {
     private val _watchedlist = MutableStateFlow<List<Int>>(emptyList())
     val watchedlist: StateFlow<List<Int>> = _watchedlist.asStateFlow()
 
-    fun loadDataFromDB() {
+    private fun loadDataFromDB() {
         val currentUser = this.currentUser
         if (currentUser == null) {
             Log.d("user", "ERORR null")
@@ -54,6 +55,20 @@ class SharedViewModel : ViewModel() {
             val watchList = databaseReference.getWatchList(currentUser.username)
             _watchlist.update { watchList }
         }
+    }
+
+    suspend fun saveRating(rating: Int, comment: String) {
+        val username = currentUser?.username ?: return
+
+        val ratingList = getRatingList().toMutableList()
+        ratingList.removeAll { it.username == username }
+        ratingList.add(Rating(rating, comment, username))
+
+        databaseReference.saveRating(ratingList, selectedMovie!!.id, viewModelScope)
+    }
+
+    suspend fun getRatingList(): List<Rating> {
+        return databaseReference.getRatingList(selectedMovie!!.id)
     }
 
     fun initializeGenresViewModel(owner: ViewModelStoreOwner) {
@@ -104,7 +119,7 @@ class SharedViewModel : ViewModel() {
         return currentUser!!.genres
     }
 
-    fun setCurrentUser(user: User) {
+    private fun setCurrentUser(user: User) {
         this.currentUser = user;
     }
 
@@ -126,7 +141,7 @@ class SharedViewModel : ViewModel() {
         }
     }
 
-    fun fetchUser(username: String, onResult: (User?) -> Unit) {
+    private fun fetchUser(username: String, onResult: (User?) -> Unit) {
         databaseReference.fetchUser(username = username, viewModelScope) { user ->
             onResult(user)
         }
