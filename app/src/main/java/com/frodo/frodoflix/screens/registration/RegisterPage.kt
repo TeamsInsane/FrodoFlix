@@ -66,7 +66,7 @@ fun RegisterText(sharedViewModel: SharedViewModel) {
             modifier = Modifier.clickable {
                 sharedViewModel.navController?.navigate("login_page")
             },
-            text = "Already have an account?",
+            text = "Already have an account? Log in",
             fontSize = 16.sp
         )
     }
@@ -150,13 +150,16 @@ fun RegisterForm(
 @Composable
 fun DisplayRegister(usernameValue: String, emailValue: String, passwordValue: String, sharedViewModel: SharedViewModel){
     Column(
-        modifier = Modifier.fillMaxHeight()
-    ) {
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 64.dp),
+        horizontalAlignment = Alignment.CenterHorizontally    ) {
         Row(
             modifier = Modifier
                 .padding(start = 50.dp, end = 50.dp, top = 64.dp, bottom = 64.dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(MaterialTheme.colorScheme.surface)
+                .padding(6.dp)
                 .clickable  {
                     val (hashedPassword, salt) = sharedViewModel.hashPassword(passwordValue)
                     sharedViewModel.newUser(usernameValue, emailValue, hashedPassword, salt)

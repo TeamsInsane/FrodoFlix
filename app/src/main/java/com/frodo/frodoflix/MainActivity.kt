@@ -16,6 +16,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.frodo.frodoflix.screens.DisplayMoviePage
 import com.frodo.frodoflix.screens.RateMovie
+import com.frodo.frodoflix.screens.SearchPage
 import com.frodo.frodoflix.screens.profile.DisplayWantToWatchPage
 import com.frodo.frodoflix.screens.profile.DisplayWatchedListPage
 import com.frodo.frodoflix.screens.registration.LoginPage
@@ -44,6 +45,11 @@ class MainActivity : ComponentActivity() {
                     // First screen (Home Page)
                     composable("home_page") {
                         DrawMainPage(sharedViewModel)
+                    }
+
+                    // Search page
+                    composable("search_page"){
+                        SearchPage(sharedViewModel)
                     }
 
                     // Profile Page

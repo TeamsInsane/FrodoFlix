@@ -39,31 +39,56 @@ fun BottomMenuBar(navController : NavController) {
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                HomePage(navController);
+                SearchPage(navController);
+                ProfilePage(navController);
 
-
-                Icon(
-                    painter = painterResource(id = R.drawable.home),
-                    contentDescription = "Home",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(48.dp)
-                        .padding(10.dp)
-                        .clickable {
-                            navController.navigate("home_page")
-                        }
-                )
-                Icon(
-                    painter = painterResource(id = R.drawable.user),
-                    contentDescription = "User",
-                    tint = MaterialTheme.colorScheme.primary,
-
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clickable {
-                            navController.navigate("profile")
-                        }
-                        .padding(10.dp)
-                )
             }
         }
     }
+}
+
+@Composable
+fun HomePage(navController: NavController){
+    Icon(
+        painter = painterResource(id = R.drawable.home),
+        contentDescription = "Home",
+        tint = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.size(48.dp)
+            .padding(10.dp)
+            .clickable {
+                navController.navigate("home_page")
+            }
+    )
+}
+
+@Composable
+fun SearchPage(navController: NavController){
+    Icon(
+        painter = painterResource(id = R.drawable.search),
+        contentDescription = "Search",
+        tint = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.size(48.dp)
+            .padding(10.dp)
+            .clickable {
+                navController.navigate("search_page")
+            }
+    )
+}
+
+@Composable
+fun ProfilePage(navController: NavController){
+
+    Icon(
+        painter = painterResource(id = R.drawable.user),
+        contentDescription = "User",
+        tint = MaterialTheme.colorScheme.primary,
+
+        modifier = Modifier
+            .size(48.dp)
+            .clickable {
+                navController.navigate("profile")
+            }
+            .padding(10.dp)
+    )
 }

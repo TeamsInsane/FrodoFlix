@@ -67,7 +67,7 @@ fun LoginText(sharedViewModel: SharedViewModel) {
             modifier = Modifier.clickable {
                 sharedViewModel.navController?.navigate("register_page")
             },
-            text = "Don't have an account yet?",
+            text = "Don't have an account yet? Sign up",
             fontSize = 16.sp
         )
     }
@@ -130,7 +130,10 @@ fun LoginForm(
 @Composable
 fun DisplayLogin(usernameValue: String, passwordValue: String, sharedViewModel: SharedViewModel){
     Column(
-        modifier = Modifier.fillMaxHeight()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 64.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
             modifier = Modifier
@@ -147,7 +150,7 @@ fun DisplayLogin(usernameValue: String, passwordValue: String, sharedViewModel: 
         ) {
 
             Text(
-                text = "Sign in",
+                text = "Log in",
                 fontSize = 18.sp,
             )
         }

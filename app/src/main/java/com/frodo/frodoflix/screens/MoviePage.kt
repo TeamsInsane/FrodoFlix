@@ -367,7 +367,7 @@ fun DisplayRatings(sharedViewModel: SharedViewModel) {
                     ) {
                         Text(
                             text = "Review by ${rating.username}",
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.Bold
                         )
 
@@ -388,7 +388,7 @@ fun DisplayRatings(sharedViewModel: SharedViewModel) {
                     // Comment
                     Text(
                         text = rating.comment,
-                        color = Color.LightGray,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             }

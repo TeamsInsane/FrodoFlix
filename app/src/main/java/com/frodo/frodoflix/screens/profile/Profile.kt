@@ -28,14 +28,13 @@ fun Profile(sharedViewModel: SharedViewModel) {
     ) {
         // Background Image
         Image(
-            painter = painterResource(id = R.drawable.background_image), // Replace with your image resource
+            painter = painterResource(id = R.drawable.background_image),
             contentDescription = "Background Image",
             modifier = Modifier.fillMaxSize()
         )
 
-        // Foreground Content
         Scaffold(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f) // Optional: Adds slight transparency
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
         ) { innerPadding ->
             Column(
                 modifier = Modifier
