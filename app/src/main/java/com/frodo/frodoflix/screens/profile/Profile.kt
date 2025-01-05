@@ -43,9 +43,9 @@ fun Profile(sharedViewModel: SharedViewModel) {
             ) {
                 DisplaySettingsIcon(navController)
                 DisplayProfileIcon()
-                DisplayUsername()
-                DisplayAllMovies(sharedViewModel, navController)
-                DisplayWatchList(navController)
+                DisplayUsername(sharedViewModel.getUsername())
+                DisplayFavMoviesButton(sharedViewModel, navController)
+                DisplayWatchList(sharedViewModel, navController)
                 DisplayFavouriteGenres(navController)
             }
             BottomMenuBar(navController)
@@ -95,7 +95,7 @@ fun DisplayProfileIcon() {
 }
 
 @Composable
-fun DisplayUsername() {
+fun DisplayUsername(username: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -103,7 +103,7 @@ fun DisplayUsername() {
         horizontalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Frodo",
+            text = username,
             color = MaterialTheme.colorScheme.onSurface,
 
             fontSize = 40.sp,
@@ -113,17 +113,17 @@ fun DisplayUsername() {
 
 
 @Composable
-fun DisplayAllMovies(sharedViewModel: SharedViewModel, navController: NavController) {
+fun DisplayFavMoviesButton(sharedViewModel: SharedViewModel, navController: NavController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 2.dp, bottom = 2.dp),
         horizontalArrangement = Arrangement.Center,
     ) {
-        // Rate movie button
+        //Favourite movies button
         Button(
             onClick = {
-                navController.navigate("movies_watched")
+                navController.navigate("fav_page")
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.surface,
@@ -133,10 +133,10 @@ fun DisplayAllMovies(sharedViewModel: SharedViewModel, navController: NavControl
                 .padding(horizontal = 8.dp)
         ) {
 
-            val moviesWatchCount = sharedViewModel.watchedlist.collectAsState().value.size
+            val favMoviesCount = sharedViewModel.favList.collectAsState().value.size
 
             Text(
-                text = "Movies watched: $moviesWatchCount",
+                text = "Favourite movies: $favMoviesCount",
                 fontSize = 22.sp
             )
         }
@@ -145,7 +145,7 @@ fun DisplayAllMovies(sharedViewModel: SharedViewModel, navController: NavControl
 
 
 @Composable
-fun DisplayWatchList(navController: NavController) {
+fun DisplayWatchList(sharedViewModel: SharedViewModel, navController: NavController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -155,7 +155,7 @@ fun DisplayWatchList(navController: NavController) {
         // Rate movie button
         Button(
             onClick = {
-                navController.navigate("want_to_watch")
+                navController.navigate("watch_list")
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.surface,
@@ -164,14 +164,16 @@ fun DisplayWatchList(navController: NavController) {
             modifier = Modifier
                 .padding(horizontal = 8.dp)
         ) {
+
+            val watchListCount = sharedViewModel.watchlist.collectAsState().value.size
+
             Text(
-                text = "Watch list",
+                text = "Watch list: $watchListCount",
                 fontSize = 22.sp
             )
         }
     }
 }
-
 
 @Composable
 fun DisplayFavouriteGenres(navController : NavController) {

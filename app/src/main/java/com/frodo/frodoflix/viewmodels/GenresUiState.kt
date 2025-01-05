@@ -24,7 +24,7 @@ class GenresViewModel: ViewModel() {
     private val _genresUiState = MutableStateFlow(GenresUiState())
     val genresUiState: StateFlow<GenresUiState> = _genresUiState.asStateFlow()
 
-    fun loadGenresFromApi() {
+    fun loadGenresFromApi(savedGenres: List<String>) {
         viewModelScope.launch {
             val genresJSONArray: JSONArray? = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/genre/movie/list?language=en", "genres") as JSONArray?
 
@@ -42,6 +42,8 @@ class GenresViewModel: ViewModel() {
             _genresUiState.update { currentState ->
                 currentState.copy(genresList = genresList)
             }
+
+            loadSavedGenres(savedGenres)
         }
     }
 
@@ -67,13 +69,12 @@ class GenresViewModel: ViewModel() {
     }
 
    fun loadSavedGenres(savedGenres: List<String>) {
-       viewModelScope.launch {
-           _genresUiState.update { currentState ->
-               val updatedGenresList = currentState.genresList.map { genreItem ->
-                   genreItem.copy(status = savedGenres.contains(genreItem.genre))
-               }
-               currentState.copy(genresList = updatedGenresList)
+       _genresUiState.update { currentState ->
+           val updatedGenresList = currentState.genresList.map { genreItem ->
+               genreItem.copy(status = savedGenres.contains(genreItem.genre))
            }
+
+           currentState.copy(genresList = updatedGenresList)
        }
    }
 }

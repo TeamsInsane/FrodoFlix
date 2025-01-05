@@ -48,8 +48,6 @@ class TMDB {
                     //TODO: Let the user know
                 }
 
-                Log.d("TMDB", jsonObject.toString())
-
                 if (result != "") {
                     val arrayOfData = jsonObject?.getJSONArray(result)
 

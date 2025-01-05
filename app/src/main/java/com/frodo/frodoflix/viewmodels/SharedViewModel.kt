@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.security.MessageDigest
@@ -39,8 +40,8 @@ class SharedViewModel : ViewModel() {
     private val _watchlist = MutableStateFlow<List<Int>>(emptyList())
     val watchlist: StateFlow<List<Int>> = _watchlist.asStateFlow()
 
-    private val _watchedlist = MutableStateFlow<List<Int>>(emptyList())
-    val watchedlist: StateFlow<List<Int>> = _watchedlist.asStateFlow()
+    private val _favList = MutableStateFlow<List<Int>>(emptyList())
+    val favList: StateFlow<List<Int>> = _favList.asStateFlow()
 
     private fun loadDataFromDB() {
         val currentUser = this.currentUser
@@ -50,11 +51,10 @@ class SharedViewModel : ViewModel() {
         }
 
         viewModelScope.launch {
-            Log.d("firebase", currentUser.username)
-            val watchedList = databaseReference.getWatchedList(currentUser.username)
-            Log.d("watchlist", watchedList.toString())
-            _watchedlist.update { watchedList }
-            Log.d("Firebase", "Fetched watched list: $watchedList")
+            val favList = databaseReference.getFavList(currentUser.username)
+            _favList.update { favList }
+
+
             val watchList = databaseReference.getWatchList(currentUser.username)
             _watchlist.update { watchList }
         }
@@ -82,8 +82,8 @@ class SharedViewModel : ViewModel() {
         _isDarkTheme.value = !_isDarkTheme.value
     }
 
-    fun updateWatchedlist(movieID: Int) {
-        _watchedlist.update { currentList ->
+    fun updateFavList(movieID: Int) {
+        _favList.update { currentList ->
             if (!currentList.contains(movieID)) {
                 currentList + movieID
             } else {
@@ -91,7 +91,7 @@ class SharedViewModel : ViewModel() {
             }
         }
 
-        databaseReference.updateWatchedList(currentUser!!.username, viewModelScope, watchedlist.value)
+        databaseReference.updateFavList(currentUser!!.username, viewModelScope, favList.value)
     }
 
     fun updateWatchlist(movieID: Int) {
@@ -116,10 +116,6 @@ class SharedViewModel : ViewModel() {
         currentUser = User(tmpUser.username, tmpUser.email, tmpUser.password, tmpUser.salt, genreList)
 
         databaseReference.updateGenreList(tmpUser.username, viewModelScope, genreList)
-    }
-
-    fun getUserGenres() : List<String>{
-        return currentUser!!.genres
     }
 
     private fun setCurrentUser(user: User) {
@@ -159,8 +155,8 @@ class SharedViewModel : ViewModel() {
                     setCurrentUser(user)
                     saveLoginInfo(user.username, user.password)
                     loadDataFromDB()
-                    genresViewModel.loadSavedGenres(user.genres)
                     viewModelScope.launch(Dispatchers.Main) {
+                        genresViewModel.loadSavedGenres(user.genres)
                         navController?.navigate("home_page")
                     }
                 } else {
@@ -185,14 +181,20 @@ class SharedViewModel : ViewModel() {
                 if (result && user != null) {
                     setCurrentUser(user)
                     loadDataFromDB()
-                    genresViewModel.loadSavedGenres(user.genres)
+
+                    viewModelScope.launch {
+                        genresViewModel.loadGenresFromApi(user.genres)
+                        genresViewModel.genresUiState.first { it.genresList.isNotEmpty() }
+                        callback(true)
+                        navController?.navigate("home_page")
+                    }
+                } else {
+                    callback(false)
                 }
-
-                callback(result)
             }
+        } else {
+            callback(false)
         }
-
-        callback(false)
     }
 
     fun hashPassword(password: String, saltLength: Int = 16): Pair<String, String> {
@@ -258,5 +260,13 @@ class SharedViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.Main) {
             navController?.navigate("register_page")
         }
+    }
+
+    fun getUsername(): String {
+        return currentUser!!.username
+    }
+
+    fun getEmail(): String {
+        return currentUser!!.email
     }
 }

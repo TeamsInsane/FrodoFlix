@@ -1,7 +1,6 @@
 package com.frodo.frodoflix
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -17,8 +16,8 @@ import androidx.navigation.compose.rememberNavController
 import com.frodo.frodoflix.screens.DisplayMoviePage
 import com.frodo.frodoflix.screens.RateMovie
 import com.frodo.frodoflix.screens.SearchPage
+import com.frodo.frodoflix.screens.profile.DisplayFavMoviesPage
 import com.frodo.frodoflix.screens.profile.DisplayWantToWatchPage
-import com.frodo.frodoflix.screens.profile.DisplayWatchedListPage
 import com.frodo.frodoflix.screens.registration.LoginPage
 import com.frodo.frodoflix.screens.profile.SettingsScreen
 import com.frodo.frodoflix.screens.registration.RegisterPage
@@ -87,14 +86,14 @@ class MainActivity : ComponentActivity() {
                         RateMovie(sharedViewModel)
                     }
 
-                    // Watched movies
-                    composable("movies_watched"){
-                        DisplayWatchedListPage(sharedViewModel)
+                    // Watch list page
+                    composable("watch_list"){
+                        DisplayWantToWatchPage(sharedViewModel)
                     }
 
-                    // want to watch
-                    composable("want_to_watch"){
-                        DisplayWantToWatchPage(sharedViewModel)
+                    // Fav movies list page
+                    composable("fav_page"){
+                        DisplayFavMoviesPage(sharedViewModel)
                     }
                 }
 

@@ -37,12 +37,6 @@ fun FavoriteGenresPage(sharedViewModel: SharedViewModel) {
     val genresUiState by genresViewModel.genresUiState.collectAsState()
     val navController = sharedViewModel.navController ?: return
 
-    LaunchedEffect(Unit) {
-        if (genresUiState.genresList.isEmpty()) {
-            genresViewModel.loadGenresFromApi()
-        }
-    }
-
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Box(
             modifier = Modifier

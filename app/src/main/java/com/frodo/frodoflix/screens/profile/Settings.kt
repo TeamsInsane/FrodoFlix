@@ -44,8 +44,8 @@ fun SettingsScreen(sharedViewModel: SharedViewModel) {
         ) {
             BackToPreviousScreen(navController)
             DisplayDarkTheme(sharedViewModel)
-            SettingsUsername()
-            DisplayEmail()
+            SettingsUsername(sharedViewModel.getUsername())
+            DisplayEmail(sharedViewModel.getEmail())
             DisplayChangePassword()
             DisplaySignOut(sharedViewModel)
         }
@@ -94,7 +94,7 @@ fun DisplayDarkTheme(sharedViewModel: SharedViewModel){
 }
 
 @Composable
-fun SettingsUsername(){
+fun SettingsUsername(username: String){
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -114,7 +114,7 @@ fun SettingsUsername(){
             verticalAlignment = Alignment.CenterVertically,
         ){
             Text(
-                text = "Frodo",
+                text = username,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 16.sp,
             )
@@ -143,7 +143,7 @@ fun SettingsUsername(){
 }
 
 @Composable
-fun DisplayEmail(){
+fun DisplayEmail(email: String){
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -151,7 +151,7 @@ fun DisplayEmail(){
 
     ){
         Text(
-            text = "Email address",
+            text = "Email",
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
             fontSize = 18.sp,
@@ -163,7 +163,7 @@ fun DisplayEmail(){
             verticalAlignment = Alignment.CenterVertically,
         ){
             Text(
-                text = "Frodo.Baggins@gmail.com",
+                text = email,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 16.sp,
             )

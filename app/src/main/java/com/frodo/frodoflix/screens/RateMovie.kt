@@ -180,7 +180,7 @@ fun DisplaySaveReview(sharedViewModel: SharedViewModel, selectedRating: Int, com
                 }
 
                 val movieID = sharedViewModel.selectedMovie!!.id
-                sharedViewModel.updateWatchedlist(movieID = movieID)
+                //sharedViewModel.updateWatchedlist(movieID = movieID)
                 sharedViewModel.navController?.navigate("movie_page")
 
             },

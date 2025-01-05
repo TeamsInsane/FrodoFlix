@@ -20,9 +20,9 @@ class FrodoDatabase {
     private val DATABASE_REFERENCE: String = dotenv["DATABASE_REFERENCE"]
     private val database = Firebase.database(DATABASE_REFERENCE)
 
-    suspend fun getWatchedList(username: String): List<Int> {
+    suspend fun getFavList(username: String): List<Int> {
         return try {
-            val snapshot = database.getReference("users").child(username).child("watchedlist").get().await()
+            val snapshot = database.getReference("users").child(username).child("favlist").get().await()
             Log.d("firebase", snapshot.toString())
             snapshot.children.mapNotNull { it.getValue(Int::class.java) }
         } catch (e: Exception) {
@@ -59,9 +59,9 @@ class FrodoDatabase {
         }
     }
 
-    fun updateWatchedList(username: String, scope: CoroutineScope, watchlist: List<Int>) {
+    fun updateFavList(username: String, scope: CoroutineScope, favList: List<Int>) {
         scope.launch(Dispatchers.IO) {
-            database.getReference("users").child(username).child("watchedlist").setValue(watchlist)
+            database.getReference("users").child(username).child("favlist").setValue(favList)
         }
     }
 

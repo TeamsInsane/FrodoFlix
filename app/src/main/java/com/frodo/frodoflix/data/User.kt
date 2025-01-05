@@ -1,4 +1,4 @@
-package com.frodo.frodoflix.data;
+package com.frodo.frodoflix.data
 
 
 data class User(

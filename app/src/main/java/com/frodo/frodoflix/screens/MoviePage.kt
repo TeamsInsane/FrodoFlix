@@ -18,7 +18,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -38,13 +40,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
@@ -58,7 +60,6 @@ import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.staticitems.BackToPreviousScreen
 import com.frodo.frodoflix.staticitems.BottomMenuBar
 import com.frodo.frodoflix.viewmodels.SharedViewModel
-import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -92,7 +93,7 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
         ) {
             item {
                 BackToPreviousScreen(navController)
-                DisplayMovieBanner(nonNullData.getString("backdrop_path"))
+                DisplayMovieBanner(nonNullData.getString("backdrop_path"), sharedViewModel, movie)
 
                 // Title Text
                 Text(
@@ -152,29 +153,47 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
 
 
 @Composable
-fun DisplayMovieBanner(bannerPath: String) {
-    SubcomposeAsyncImage(
-        model = ImageRequest.Builder(LocalContext.current)
-            .data("https://image.tmdb.org/t/p/original/$bannerPath")
-            .crossfade(true)
-            .build(),
-        contentDescription = "Movie banner",
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(16f / 9f)
-    ) {
-        // Progress indicator
-        when (painter.state) {
-            is AsyncImagePainter.State.Loading -> {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+fun DisplayMovieBanner(bannerPath: String, sharedViewModel: SharedViewModel, movie: Movie) {
+    Box(modifier = Modifier.fillMaxWidth()) {
+        SubcomposeAsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data("https://image.tmdb.org/t/p/original/$bannerPath")
+                .crossfade(true)
+                .build(),
+            contentDescription = "Movie banner",
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(16f / 9f),
+            contentScale = ContentScale.Crop
+        ) {
+            // Progress indicator
+            when (painter.state) {
+                is AsyncImagePainter.State.Loading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+                is AsyncImagePainter.State.Success -> {
+                    SubcomposeAsyncImageContent()
+                }
+                else -> {}
             }
-
-            is AsyncImagePainter.State.Success -> {
-                SubcomposeAsyncImageContent()
-            }
-
-            else -> {}
         }
+
+        val favList by sharedViewModel.favList.collectAsState()
+        val isInFavList = favList.contains(movie.id)
+
+        Icon(
+            imageVector = if (isInFavList) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+            contentDescription = "Favorite Icon",
+            tint = Color.Red,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+                .size(40.dp)
+                .clip(CircleShape)
+                .clickable {
+                    sharedViewModel.updateFavList(movieID = movie.id)
+                }
+        )
     }
 }
 
@@ -189,9 +208,9 @@ fun DisplayRateMovie(sharedViewModel: SharedViewModel, navController: NavControl
         horizontalArrangement = Arrangement.Center, // Center horizontally
         verticalAlignment = Alignment.CenterVertically // Align vertically
     ) {
-        val watchedlist by sharedViewModel.watchedlist.collectAsState()
 
-        val isInWatchedlist = watchedlist.contains(movie.id)
+
+        val isInWatchedlist = true
         // Watched + rate movie button
         Button(
             onClick = {

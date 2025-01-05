@@ -1,27 +1,32 @@
 package com.frodo.frodoflix.screens.profile
 
-import android.util.Log
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import android.util.Log
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,40 +43,57 @@ import org.json.JSONObject
 import kotlin.math.min
 
 @Composable
-fun DisplayWatchedListPage(sharedViewModel: SharedViewModel) {
+fun DisplayWantToWatchPage(sharedViewModel: SharedViewModel) {
     val navController = sharedViewModel.navController ?: return
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        BackToPreviousScreen(navController)
-        DisplayMoviesColumn(sharedViewModel)
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(innerPadding)
+        ) {
+            item {
+                BackToPreviousScreen(navController)
+
+                // Watchlist movies text
+                Text(
+                    text = "Watchlist movies",
+                    fontSize = 28.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
+                    fontWeight = FontWeight.Bold
+                )
+
+                DisplayMoviesColumnWTW(sharedViewModel)
+            }
+        }
+
         BottomMenuBar(navController)
     }
 }
 
 @Composable
-fun DisplayMoviesColumn(sharedViewModel: SharedViewModel) {
-    LazyColumn {
-        val watchedMovieList = sharedViewModel.watchedlist.value
-        for (i in 0..watchedMovieList.size / 3) {
-            val watchedMovieSublist =
-                watchedMovieList.subList(i * 3, min(i * 3 + 3, watchedMovieList.size))
+fun DisplayMoviesColumnWTW(sharedViewModel: SharedViewModel) {
+    val wantToWatchList = sharedViewModel.watchlist.collectAsState().value
 
-            item {
-                DisplayListMoviesRow(watchedMovieSublist, sharedViewModel)
-            }
-        }
+    for (i in 0..wantToWatchList.size / 3) {
+        val wantToWatchMovieSublist =
+            wantToWatchList.subList(i * 3, min(i * 3 + 3, wantToWatchList.size))
+
+
+        DisplayListMoviesRow(wantToWatchMovieSublist, sharedViewModel)
     }
 }
 
 @Composable
 fun DisplayListMoviesRow(movieIDList: List<Int>, sharedViewModel: SharedViewModel) {
     Row (
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = if (movieIDList.size < 3) Arrangement.Start else Arrangement.SpaceEvenly
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.Start
     ){
         for (id in movieIDList) {
             var data by remember { mutableStateOf<JSONObject?>(null) }
@@ -103,10 +125,12 @@ fun DisplayListMoviesRow(movieIDList: List<Int>, sharedViewModel: SharedViewMode
 
 @Composable
 fun DisplayMovie(movie: Movie, sharedViewModel: SharedViewModel) {
+    Log.d("size", LocalConfiguration.current.screenWidthDp.toString())
     Column (
         modifier = Modifier
-            .width(135.dp)
+            .width((LocalConfiguration.current.screenWidthDp / 3 - 8).dp)
             .padding(8.dp)
+            .padding(bottom = 0.dp)
             .clickable {
                 sharedViewModel.selectedMovie = movie
                 sharedViewModel.navController?.navigate("movie_page")
@@ -116,7 +140,7 @@ fun DisplayMovie(movie: Movie, sharedViewModel: SharedViewModel) {
 
         Box(
             modifier = Modifier
-                .width(125.dp)
+                .width((LocalConfiguration.current.screenWidthDp / 3 - 2 * 8).dp)
                 .height(180.dp)
         ) {
             // Loading states for images (loading image before the image is loaded...)
@@ -148,7 +172,6 @@ fun DisplayMovie(movie: Movie, sharedViewModel: SharedViewModel) {
             text = movie.title,
 
             fontSize = 16.sp,
-            modifier = Modifier.padding(top = 8.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
