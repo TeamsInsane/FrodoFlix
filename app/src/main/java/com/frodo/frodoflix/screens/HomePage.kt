@@ -211,7 +211,7 @@ fun ForYouMovies(sharedViewModel: SharedViewModel) {
     var movies by remember { mutableStateOf<JSONArray?>(null) }
 
     val genres = sharedViewModel.genresViewModel.getFavouriteGenreIds().joinToString("|")
-    val startDate = LocalDate.now().minusYears(3);
+    val startDate = LocalDate.now().minusYears(3)
     val url = "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=vote_average.desc&without_genres=99,10755&vote_count.gte=200" +
             "&with_genres=$genres" +
             "&primary_release_date.gte=$startDate"
@@ -228,7 +228,7 @@ fun ForYouMovies(sharedViewModel: SharedViewModel) {
 fun FamilyMovies(sharedViewModel: SharedViewModel) {
     var movies by remember { mutableStateOf<JSONArray?>(null) }
 
-    val startDate = LocalDate.now().minusYears(2);
+    val startDate = LocalDate.now().minusYears(2)
     val url = "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=vote_average.desc&without_genres=99,10755&vote_count.gte=200" +
             "&with_genres=10751" +
             "&primary_release_date.gte=$startDate"
@@ -245,7 +245,7 @@ fun FamilyMovies(sharedViewModel: SharedViewModel) {
 fun HorrorMovies(sharedViewModel: SharedViewModel) {
     var movies by remember { mutableStateOf<JSONArray?>(null) }
 
-    val startDate = LocalDate.now().minusYears(2);
+    val startDate = LocalDate.now().minusYears(2)
     val url = "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=vote_average.desc&without_genres=99,10755&vote_count.gte=200" +
             "&with_genres=27" +
             "&primary_release_date.gte=$startDate"

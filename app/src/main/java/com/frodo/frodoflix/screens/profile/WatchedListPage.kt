@@ -61,14 +61,14 @@ fun DisplayMoviesColumn(sharedViewModel: SharedViewModel) {
                 watchedMovieList.subList(i * 3, min(i * 3 + 3, watchedMovieList.size))
 
             item {
-                DisplayMoviesRow(watchedMovieSublist, sharedViewModel)
+                DisplayListMoviesRow(watchedMovieSublist, sharedViewModel)
             }
         }
     }
 }
 
 @Composable
-fun DisplayMoviesRow(movieIDList: List<Int>, sharedViewModel: SharedViewModel) {
+fun DisplayListMoviesRow(movieIDList: List<Int>, sharedViewModel: SharedViewModel) {
     Row (
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = if (movieIDList.size < 3) Arrangement.Start else Arrangement.SpaceEvenly

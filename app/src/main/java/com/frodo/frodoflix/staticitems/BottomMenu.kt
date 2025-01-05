@@ -39,9 +39,9 @@ fun BottomMenuBar(navController : NavController) {
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                HomePage(navController);
-                SearchPage(navController);
-                ProfilePage(navController);
+                HomePage(navController)
+                SearchPage(navController)
+                ProfilePage(navController)
 
             }
         }

@@ -39,7 +39,7 @@ fun FavoriteGenresPage(sharedViewModel: SharedViewModel) {
 
     LaunchedEffect(Unit) {
         if (genresUiState.genresList.isEmpty()) {
-            genresViewModel.loadGenresFromApi(sharedViewModel)
+            genresViewModel.loadGenresFromApi()
         }
     }
 

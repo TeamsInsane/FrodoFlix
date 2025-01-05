@@ -1,10 +1,10 @@
 package com.frodo.frodoflix
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.frodo.frodoflix.screens.profile.Profile
@@ -38,9 +38,9 @@ class MainActivity : ComponentActivity() {
             sharedViewModel.initializeGenresViewModel(this)
             navController = rememberNavController()
             sharedViewModel.navController = navController
+            sharedViewModel.loginSharedPreferences = this.getSharedPreferences("login", MODE_PRIVATE)
 
             FrodoFlixTheme (darkTheme = sharedViewModel.isDarkTheme.value){
-
                 NavHost(navController = navController, startDestination = "login_page") {
                     // First screen (Home Page)
                     composable("home_page") {
@@ -95,6 +95,12 @@ class MainActivity : ComponentActivity() {
                     // want to watch
                     composable("want_to_watch"){
                         DisplayWantToWatchPage(sharedViewModel)
+                    }
+                }
+
+                sharedViewModel.checkSavedLogin { result ->
+                    if (result) {
+                        navController.navigate("home_page")
                     }
                 }
             }

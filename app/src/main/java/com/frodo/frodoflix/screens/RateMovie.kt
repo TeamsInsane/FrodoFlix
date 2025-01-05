@@ -174,7 +174,7 @@ fun DisplaySaveReview(sharedViewModel: SharedViewModel, selectedRating: Int, com
                 if (selectedRating != 0) {
                     Log.d("rating", "$selectedRating $comment")
                     sharedViewModel.viewModelScope.launch {
-                        sharedViewModel.saveRating(selectedRating, comment);
+                        sharedViewModel.saveRating(selectedRating, comment)
 
                     }
                 }

@@ -47,7 +47,7 @@ fun SettingsScreen(sharedViewModel: SharedViewModel) {
             SettingsUsername()
             DisplayEmail()
             DisplayChangePassword()
-            DisplaySignOut()
+            DisplaySignOut(sharedViewModel)
         }
     }
 }
@@ -235,7 +235,7 @@ fun DisplayChangePassword(){
 }
 
 @Composable
-fun DisplaySignOut(){
+fun DisplaySignOut(sharedViewModel: SharedViewModel){
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -245,6 +245,7 @@ fun DisplaySignOut(){
         // Rate movie button
         Button(
             onClick = {
+                sharedViewModel.signOut()
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Red,

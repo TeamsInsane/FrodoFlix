@@ -241,7 +241,7 @@ fun CastData(movieID: Int) {
         castData = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/movie/$movieID/credits?language=en-US", "cast") as JSONArray?
     }
 
-    ReadCastData(castData);
+    ReadCastData(castData)
 }
 
 @Composable

@@ -1,8 +1,8 @@
 package com.frodo.frodoflix.viewmodels
 
+import android.content.SharedPreferences
 import android.util.Log
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -14,6 +14,7 @@ import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.data.User
 import com.frodo.frodoflix.database.FrodoDatabase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,6 +30,8 @@ class SharedViewModel : ViewModel() {
     private val databaseReference = FrodoDatabase()
     private var currentUser: User? = null
     lateinit var genresViewModel: GenresViewModel
+
+    lateinit var loginSharedPreferences: SharedPreferences
 
     private val _isDarkTheme = mutableStateOf(false)
     val isDarkTheme: State<Boolean> = _isDarkTheme
@@ -120,7 +123,7 @@ class SharedViewModel : ViewModel() {
     }
 
     private fun setCurrentUser(user: User) {
-        this.currentUser = user;
+        this.currentUser = user
     }
 
     fun newUser(username: String, email: String, password: String, salt: String) {
@@ -133,7 +136,9 @@ class SharedViewModel : ViewModel() {
                     salt = salt,
                     viewModelScope
                 )
-                navController?.navigate("login_page")
+                viewModelScope.launch(Dispatchers.Main) {
+                    navController?.navigate("login_page")
+                }
             } else {
                 Log.e("Firebase","Username already taken!")
                 //TODO: Let the user know
@@ -152,8 +157,12 @@ class SharedViewModel : ViewModel() {
             if (user != null) {
                 if (verifyPassword(password, user.password, user.salt)) {
                     setCurrentUser(user)
+                    saveLoginInfo(user.username, user.password)
                     loadDataFromDB()
-                    navController?.navigate("home_page")
+                    genresViewModel.loadSavedGenres(user.genres)
+                    viewModelScope.launch(Dispatchers.Main) {
+                        navController?.navigate("home_page")
+                    }
                 } else {
                     Log.e("Firebase", "Wrong username or password!")
                     //TODO: Let the user know
@@ -163,6 +172,27 @@ class SharedViewModel : ViewModel() {
                 //TODO: Let the user know
             }
         }
+    }
+
+    fun checkSavedLogin(callback: (Boolean) -> Unit) {
+        val credentials = retrieveCredentials()
+        val username = credentials.first
+        val password = credentials.second
+
+        if (username != null && password != null) {
+            fetchUser(username) { user ->
+                val result = user != null && verifyHashedPassword(password, user.password)
+                if (result && user != null) {
+                    setCurrentUser(user)
+                    loadDataFromDB()
+                    genresViewModel.loadSavedGenres(user.genres)
+                }
+
+                callback(result)
+            }
+        }
+
+        callback(false)
     }
 
     fun hashPassword(password: String, saltLength: Int = 16): Pair<String, String> {
@@ -184,6 +214,49 @@ class SharedViewModel : ViewModel() {
 
     private fun verifyPassword(inputPassword: String, storedHash: String, storedSalt: String): Boolean {
         val inputHash = hashWithSalt(inputPassword, storedSalt)
-        return inputHash == storedHash
+        return verifyHashedPassword(inputHash, storedHash)
+    }
+
+    private fun verifyHashedPassword(hashedPassword: String, storedHash: String): Boolean {
+        return hashedPassword == storedHash;
+    }
+
+    private fun retrieveCredentials(): Pair<String?, String?> {
+        return try {
+            val username = this.loginSharedPreferences.getString("username", null)
+            val hashedPassword= this.loginSharedPreferences.getString("password", null)
+
+            Pair(username, hashedPassword)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Pair(null, null)
+        }
+    }
+
+    private fun saveLoginInfo(username: String, hashedPassword: String) {
+        try {
+            with(this.loginSharedPreferences.edit()) {
+                putString("username", username)
+                putString("password", hashedPassword)
+                apply()
+            }
+
+            Log.d("savingData", "Saved $username $hashedPassword")
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun signOut() {
+        with(this.loginSharedPreferences.edit()) {
+            remove("username")
+            remove("password")
+            apply()
+        }
+
+        currentUser = null;
+        viewModelScope.launch(Dispatchers.Main) {
+            navController?.navigate("register_page")
+        }
     }
 }

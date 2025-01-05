@@ -1,4 +1,4 @@
-package com.frodo.frodoflix.database;
+package com.frodo.frodoflix.database
 
 import android.util.Log
 import com.frodo.frodoflix.data.Rating

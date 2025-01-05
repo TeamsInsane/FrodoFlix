@@ -1,6 +1,5 @@
 package com.frodo.frodoflix.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.frodo.frodoflix.api.TMDB
@@ -25,7 +24,7 @@ class GenresViewModel: ViewModel() {
     private val _genresUiState = MutableStateFlow(GenresUiState())
     val genresUiState: StateFlow<GenresUiState> = _genresUiState.asStateFlow()
 
-    fun loadGenresFromApi(sharedViewModel: SharedViewModel) {
+    fun loadGenresFromApi() {
         viewModelScope.launch {
             val genresJSONArray: JSONArray? = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/genre/movie/list?language=en", "genres") as JSONArray?
 
@@ -43,8 +42,6 @@ class GenresViewModel: ViewModel() {
             _genresUiState.update { currentState ->
                 currentState.copy(genresList = genresList)
             }
-
-            loadSavedGenres(sharedViewModel.getUserGenres())
         }
     }
 
@@ -78,5 +75,5 @@ class GenresViewModel: ViewModel() {
                currentState.copy(genresList = updatedGenresList)
            }
        }
-    }
+   }
 }
