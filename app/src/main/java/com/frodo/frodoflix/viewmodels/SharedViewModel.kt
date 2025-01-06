@@ -32,7 +32,7 @@ class SharedViewModel : ViewModel() {
     private var currentUser: User? = null
     lateinit var genresViewModel: GenresViewModel
 
-    lateinit var loginSharedPreferences: SharedPreferences
+    lateinit var sharedPreferences: SharedPreferences
 
     private val _isDarkTheme = mutableStateOf(false)
     val isDarkTheme: State<Boolean> = _isDarkTheme
@@ -52,11 +52,21 @@ class SharedViewModel : ViewModel() {
 
         viewModelScope.launch {
             val favList = databaseReference.getFavList(currentUser.username)
+            currentUser.favlist = favList
             _favList.update { favList }
 
-
             val watchList = databaseReference.getWatchList(currentUser.username)
+            currentUser.watchlist = watchList
             _watchlist.update { watchList }
+        }
+
+        loadThemeData()
+    }
+
+    private fun loadThemeData() {
+        val darkTheme = this.sharedPreferences.getBoolean("isDarkTheme", false)
+        if (darkTheme) {
+            toggleTheme()
         }
     }
 
@@ -70,6 +80,10 @@ class SharedViewModel : ViewModel() {
         databaseReference.saveRating(ratingList, selectedMovie!!.id, viewModelScope)
     }
 
+    suspend fun deleteRating() {
+        databaseReference.deleteRating(currentUser!!.username, selectedMovie!!.id, viewModelScope)
+    }
+
     suspend fun getRatingList(): List<Rating> {
         return databaseReference.getRatingList(selectedMovie!!.id)
     }
@@ -80,6 +94,15 @@ class SharedViewModel : ViewModel() {
 
     fun toggleTheme() {
         _isDarkTheme.value = !_isDarkTheme.value
+
+        try {
+            with(this.sharedPreferences.edit()) {
+                putBoolean("isDarkTheme", _isDarkTheme.value)
+                apply()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     fun updateFavList(movieID: Int) {
@@ -155,8 +178,11 @@ class SharedViewModel : ViewModel() {
                     setCurrentUser(user)
                     saveLoginInfo(user.username, user.password)
                     loadDataFromDB()
+
                     viewModelScope.launch(Dispatchers.Main) {
-                        genresViewModel.loadSavedGenres(user.genres)
+                        genresViewModel.loadGenresFromApi(user.genres)
+                        genresViewModel.genresUiState.first { it.genresList.isNotEmpty() }
+
                         navController?.navigate("home_page")
                     }
                 } else {
@@ -225,8 +251,8 @@ class SharedViewModel : ViewModel() {
 
     private fun retrieveCredentials(): Pair<String?, String?> {
         return try {
-            val username = this.loginSharedPreferences.getString("username", null)
-            val hashedPassword= this.loginSharedPreferences.getString("password", null)
+            val username = this.sharedPreferences.getString("username", null)
+            val hashedPassword= this.sharedPreferences.getString("password", null)
 
             Pair(username, hashedPassword)
         } catch (e: Exception) {
@@ -237,7 +263,7 @@ class SharedViewModel : ViewModel() {
 
     private fun saveLoginInfo(username: String, hashedPassword: String) {
         try {
-            with(this.loginSharedPreferences.edit()) {
+            with(this.sharedPreferences.edit()) {
                 putString("username", username)
                 putString("password", hashedPassword)
                 apply()
@@ -250,23 +276,81 @@ class SharedViewModel : ViewModel() {
     }
 
     fun signOut() {
-        with(this.loginSharedPreferences.edit()) {
+        with(this.sharedPreferences.edit()) {
             remove("username")
             remove("password")
             apply()
         }
 
-        currentUser = null;
         viewModelScope.launch(Dispatchers.Main) {
+            currentUser = null
             navController?.navigate("register_page")
         }
     }
 
+    fun isUserSet(): Boolean {
+        return currentUser != null
+    }
+
     fun getUsername(): String {
-        return currentUser!!.username
+        if (currentUser != null) {
+            return currentUser!!.username
+        }
+
+        return ""
     }
 
     fun getEmail(): String {
-        return currentUser!!.email
+        if (currentUser != null) {
+            return currentUser!!.email
+        }
+
+        return ""
+    }
+
+    suspend fun getStarsRated(): Int{
+        for (rating in getRatingList()) {
+            if (rating.username == currentUser!!.username) {
+                return rating.rating
+            }
+        }
+
+        return -1
+    }
+
+    fun changeUsername(username: String, callback: (Boolean) -> Unit) {
+        fetchUser(username) { user ->
+            if (user != null) {
+                callback(false)
+            } else {
+                this.databaseReference.changeUsername(currentUser!!.username, username, viewModelScope) { result ->
+                    if (result) {
+                        currentUser!!.username = username
+                    }
+                    callback(result)
+                }
+            }
+        }
+    }
+
+    fun changePassword(oldPassword: String, newPassword: String, callback: (Boolean) -> Unit) {
+        fetchUser(currentUser!!.username) { user ->
+            if (user != null) {
+                if (verifyPassword(oldPassword, user.password, user.salt)) {
+                    val hashedPassword = hashWithSalt(newPassword, user.salt)
+
+                    this.databaseReference.changePassword(hashedPassword, currentUser!!.username, viewModelScope) { result ->
+                        if (result) {
+                            currentUser!!.password = hashedPassword
+                        }
+                        callback(result)
+                    }
+                } else {
+                    callback(false)
+                }
+            } else {
+                callback(false)
+            }
+        }
     }
 }

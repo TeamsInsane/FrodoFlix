@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -87,6 +88,7 @@ fun DisplayProfileIcon() {
         Image(
             painter = painterResource(id = R.drawable.frodo),
             contentDescription = "Profile Picture",
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(150.dp)
                 .clip(CircleShape)

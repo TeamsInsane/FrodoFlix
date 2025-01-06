@@ -115,8 +115,9 @@ fun DisplayListMoviesRow(movieIDList: List<Int>, sharedViewModel: SharedViewMode
             val title = nonNullData.getString("title")
             val overview = nonNullData.getString("overview")
             val posterUrl = nonNullData.getString("poster_path")
+            val releaseDate = nonNullData.getString("release_date")
 
-            val movie = Movie(id, title, overview, posterUrl)
+            val movie = Movie(id, title, overview, posterUrl, releaseDate)
             DisplayMovie(movie, sharedViewModel)
         }
     }
@@ -125,7 +126,6 @@ fun DisplayListMoviesRow(movieIDList: List<Int>, sharedViewModel: SharedViewMode
 
 @Composable
 fun DisplayMovie(movie: Movie, sharedViewModel: SharedViewModel) {
-    Log.d("size", LocalConfiguration.current.screenWidthDp.toString())
     Column (
         modifier = Modifier
             .width((LocalConfiguration.current.screenWidthDp / 3 - 8).dp)

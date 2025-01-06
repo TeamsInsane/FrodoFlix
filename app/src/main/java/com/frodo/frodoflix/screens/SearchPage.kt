@@ -9,12 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -27,24 +26,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewModelScope
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
-import com.frodo.frodoflix.R
 import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Movie
 
 import com.frodo.frodoflix.staticitems.BottomMenuBar
 import com.frodo.frodoflix.viewmodels.SharedViewModel
-import kotlinx.coroutines.launch
+
 import org.json.JSONArray
+
 
 
 @Composable
@@ -52,15 +50,14 @@ fun SearchPage(sharedViewModel: SharedViewModel){
     val navController = sharedViewModel.navController ?: return
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.surface
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .padding(8.dp),
         ) {
             DisplaySearch(sharedViewModel)
         }
+
         BottomMenuBar(navController)
     }
 }
@@ -68,7 +65,16 @@ fun SearchPage(sharedViewModel: SharedViewModel){
 @Composable
 fun DisplaySearch(sharedViewModel: SharedViewModel) {
     var movieName by remember { mutableStateOf("") }
-    var showSearchedMovies by remember { mutableStateOf(false) }
+    var movies by remember { mutableStateOf<JSONArray?>(null) }
+
+    LaunchedEffect(movieName) {
+        if (movieName.isNotEmpty()) {
+            kotlinx.coroutines.delay(300)
+            movies = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/search/movie?query=$movieName&include_adult=false&language=en-US&page=1", "results") as JSONArray?
+        } else {
+            movies = null
+        }
+    }
 
     Row(
         modifier = Modifier
@@ -87,88 +93,58 @@ fun DisplaySearch(sharedViewModel: SharedViewModel) {
                 .weight(1f)
                 .padding(end = 8.dp)
         )
-
-        Icon(
-            painter = painterResource(id = R.drawable.search),
-            contentDescription = "Search",
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .size(32.dp)
-                .clickable {
-                    sharedViewModel.viewModelScope.launch {
-                        if (movieName.isNotEmpty()) {
-                            showSearchedMovies = true;
-                        } else {
-                            showSearchedMovies = false;
-                        }
-                    }
-                }
-        )
     }
-
-    if (showSearchedMovies) {
-        SearchMovies(movieName, sharedViewModel)
-    }
-}
-
-@Composable
-fun SearchMovies(movieName: String, sharedViewModel: SharedViewModel) {
-    var movies by remember { mutableStateOf<JSONArray?>(null) }
-
-    LaunchedEffect(true) {
-        movies = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/search/movie?query=$movieName", "results") as JSONArray?
-    }
-
-    DisplaySearchedMovies(movies, sharedViewModel)
-}
-
-@Composable
-fun DisplaySearchedMovies(movies: JSONArray?, sharedViewModel: SharedViewModel) {
-    var movieList = mutableListOf<Movie>()
 
     if (movies != null) {
-        LazyColumn {
-            items(movies.length()) { index ->
-                val item = movies.getJSONObject(index)
-
-                val id = item.getString("id").toInt()
-                val overview = item.getString("overview")
-                val title = item.getString("title")
-                val imageUrl = item.getString("poster_path")
-
-                val movie = Movie(id, title, overview, imageUrl)
-
-                movieList.add(movie)
-
-                if (movieList.size == 3) {
-                    DisplaySearchedMoviesRow(movieList, sharedViewModel)
-                    movieList.clear()
-                }
-
-            }
-        }
-
+        val nonNullMovies = movies as JSONArray
+        SplitSearchedMovies(nonNullMovies, sharedViewModel)
     }
 }
 
 @Composable
-fun DisplaySearchedMoviesRow(movieList: MutableList<Movie>, sharedViewModel: SharedViewModel) {
-    Row (
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = if (movieList.size < 3) Arrangement.Start else Arrangement.SpaceEvenly
-    ){
-        for (movie in movieList) {
-            DisplaySearchedMovie(movie, sharedViewModel)
+fun SplitSearchedMovies(movies: JSONArray, sharedViewModel: SharedViewModel) {
+    val movieList = (0 until movies.length()).map { index ->
+        val item = movies.getJSONObject(index)
+
+        val id = item.getString("id").toInt()
+        val overview = item.getString("overview")
+        val title = item.getString("title")
+        val imageUrl = item.getString("poster_path")
+        val popularity = item.getDouble("popularity")
+        val releaseDate = item.getString("release_date")
+
+        Movie(id, title, overview, imageUrl, releaseDate, popularity)
+    }
+
+    val sortedMovies = movieList.sortedByDescending { it.popularity }
+
+    val groupedMovies = sortedMovies.chunked(3)
+
+    LazyColumn(
+        modifier = Modifier.padding(8.dp)
+    ) {
+        items(groupedMovies) { rowMovies ->
+            Row (
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
+            ){
+                for (movie in rowMovies) {
+                    DisplaySearchedMovie(movie, sharedViewModel)
+                }
+            }
         }
     }
+
 }
 
 @Composable
 fun DisplaySearchedMovie(movie: Movie, sharedViewModel: SharedViewModel) {
     Column (
         modifier = Modifier
-            .width(135.dp)
+            .width((LocalConfiguration.current.screenWidthDp / 3 - 8).dp)
             .padding(8.dp)
+            .padding(bottom = 0.dp)
             .clickable {
                 sharedViewModel.selectedMovie = movie
                 sharedViewModel.navController?.navigate("movie_page")
@@ -178,7 +154,7 @@ fun DisplaySearchedMovie(movie: Movie, sharedViewModel: SharedViewModel) {
 
         Box(
             modifier = Modifier
-                .width(120.dp)
+                .width((LocalConfiguration.current.screenWidthDp / 3 - 2 * 8).dp)
                 .height(180.dp)
         ) {
             // Loading states for images (loading image before the image is loaded...)
@@ -210,7 +186,6 @@ fun DisplaySearchedMovie(movie: Movie, sharedViewModel: SharedViewModel) {
             text = movie.title,
 
             fontSize = 16.sp,
-            modifier = Modifier.padding(top = 8.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )

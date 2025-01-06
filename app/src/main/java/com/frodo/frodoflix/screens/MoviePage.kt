@@ -32,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -84,7 +85,7 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
     }
 
     val nonNullData = data as JSONObject
-    // Apply Scaffold for consistent theming and structure
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
@@ -104,12 +105,71 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
                     fontWeight = FontWeight.Bold
                 )
 
-                // Rating and Duration Text
-                Text(
-                    text = "Rating: ${nonNullData.getString("vote_average")}     ${nonNullData.getString("runtime")} min",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp)
-                )
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Rating, Duration, Release Date
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Rating
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = "Star",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(16.dp)
+                        )
+
+                        Spacer(modifier = Modifier.width(4.dp))
+
+                        Text(
+                            text = "${nonNullData.getString("vote_average")}/10",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    // Duration
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(R.drawable.timelapse),
+                            contentDescription = "Duration Icon",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "${nonNullData.getString("runtime")} min",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    // Release Date
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(R.drawable.calendar_month),
+                            contentDescription = "Release Date Icon",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = movie.releaseDate,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // Description Text
                 Text(
@@ -205,32 +265,45 @@ fun DisplayRateMovie(sharedViewModel: SharedViewModel, navController: NavControl
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 16.dp, bottom = 16.dp),
-        horizontalArrangement = Arrangement.Center, // Center horizontally
-        verticalAlignment = Alignment.CenterVertically // Align vertically
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
     ) {
 
+        val starsRated = remember { mutableIntStateOf(-1) }
 
-        val isInWatchedlist = true
-        // Watched + rate movie button
+        LaunchedEffect(true) {
+            starsRated.intValue = sharedViewModel.getStarsRated()
+            starsRated.intValue = sharedViewModel.getStarsRated()
+        }
+
         Button(
             onClick = {
                 navController.navigate("rate_movie")
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isInWatchedlist) Color.Green else Color.Yellow,
-                contentColor = Color.Black
+                containerColor = if (starsRated.intValue != -1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ),
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.padding(horizontal = 8.dp)
         ) {
+            Icon(
+                imageVector = Icons.Filled.Star,
+                contentDescription = "star icon",
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(20.dp)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
             Text(
-                text = if (isInWatchedlist) "already rated" else "rate"
+                text = if (starsRated.intValue != -1) "Rated: ${starsRated.intValue}" else "Rate Movie",
+                fontWeight = FontWeight.SemiBold
             )
         }
 
         //Watchlist button
         val watchlist by sharedViewModel.watchlist.collectAsState()
-
         val isInWatchlist = watchlist.contains(movie.id)
 
         Button(
@@ -238,13 +311,24 @@ fun DisplayRateMovie(sharedViewModel: SharedViewModel, navController: NavControl
                 sharedViewModel.updateWatchlist(movie.id)
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isInWatchlist) Color.Green else Color.Yellow,
-                contentColor = Color.Black
+                containerColor = if (isInWatchlist) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ),
+            shape = MaterialTheme.shapes.medium,
             modifier = Modifier.padding(horizontal = 8.dp)
         ) {
+            Icon(
+                imageVector = if (isInWatchlist) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                contentDescription = "watchlist icon",
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(20.dp)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
             Text(
-                text = if (isInWatchlist) "Remove from Watchlist" else "Add to Watchlist"
+                text = if (isInWatchlist) "In Watchlist" else "Add to Watchlist",
+                fontWeight = FontWeight.SemiBold
             )
         }
     }
@@ -394,12 +478,13 @@ fun DisplayRatings(sharedViewModel: SharedViewModel) {
 
                         repeat(rating.rating) {
                             Icon(
-                                imageVector = Icons.Default.Star,
+                                imageVector = Icons.Filled.Star,
                                 contentDescription = "Star",
-                                tint = Color.Yellow,
+                                tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
+
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))

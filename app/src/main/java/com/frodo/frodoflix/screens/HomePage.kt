@@ -284,8 +284,9 @@ fun DisplayMoviesRow(movies : JSONArray?, sharedViewModel: SharedViewModel) {
                 val overview = item.getString("overview")
                 val title = item.getString("title")
                 val imageUrl = item.getString("poster_path")
+                val releaseDate = item.getString("release_date")
 
-                val movie = Movie(id, title, overview, imageUrl)
+                val movie = Movie(id, title, overview, imageUrl, releaseDate)
 
                 DisplayMovie(movie, sharedViewModel)
             }

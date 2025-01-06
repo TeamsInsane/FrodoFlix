@@ -26,7 +26,6 @@ fun BottomMenuBar(navController : NavController) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
-
     ) {
         Spacer(modifier = Modifier.weight(1f))
         Box(
@@ -54,11 +53,12 @@ fun HomePage(navController: NavController){
         painter = painterResource(id = R.drawable.home),
         contentDescription = "Home",
         tint = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.size(48.dp)
-            .padding(10.dp)
+        modifier = Modifier
+            .size(50.dp)
             .clickable {
                 navController.navigate("home_page")
             }
+            .padding(10.dp)
     )
 }
 
@@ -68,11 +68,12 @@ fun SearchPage(navController: NavController){
         painter = painterResource(id = R.drawable.search),
         contentDescription = "Search",
         tint = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.size(48.dp)
-            .padding(10.dp)
+        modifier = Modifier
+            .size(50.dp)
             .clickable {
                 navController.navigate("search_page")
             }
+            .padding(10.dp)
     )
 }
 
@@ -85,7 +86,7 @@ fun ProfilePage(navController: NavController){
         tint = MaterialTheme.colorScheme.primary,
 
         modifier = Modifier
-            .size(48.dp)
+            .size(50.dp)
             .clickable {
                 navController.navigate("profile")
             }

@@ -42,6 +42,15 @@ class FrodoDatabase {
         }
     }
 
+    suspend fun deleteRating(username: String, movieID: Int, scope: CoroutineScope) {
+        val snapshot = database.getReference("movies").child(movieID.toString()).get().await()
+        val ratingList = snapshot.children.mapNotNull { it.getValue(Rating::class.java) }.toMutableList()
+
+        ratingList.removeIf { it.username == username }
+
+        saveRating(ratingList, movieID, scope)
+    }
+
     suspend fun getWatchList(username: String): List<Int> {
         return try {
             val snapshot = database.getReference("users").child(username).child("watchlist").get().await()
@@ -81,11 +90,10 @@ class FrodoDatabase {
         }
     }
 
-    fun newUser(username: String, email: String, password: String, salt: String, scope: CoroutineScope, genres: List<String> = emptyList()) {
+    fun newUser(username: String, email: String, password: String, salt: String, scope: CoroutineScope, genres: List<String> = emptyList(), favList: List<Int> = emptyList(), watchlist: List<Int> = emptyList()) {
         scope.launch(Dispatchers.IO){
             if (email.isNotEmpty() && password.isNotEmpty() && username.isNotEmpty()) {
-                val user = User(username = username, email = email, password = password, salt = salt, genres = genres)
-                Log.d("firebase", user.toString())
+                val user = User(username = username, email = email, password = password, salt = salt, genres = genres, favlist = favList, watchlist = watchlist)
                 database.getReference("users").child(username).setValue(user)
                     .addOnSuccessListener {
                         Log.d("Firebase", "Ratal shrant v db")
@@ -105,12 +113,58 @@ class FrodoDatabase {
             database.getReference("users").child(username).get()
                 .addOnSuccessListener { snapshot ->
                     val user = snapshot.getValue(User::class.java)
-                    Log.d("Firebase", user.toString())
+                    Log.d("user", user.toString())
                     onResult(user)
                 }
                 .addOnFailureListener { exception ->
                     Log.e("Firebase", "Error getting data", exception)
                     onResult(null)
+                }
+        }
+    }
+
+    fun changeUsername(oldUsername: String, newUsername: String, scope: CoroutineScope, onResult: (Boolean) -> Unit) {
+        scope.launch(Dispatchers.IO){
+            database.getReference("users").child(oldUsername).get()
+                .addOnSuccessListener { snapshot ->
+                    val user = snapshot.getValue(User::class.java)
+
+                    if (user != null) {
+                        database.getReference("users").child(oldUsername).removeValue()
+                        Log.d("data", user.favlist.toString())
+                        Log.d("data", user.watchlist.toString())
+                        newUser(newUsername, user.email, user.password, user.salt, scope, user.genres, user.favlist, user.watchlist)
+                        onResult(true)
+                    } else {
+                        onResult(false)
+                    }
+                }
+
+                .addOnFailureListener { exception ->
+                    Log.e("Firebase", "Error getting data", exception)
+                    onResult(false)
+                }
+        }
+    }
+
+    fun changePassword(newPassword: String, username: String, scope: CoroutineScope, onResult: (Boolean) -> Unit) {
+        scope.launch(Dispatchers.IO) {
+            database.getReference("users").child(username).get()
+                .addOnSuccessListener { snapshot ->
+                    val user = snapshot.getValue(User::class.java)
+
+                    if (user != null) {
+                        database.getReference("users").child(username).removeValue()
+                        newUser(user.username, user.email, newPassword, user.salt, scope, user.genres, user.favlist, user.watchlist)
+                        onResult(true)
+                    } else {
+                        onResult(false)
+                    }
+                }
+
+                .addOnFailureListener { exception ->
+                    Log.e("Firebase", "Error getting data", exception)
+                    onResult(false)
                 }
         }
     }

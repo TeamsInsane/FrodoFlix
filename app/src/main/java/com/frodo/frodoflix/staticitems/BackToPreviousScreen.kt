@@ -1,6 +1,7 @@
 package com.frodo.frodoflix.staticitems
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,17 +26,17 @@ fun BackToPreviousScreen(navController : NavController){
             painter = painterResource(id = R.drawable.arrow_back),
             contentDescription = "Back to Home Page",
             tint = MaterialTheme.colorScheme.primary,
-
             modifier = Modifier
                 .size(48.dp)
                 .clickable {
-                    if (navController.previousBackStackEntry?.destination?.route == "rate_movie") {
+                    Log.d("destination", navController.previousBackStackEntry?.destination?.route.toString())
+
+                    while (navController.previousBackStackEntry?.destination?.route == "rate_movie") {
                         navController.popBackStack()
-                        navController.popBackStack()
-                        navController.popBackStack()
-                    } else {
                         navController.popBackStack()
                     }
+
+                    navController.popBackStack()
                 }
         )
     }

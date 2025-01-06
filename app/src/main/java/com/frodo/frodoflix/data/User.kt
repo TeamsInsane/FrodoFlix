@@ -2,11 +2,11 @@ package com.frodo.frodoflix.data
 
 
 data class User(
-    val username: String = "",
+    var username: String = "",
     val email: String = "",
-    val password: String = "",
+    var password: String = "",
     val salt: String = "",
-    val genres: List<String> = emptyList(),
-    val watchedList: List<Int> = emptyList(),
-    val watchList: List<Int> = emptyList()
+    var genres: List<String> = emptyList(),
+    var favlist: List<Int> = emptyList(),
+    var watchlist: List<Int> = emptyList()
 )

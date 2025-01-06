@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
             sharedViewModel.initializeGenresViewModel(this)
             navController = rememberNavController()
             sharedViewModel.navController = navController
-            sharedViewModel.loginSharedPreferences = this.getSharedPreferences("login", MODE_PRIVATE)
+            sharedViewModel.sharedPreferences = this.getSharedPreferences("login", MODE_PRIVATE)
 
             FrodoFlixTheme (darkTheme = sharedViewModel.isDarkTheme.value){
                 NavHost(navController = navController, startDestination = "login_page") {
@@ -96,7 +96,10 @@ class MainActivity : ComponentActivity() {
                         DisplayFavMoviesPage(sharedViewModel)
                     }
                 }
+            }
 
+            //Fix za dark theme switch
+            if (!sharedViewModel.isUserSet()) {
                 sharedViewModel.checkSavedLogin { result ->
                     if (result) {
                         navController.navigate("home_page")

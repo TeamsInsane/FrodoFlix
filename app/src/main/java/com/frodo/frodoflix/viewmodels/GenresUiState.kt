@@ -47,6 +47,12 @@ class GenresViewModel: ViewModel() {
         }
     }
 
+    fun getFavouriteGenresList(): List<String> {
+        return genresUiState.value.genresList
+            .filter { it.status }
+            .map { it.genre }
+    }
+
     fun toggleGenreStatus(index: Int) {
         _genresUiState.update { currentState ->
             val updatedList = currentState.genresList.toMutableList()
@@ -56,16 +62,10 @@ class GenresViewModel: ViewModel() {
         }
     }
 
-    fun getFavouriteGenresList(): List<String> {
-        return genresUiState.value.genresList
-            .filter { it.status } // Filter selected genres
-            .map { it.genre }     // Map to genre names
-    }
-
     fun getFavouriteGenreIds(): List<Int> {
         return genresUiState.value.genresList
-            .filter { it.status } // Filter selected genres
-            .map { it.id }        // Map to genre IDs
+            .filter { it.status }
+            .map { it.id }
     }
 
    fun loadSavedGenres(savedGenres: List<String>) {
