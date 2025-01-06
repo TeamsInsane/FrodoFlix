@@ -43,6 +43,9 @@ class SharedViewModel : ViewModel() {
     private val _favList = MutableStateFlow<List<Int>>(emptyList())
     val favList: StateFlow<List<Int>> = _favList.asStateFlow()
 
+    private val _watchedList = MutableStateFlow<List<Int>>(emptyList())
+    val watchedList: StateFlow<List<Int>> = _watchedList.asStateFlow()
+
     private fun loadDataFromDB() {
         val currentUser = this.currentUser
         if (currentUser == null) {
@@ -58,6 +61,10 @@ class SharedViewModel : ViewModel() {
             val watchList = databaseReference.getWatchList(currentUser.username)
             currentUser.watchlist = watchList
             _watchlist.update { watchList }
+
+            val watchedList = databaseReference.getWatchedList(currentUser.username)
+            currentUser.watchedlist = watchedList
+            _watchedList.update { watchedList }
         }
 
         loadThemeData()
@@ -127,6 +134,18 @@ class SharedViewModel : ViewModel() {
         }
 
         databaseReference.updateWatchlist(currentUser!!.username, viewModelScope, watchlist.value)
+    }
+
+    fun updateWatchedlist(movieID: Int) {
+        _watchedList.update { currentList ->
+            if (!currentList.contains(movieID)) {
+                currentList + movieID
+            } else {
+                currentList - movieID
+            }
+        }
+
+        databaseReference.updateWatchedlist(currentUser!!.username, viewModelScope, watchedList.value)
     }
 
     fun updateUserGenres(genreList: List<String>) {
@@ -252,7 +271,7 @@ class SharedViewModel : ViewModel() {
     }
 
     private fun verifyHashedPassword(hashedPassword: String, storedHash: String): Boolean {
-        return hashedPassword == storedHash;
+        return hashedPassword == storedHash
     }
 
     private fun retrieveCredentials(): Pair<String?, String?> {

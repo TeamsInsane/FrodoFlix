@@ -47,6 +47,7 @@ fun Profile(sharedViewModel: SharedViewModel) {
                 DisplayUsername(sharedViewModel.getUsername())
                 DisplayFavMoviesButton(sharedViewModel, navController)
                 DisplayWatchList(sharedViewModel, navController)
+                DisplayWatchedList(sharedViewModel, navController)
                 DisplayFavouriteGenres(navController)
             }
             BottomMenuBar(navController)
@@ -60,7 +61,7 @@ fun DisplaySettingsIcon(navController: NavController) {
     // Top Row with Settings Icon
     Row(
         modifier = Modifier
-            .padding(top = 16.dp, bottom = 64.dp)
+            .padding(top = 16.dp)
             .fillMaxWidth(),
     ) {
         Spacer(modifier = Modifier.weight(1f))
@@ -151,10 +152,10 @@ fun DisplayWatchList(sharedViewModel: SharedViewModel, navController: NavControl
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 32.dp),
+            .padding(top = 8.dp, bottom = 2.dp),
         horizontalArrangement = Arrangement.Center,
     ) {
-        // Rate movie button
+
         Button(
             onClick = {
                 navController.navigate("watch_list")
@@ -168,6 +169,37 @@ fun DisplayWatchList(sharedViewModel: SharedViewModel, navController: NavControl
         ) {
 
             val watchListCount = sharedViewModel.watchlist.collectAsState().value.size
+
+            Text(
+                text = "Watch list: $watchListCount",
+                fontSize = 22.sp
+            )
+        }
+    }
+}
+
+@Composable
+fun DisplayWatchedList(sharedViewModel: SharedViewModel, navController: NavController) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp, bottom = 32.dp),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+
+        Button(
+            onClick = {
+                navController.navigate("watched_list")
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary
+            ),
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
+        ) {
+
+            val watchListCount = sharedViewModel.watchedList.collectAsState().value.size
 
             Text(
                 text = "Watch list: $watchListCount",

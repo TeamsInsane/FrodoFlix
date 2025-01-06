@@ -8,5 +8,6 @@ data class User(
     val salt: String = "",
     var genres: List<String> = emptyList(),
     var favlist: List<Int> = emptyList(),
-    var watchlist: List<Int> = emptyList()
+    var watchlist: List<Int> = emptyList(),
+    var watchedlist: List<Int> = emptyList()
 )

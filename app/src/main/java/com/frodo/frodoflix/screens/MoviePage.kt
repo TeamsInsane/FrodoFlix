@@ -246,19 +246,41 @@ fun DisplayMovieBanner(bannerPath: String, sharedViewModel: SharedViewModel, mov
         val favList by sharedViewModel.favList.collectAsState()
         val isInFavList = favList.contains(movie.id)
 
-        Icon(
-            imageVector = if (isInFavList) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-            contentDescription = "Favorite Icon",
-            tint = Color.Red,
+        val watchedList by sharedViewModel.watchedList.collectAsState()
+        val isInWatchedList = watchedList.contains(movie.id)
+
+        Row(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp)
-                .size(40.dp)
-                .clip(CircleShape)
-                .clickable {
-                    sharedViewModel.updateFavList(movieID = movie.id)
-                }
-        )
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.circle_gray),
+                contentDescription = "Watched Icon",
+                tint = if (isInWatchedList) Color(0xFF4CAF50) else Color(0xFFE0E0E0),
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .clickable {
+                        sharedViewModel.updateWatchedlist(movieID = movie.id)
+                    }
+            )
+
+            Icon(
+                imageVector = if (isInFavList) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                contentDescription = "Favorite Icon",
+                tint = Color.Red,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .clickable {
+                        sharedViewModel.updateFavList(movieID = movie.id)
+                    }
+            )
+        }
     }
 }
 

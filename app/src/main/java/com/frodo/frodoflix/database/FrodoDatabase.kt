@@ -29,10 +29,22 @@ class FrodoDatabase {
             Log.d("firebase", snapshot.toString())
             snapshot.children.mapNotNull { it.getValue(Int::class.java) }
         } catch (e: Exception) {
+            Log.e("Firebase", "Error getting fav list", e)
+            emptyList()
+        }
+    }
+
+    suspend fun getWatchedList(username: String): List<Int> {
+        return try {
+            val snapshot = database.getReference("users").child(username).child("watchedlist").get().await()
+            Log.d("firebase", snapshot.toString())
+            snapshot.children.mapNotNull { it.getValue(Int::class.java) }
+        } catch (e: Exception) {
             Log.e("Firebase", "Error getting watched list", e)
             emptyList()
         }
     }
+
 
     suspend fun getRatingList(movieID: Int): List<Rating> {
         return try {
@@ -60,7 +72,7 @@ class FrodoDatabase {
             Log.d("firebase", snapshot.toString())
             snapshot.children.mapNotNull { it.getValue(Int::class.java) }
         } catch (e: Exception) {
-            Log.e("Firebase", "Error getting watched list", e)
+            Log.e("Firebase", "Error getting watch list", e)
             emptyList()
         }
     }
@@ -83,6 +95,12 @@ class FrodoDatabase {
         }
     }
 
+    fun updateWatchedlist(username: String, scope: CoroutineScope, watchlist: List<Int>) {
+        scope.launch(Dispatchers.IO) {
+            database.getReference("users").child(username).child("watchedlist").setValue(watchlist)
+        }
+    }
+
     fun updateGenreList(username: String, scope: CoroutineScope, genres: List<String>) {
         scope.launch(Dispatchers.IO) {
             database.getReference("users").child(username).child("genres").setValue(genres)
@@ -93,10 +111,10 @@ class FrodoDatabase {
         }
     }
 
-    fun newUser(username: String, email: String, password: String, salt: String, scope: CoroutineScope, genres: List<String> = emptyList(), favList: List<Int> = emptyList(), watchlist: List<Int> = emptyList()) {
+    fun newUser(username: String, email: String, password: String, salt: String, scope: CoroutineScope, genres: List<String> = emptyList(), favList: List<Int> = emptyList(), watchlist: List<Int> = emptyList(), watchedlist: List<Int> = emptyList()) {
         scope.launch(Dispatchers.IO){
             if (email.isNotEmpty() && password.isNotEmpty() && username.isNotEmpty()) {
-                val user = User(username = username, email = email, password = password, salt = salt, genres = genres, favlist = favList, watchlist = watchlist)
+                val user = User(username = username, email = email, password = password, salt = salt, genres = genres, favlist = favList, watchlist = watchlist, watchedlist = watchedlist)
                 database.getReference("users").child(username).setValue(user)
                     .addOnSuccessListener {
                         Log.d("Firebase", "Ratal shrant v db")
@@ -134,7 +152,7 @@ class FrodoDatabase {
 
                     if (user != null) {
                         database.getReference("users").child(oldUsername).removeValue()
-                        newUser(newUsername, user.email, user.password, user.salt, scope, user.genres, user.favlist, user.watchlist)
+                        newUser(newUsername, user.email, user.password, user.salt, scope, user.genres, user.favlist, user.watchlist, user.watchedlist)
                         onResult(true)
                     } else {
                         onResult(false)
@@ -156,7 +174,7 @@ class FrodoDatabase {
 
                     if (user != null) {
                         database.getReference("users").child(username).removeValue()
-                        newUser(user.username, user.email, newPassword, user.salt, scope, user.genres, user.favlist, user.watchlist)
+                        newUser(user.username, user.email, newPassword, user.salt, scope, user.genres, user.favlist, user.watchlist, user.watchedlist)
                         onResult(true)
                     } else {
                         onResult(false)

@@ -18,6 +18,7 @@ import com.frodo.frodoflix.screens.RateMovie
 import com.frodo.frodoflix.screens.SearchPage
 import com.frodo.frodoflix.screens.profile.DisplayFavMoviesPage
 import com.frodo.frodoflix.screens.profile.DisplayWantToWatchPage
+import com.frodo.frodoflix.screens.profile.DisplayWatchedPage
 import com.frodo.frodoflix.screens.registration.LoginPage
 import com.frodo.frodoflix.screens.profile.SettingsScreen
 import com.frodo.frodoflix.screens.registration.RegisterPage
@@ -94,6 +95,11 @@ class MainActivity : ComponentActivity() {
                     // Fav movies list page
                     composable("fav_page"){
                         DisplayFavMoviesPage(sharedViewModel)
+                    }
+
+                    // Watched list page
+                    composable("watched_list"){
+                        DisplayWatchedPage(sharedViewModel)
                     }
                 }
             }

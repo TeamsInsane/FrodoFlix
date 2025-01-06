@@ -59,7 +59,7 @@ fun DisplayWantToWatchPage(sharedViewModel: SharedViewModel) {
 
                 // Watchlist movies text
                 Text(
-                    text = "Watchlist movies",
+                    text = "Watchlist Movies",
                     fontSize = 28.sp,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
