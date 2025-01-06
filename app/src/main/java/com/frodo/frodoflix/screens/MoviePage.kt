@@ -24,6 +24,7 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -180,6 +181,8 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
 
                 DisplayRateMovie(sharedViewModel, navController, movie)
 
+                HorizontalDivider(thickness = 2.dp)
+
                 // Cast Section Title
                 Text(
                     text = "Cast",
@@ -190,6 +193,8 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
                 )
 
                 CastData(movie.id)
+
+                HorizontalDivider(thickness = 2.dp)
 
 
                 // Rating Section Title
@@ -456,6 +461,7 @@ fun DisplayRatings(sharedViewModel: SharedViewModel) {
                 Image(
                     painter = painterResource(id = R.drawable.frodo),
                     contentDescription = "Profile Picture",
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
@@ -496,6 +502,8 @@ fun DisplayRatings(sharedViewModel: SharedViewModel) {
                     )
                 }
             }
+
+            HorizontalDivider(thickness = 1.dp)
         }
 
     }

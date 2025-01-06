@@ -4,6 +4,9 @@ import android.util.Log
 import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.data.User
 import com.google.firebase.Firebase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import io.github.cdimascio.dotenv.dotenv
 import kotlinx.coroutines.CoroutineScope
@@ -131,8 +134,6 @@ class FrodoDatabase {
 
                     if (user != null) {
                         database.getReference("users").child(oldUsername).removeValue()
-                        Log.d("data", user.favlist.toString())
-                        Log.d("data", user.watchlist.toString())
                         newUser(newUsername, user.email, user.password, user.salt, scope, user.genres, user.favlist, user.watchlist)
                         onResult(true)
                     } else {
@@ -166,6 +167,31 @@ class FrodoDatabase {
                     Log.e("Firebase", "Error getting data", exception)
                     onResult(false)
                 }
+        }
+    }
+
+    fun changeRatingUsername(oldUsername: String, newUsername: String, scope: CoroutineScope) {
+        scope.launch(Dispatchers.IO) {
+            val moviesRef = database.getReference("movies")
+
+            moviesRef.addListenerForSingleValueEvent(object: ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+
+                    for (movieSnapshot in snapshot.children) {
+                        for (reviewSnapshot in movieSnapshot.children) {
+                            val username = reviewSnapshot.child("username").getValue(String::class.java)
+
+                            Log.d("review", username!!)
+
+                            if (username == oldUsername) {
+                                reviewSnapshot.ref.child("username").setValue(newUsername)
+                            }
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
         }
     }
 }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -23,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.frodo.frodoflix.viewmodels.SharedViewModel
@@ -93,7 +95,7 @@ fun LoginForm(
             onValueChange = { onEmailChange(it) },
             label = { Text("Enter your username") },
             singleLine = true, // Restrict to a single line for email input
-            textStyle = TextStyle(color = Color.Blue, fontWeight = FontWeight.Normal),
+            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal),
             modifier = Modifier
                 .fillMaxWidth()
         )
@@ -114,7 +116,8 @@ fun LoginForm(
             onValueChange = { onPasswordChange(it) },
             label = { Text("Enter your password") },
             singleLine = true,
-            textStyle = TextStyle(color = Color.Blue, fontWeight = FontWeight.Normal),
+            visualTransformation = PasswordVisualTransformation(),
+            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal),
             modifier = Modifier
                 .fillMaxWidth()
         )
@@ -124,29 +127,42 @@ fun LoginForm(
 
 @Composable
 fun DisplayLogin(usernameValue: String, passwordValue: String, sharedViewModel: SharedViewModel){
+    var errorMessage by remember { mutableStateOf("") }
+
+    if (errorMessage.isNotEmpty()) {
+        Text(
+            text = errorMessage,
+            color = Color.Red,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 64.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier
-                .padding(start = 50.dp, end = 50.dp, top = 64.dp, bottom = 64.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(6.dp)
-                .clickable {
-                    sharedViewModel.checkLogin(username = usernameValue, password = passwordValue)
-                },
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-
+        Button(
+            onClick = {
+                if (usernameValue.isNotEmpty() && passwordValue.isNotEmpty()) {
+                    sharedViewModel.checkLogin(username = usernameValue, password = passwordValue) { result ->
+                        if (!result) {
+                            errorMessage = "Failed to log in. Wrong username or password."
+                        } else {
+                            errorMessage = ""
+                        }
+                    }
+                } else {
+                    errorMessage = "Failed to log in. Missing data."
+                }
+            }
         ) {
-
             Text(
                 text = "Log in",
                 fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
     }

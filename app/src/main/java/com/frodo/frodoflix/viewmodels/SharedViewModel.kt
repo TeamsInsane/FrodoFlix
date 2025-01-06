@@ -145,7 +145,7 @@ class SharedViewModel : ViewModel() {
         this.currentUser = user
     }
 
-    fun newUser(username: String, email: String, password: String, salt: String) {
+    fun newUser(username: String, email: String, password: String, salt: String, onResult: (Boolean) -> Unit) {
         fetchUser(username) { user ->
             if (user === null) {
                 databaseReference.newUser(
@@ -155,12 +155,13 @@ class SharedViewModel : ViewModel() {
                     salt = salt,
                     viewModelScope
                 )
+                onResult(true)
                 viewModelScope.launch(Dispatchers.Main) {
                     navController?.navigate("login_page")
                 }
             } else {
                 Log.e("Firebase","Username already taken!")
-                //TODO: Let the user know
+                onResult(false)
             }
         }
     }
@@ -171,13 +172,14 @@ class SharedViewModel : ViewModel() {
         }
     }
 
-    fun checkLogin(username: String, password: String) {
+    fun checkLogin(username: String, password: String, onResult: (Boolean) -> Unit) {
         fetchUser(username) { user ->
             if (user != null) {
                 if (verifyPassword(password, user.password, user.salt)) {
                     setCurrentUser(user)
                     saveLoginInfo(user.username, user.password)
                     loadDataFromDB()
+                    onResult(true)
 
                     viewModelScope.launch(Dispatchers.Main) {
                         genresViewModel.loadGenresFromApi(user.genres)
@@ -187,11 +189,11 @@ class SharedViewModel : ViewModel() {
                     }
                 } else {
                     Log.e("Firebase", "Wrong username or password!")
-                    //TODO: Let the user know
+                    onResult(false)
                 }
             } else {
                 Log.e("Firebase", "Wrong username or password!")
-                //TODO: Let the user know
+                onResult(false)
             }
         }
     }
@@ -203,16 +205,20 @@ class SharedViewModel : ViewModel() {
 
         if (username != null && password != null) {
             fetchUser(username) { user ->
-                val result = user != null && verifyHashedPassword(password, user.password)
-                if (result && user != null) {
-                    setCurrentUser(user)
-                    loadDataFromDB()
+                if (user != null) {
+                    val result =  verifyHashedPassword(password, user.password)
+                    if (result) {
+                        setCurrentUser(user)
+                        loadDataFromDB()
 
-                    viewModelScope.launch {
-                        genresViewModel.loadGenresFromApi(user.genres)
-                        genresViewModel.genresUiState.first { it.genresList.isNotEmpty() }
-                        callback(true)
-                        navController?.navigate("home_page")
+                        viewModelScope.launch {
+                            genresViewModel.loadGenresFromApi(user.genres)
+                            genresViewModel.genresUiState.first { it.genresList.isNotEmpty() }
+                            callback(true)
+                            navController?.navigate("home_page")
+                        }
+                    } else {
+                        callback(false)
                     }
                 } else {
                     callback(false)
@@ -325,6 +331,7 @@ class SharedViewModel : ViewModel() {
             } else {
                 this.databaseReference.changeUsername(currentUser!!.username, username, viewModelScope) { result ->
                     if (result) {
+                        databaseReference.changeRatingUsername(currentUser!!.username, username, viewModelScope)
                         currentUser!!.username = username
                     }
                     callback(result)
