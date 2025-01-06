@@ -2,94 +2,99 @@ package com.frodo.frodoflix.staticitems
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.frodo.frodoflix.R
 
 @Composable
-fun BottomMenuBar(navController : NavController) {
-    Column(
+fun BottomMenuBar(navController: NavController) {
+    Box(
         modifier = Modifier
-            .fillMaxHeight()
+            .fillMaxSize(),
+        contentAlignment = Alignment.BottomCenter
     ) {
-        Spacer(modifier = Modifier.weight(1f))
-        Box(
+        Surface(
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.surface)
-        ){
+                .fillMaxWidth(0.95f)
+                .height(80.dp)
+                .padding(12.dp),
+            shape = RoundedCornerShape(40.dp),
+            color = MaterialTheme.colorScheme.surfaceDim
+        ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxSize(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                HomePage(navController)
-                SearchPage(navController)
-                ProfilePage(navController)
+                val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route
 
+                BottomMenuItem(
+                    iconRes = R.drawable.home,
+                    contentDescription = "Home",
+                    isSelected = currentDestination == "home_page",
+                    onClick = { navController.navigate("home_page") }
+                )
+
+                BottomMenuItem(
+                    iconRes = R.drawable.search,
+                    contentDescription = "Search",
+                    isSelected = currentDestination == "search_page",
+                    onClick = { navController.navigate("search_page") }
+                )
+
+                BottomMenuItem(
+                    iconRes = R.drawable.user,
+                    contentDescription = "Profile",
+                    isSelected = currentDestination == "profile",
+                    onClick = { navController.navigate("profile") }
+                )
             }
         }
     }
 }
 
 @Composable
-fun HomePage(navController: NavController){
-    Icon(
-        painter = painterResource(id = R.drawable.home),
-        contentDescription = "Home",
-        tint = MaterialTheme.colorScheme.primary,
+fun BottomMenuItem(
+    iconRes: Int,
+    contentDescription: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Column(
         modifier = Modifier
-            .size(50.dp)
-            .clickable {
-                navController.navigate("home_page")
-            }
-            .padding(10.dp)
-    )
-}
-
-@Composable
-fun SearchPage(navController: NavController){
-    Icon(
-        painter = painterResource(id = R.drawable.search),
-        contentDescription = "Search",
-        tint = MaterialTheme.colorScheme.primary,
-        modifier = Modifier
-            .size(50.dp)
-            .clickable {
-                navController.navigate("search_page")
-            }
-            .padding(10.dp)
-    )
-}
-
-@Composable
-fun ProfilePage(navController: NavController){
-
-    Icon(
-        painter = painterResource(id = R.drawable.user),
-        contentDescription = "User",
-        tint = MaterialTheme.colorScheme.primary,
-
-        modifier = Modifier
-            .size(50.dp)
-            .clickable {
-                navController.navigate("profile")
-            }
-            .padding(10.dp)
-    )
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(60.dp)
+                .background(
+                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    shape = CircleShape
+                )
+                .padding(10.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(id = iconRes),
+                contentDescription = contentDescription,
+                tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+    }
 }

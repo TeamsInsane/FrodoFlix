@@ -1,6 +1,5 @@
 package com.frodo.frodoflix.screens
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,6 +47,7 @@ import org.json.JSONArray
 @Composable
 fun SearchPage(sharedViewModel: SharedViewModel){
     val navController = sharedViewModel.navController ?: return
+    val savedMovieName = sharedViewModel.searchPrompt
 
     Scaffold(
     ) { innerPadding ->
@@ -55,7 +55,15 @@ fun SearchPage(sharedViewModel: SharedViewModel){
             modifier = Modifier
                 .padding(innerPadding)
         ) {
-            DisplaySearch(sharedViewModel)
+
+            Text(
+                text = "Search for movies",
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 24.sp,
+                modifier = Modifier.padding(16.dp)
+            )
+
+            DisplaySearch(sharedViewModel, savedMovieName)
         }
 
         BottomMenuBar(navController)
@@ -63,8 +71,8 @@ fun SearchPage(sharedViewModel: SharedViewModel){
 }
 
 @Composable
-fun DisplaySearch(sharedViewModel: SharedViewModel) {
-    var movieName by remember { mutableStateOf("") }
+fun DisplaySearch(sharedViewModel: SharedViewModel, savedMovieName: String) {
+    var movieName by remember { mutableStateOf(savedMovieName) }
     var movies by remember { mutableStateOf<JSONArray?>(null) }
 
     LaunchedEffect(movieName) {
@@ -85,7 +93,7 @@ fun DisplaySearch(sharedViewModel: SharedViewModel) {
     ) {
         OutlinedTextField(
             value = movieName,
-            onValueChange = { movieName = it },
+            onValueChange = { movieName = it; sharedViewModel.searchPrompt = movieName },
             label = { Text("Name of the movie ...") },
             singleLine = true,
             shape = RoundedCornerShape(16.dp),
@@ -184,7 +192,6 @@ fun DisplaySearchedMovie(movie: Movie, sharedViewModel: SharedViewModel) {
         //Movie title
         Text(
             text = movie.title,
-
             fontSize = 16.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis

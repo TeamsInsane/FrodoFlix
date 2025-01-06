@@ -1,6 +1,7 @@
 package com.frodo.frodoflix.screens.profile
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -35,7 +36,7 @@ fun Profile(sharedViewModel: SharedViewModel) {
         )
 
         Scaffold(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.25f)
         ) { innerPadding ->
             Column(
                 modifier = Modifier
@@ -93,6 +94,7 @@ fun DisplayProfileIcon() {
             modifier = Modifier
                 .size(150.dp)
                 .clip(CircleShape)
+                .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
         )
     }
 }
@@ -102,14 +104,14 @@ fun DisplayUsername(username: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 48.dp),
+            .padding(top = 8.dp, bottom = 100.dp),
         horizontalArrangement = Arrangement.Center
     ) {
         Text(
             text = username,
             color = MaterialTheme.colorScheme.onSurface,
-
             fontSize = 40.sp,
+            style = MaterialTheme.typography.titleMedium
         )
     }
 }
@@ -129,18 +131,22 @@ fun DisplayFavMoviesButton(sharedViewModel: SharedViewModel, navController: NavC
                 navController.navigate("fav_page")
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = MaterialTheme.colorScheme.surfaceDim,
                 contentColor = MaterialTheme.colorScheme.primary
             ),
             modifier = Modifier
                 .padding(horizontal = 8.dp)
+                .fillMaxWidth()
+                .height(50.dp)
+                .clip(MaterialTheme.shapes.medium),
+            contentPadding = PaddingValues(0.dp)
         ) {
 
             val favMoviesCount = sharedViewModel.favList.collectAsState().value.size
 
             Text(
                 text = "Favourite movies: $favMoviesCount",
-                fontSize = 22.sp
+                fontSize = 22.sp,
             )
         }
     }
@@ -161,11 +167,15 @@ fun DisplayWatchList(sharedViewModel: SharedViewModel, navController: NavControl
                 navController.navigate("watch_list")
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = MaterialTheme.colorScheme.surfaceDim,
                 contentColor = MaterialTheme.colorScheme.primary
             ),
             modifier = Modifier
                 .padding(horizontal = 8.dp)
+                .fillMaxWidth()
+                .height(50.dp)
+                .clip(MaterialTheme.shapes.medium),
+            contentPadding = PaddingValues(0.dp)
         ) {
 
             val watchListCount = sharedViewModel.watchlist.collectAsState().value.size
@@ -192,11 +202,15 @@ fun DisplayWatchedList(sharedViewModel: SharedViewModel, navController: NavContr
                 navController.navigate("watched_list")
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = MaterialTheme.colorScheme.surfaceDim,
                 contentColor = MaterialTheme.colorScheme.primary
             ),
             modifier = Modifier
                 .padding(horizontal = 8.dp)
+                .fillMaxWidth()
+                .height(50.dp)
+                .clip(MaterialTheme.shapes.medium),
+            contentPadding = PaddingValues(0.dp)
         ) {
 
             val watchListCount = sharedViewModel.watchedList.collectAsState().value.size
@@ -229,6 +243,10 @@ fun DisplayFavouriteGenres(navController : NavController) {
             ),
             modifier = Modifier
                 .padding(horizontal = 8.dp)
+                .fillMaxWidth()
+                .height(50.dp)
+                .clip(MaterialTheme.shapes.medium),
+            contentPadding = PaddingValues(0.dp)
         ) {
             Text(
                 text = "Favourite genres",

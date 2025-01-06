@@ -27,6 +27,8 @@ import java.util.Base64
 
 class SharedViewModel : ViewModel() {
     var selectedMovie: Movie? = null
+    var searchPrompt: String = ""
+
     var navController: NavController? = null
     private val databaseReference = FrodoDatabase()
     private var currentUser: User? = null

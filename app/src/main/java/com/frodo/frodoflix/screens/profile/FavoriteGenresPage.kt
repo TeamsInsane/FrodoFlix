@@ -1,6 +1,5 @@
 package com.frodo.frodoflix.screens.profile
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,6 +43,13 @@ fun FavoriteGenresPage(sharedViewModel: SharedViewModel) {
                     .padding(16.dp)
             ) {
                 BackToPreviousScreen(navController)
+
+                Text(
+                    text = "Select your favorite genres",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
 
                 GenresList(
                     genreList = genresUiState.genresList,
