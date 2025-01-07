@@ -64,6 +64,8 @@ import com.frodo.frodoflix.staticitems.BottomMenuBar
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 import org.json.JSONArray
 import org.json.JSONObject
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Composable
 fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
@@ -128,7 +130,7 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
                         Spacer(modifier = Modifier.width(4.dp))
 
                         Text(
-                            text = "${nonNullData.getString("vote_average")}/10",
+                            text = BigDecimal(nonNullData.getString("vote_average").toDouble()).setScale(1, RoundingMode.HALF_EVEN).toString() + "/10",
                             color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold
@@ -206,9 +208,11 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
                     fontWeight = FontWeight.Bold
                 )
 
+                HorizontalDivider(thickness = 1.dp)
+
                 DisplayRatings(sharedViewModel)
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(50.dp))
             }
         }
     }

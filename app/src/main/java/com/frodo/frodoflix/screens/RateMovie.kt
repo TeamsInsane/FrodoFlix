@@ -205,7 +205,7 @@ fun DisplayRatingDropdown(onResult: (Int?) -> Unit) {
                 .height(56.dp)
         ) {
             Text(
-                text = "Rating: $selectedRating",
+                text = if (selectedRating != 0) "Rating: $selectedRating ⭐" else "No rating",
                 fontSize = 16.sp,
                 modifier = Modifier.align(Alignment.CenterStart)
             )
@@ -216,7 +216,7 @@ fun DisplayRatingDropdown(onResult: (Int?) -> Unit) {
             ) {
                 (1..5).forEach { rating ->
                     DropdownMenuItem(
-                        text = { Text(text = "⭐ $rating") },
+                        text = { Text(text = "$rating ⭐") },
                         onClick = {
                             selectedRating = rating
                             expanded = false
@@ -231,11 +231,11 @@ fun DisplayRatingDropdown(onResult: (Int?) -> Unit) {
 
 @Composable
 fun DisplaySaveReview(sharedViewModel: SharedViewModel, selectedRating: Int, comment: String) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 50.dp, bottom = 2.dp),
-        horizontalArrangement = Arrangement.Center,
+            .padding(top = 64.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Button(
             onClick = {
@@ -251,17 +251,13 @@ fun DisplaySaveReview(sharedViewModel: SharedViewModel, selectedRating: Int, com
                 }
 
                 sharedViewModel.navController?.navigate("movie_page")
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Green,
-                contentColor = Color.White
-            ),
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
+            }
         ) {
             Text(
                 text = "Save",
-                fontSize = 22.sp
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
     }
