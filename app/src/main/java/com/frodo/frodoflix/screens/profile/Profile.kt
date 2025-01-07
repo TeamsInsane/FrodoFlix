@@ -213,10 +213,10 @@ fun DisplayWatchedList(sharedViewModel: SharedViewModel, navController: NavContr
             contentPadding = PaddingValues(0.dp)
         ) {
 
-            val watchListCount = sharedViewModel.watchedList.collectAsState().value.size
+            val watchedListCount = sharedViewModel.watchedList.collectAsState().value.size
 
             Text(
-                text = "Watch list: $watchListCount",
+                text = "Watched list: $watchedListCount",
                 fontSize = 22.sp
             )
         }

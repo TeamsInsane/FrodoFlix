@@ -1,6 +1,7 @@
 package com.frodo.frodoflix
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -113,5 +114,35 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d("cikel", "onStart() called")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("cikel", "onResume() called")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("cikel", "onPause() called")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("cikel", "onStop() called")
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        Log.d("cikel", "onRestart() called")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("cikel", "onDestroy() called")
     }
 }

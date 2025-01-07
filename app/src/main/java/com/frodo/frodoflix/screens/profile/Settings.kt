@@ -1,6 +1,5 @@
 package com.frodo.frodoflix.screens.profile
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -229,19 +228,6 @@ fun DisplayEmail(email: String){
                 text = email,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 16.sp,
-            )
-            Spacer(modifier = Modifier.weight(1f))
-
-            Icon(
-                painter = painterResource(id = R.drawable.pen),
-                contentDescription = "Back to Profile",
-                tint = MaterialTheme.colorScheme.primary,
-
-                modifier = Modifier
-                    .size(24.dp)
-                    .clickable {
-                        Log.d("settings", "can click")
-                    }
             )
         }
 
