@@ -49,8 +49,7 @@ fun SearchPage(sharedViewModel: SharedViewModel){
     val navController = sharedViewModel.navController ?: return
     val savedMovieName = sharedViewModel.searchPrompt
 
-    Scaffold(
-    ) { innerPadding ->
+    Scaffold { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)

@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.json.JSONArray
 import org.json.JSONObject
 
 class TMDB {
@@ -41,11 +40,9 @@ class TMDB {
                         jsonObject = JSONObject(jsonData)
                     } else {
                         Log.e("ResponseError", "Response body is null")
-                        //TODO: Let the user know
                     }
                 } else {
                     Log.e("ResponseError", "Request failed with code: ${response.code}")
-                    //TODO: Let the user know
                 }
 
                 if (result != "") {

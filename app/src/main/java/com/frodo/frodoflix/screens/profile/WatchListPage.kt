@@ -82,7 +82,6 @@ fun DisplayMoviesColumnWTW(sharedViewModel: SharedViewModel) {
         val wantToWatchMovieSublist =
             wantToWatchList.subList(i * 3, min(i * 3 + 3, wantToWatchList.size))
 
-
         DisplayListMoviesRow(wantToWatchMovieSublist, sharedViewModel)
     }
 }
@@ -122,7 +121,6 @@ fun DisplayListMoviesRow(movieIDList: List<Int>, sharedViewModel: SharedViewMode
         }
     }
 }
-
 
 @Composable
 fun DisplayMovie(movie: Movie, sharedViewModel: SharedViewModel) {
@@ -170,7 +168,6 @@ fun DisplayMovie(movie: Movie, sharedViewModel: SharedViewModel) {
         //Movie title
         Text(
             text = movie.title,
-
             fontSize = 16.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis

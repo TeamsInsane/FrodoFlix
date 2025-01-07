@@ -68,7 +68,7 @@ class GenresViewModel: ViewModel() {
             .map { it.id }
     }
 
-   fun loadSavedGenres(savedGenres: List<String>) {
+   private fun loadSavedGenres(savedGenres: List<String>) {
        _genresUiState.update { currentState ->
            val updatedGenresList = currentState.genresList.map { genreItem ->
                genreItem.copy(status = savedGenres.contains(genreItem.genre))

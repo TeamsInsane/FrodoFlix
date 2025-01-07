@@ -181,7 +181,7 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp)
                 )
 
-                DisplayRateMovie(sharedViewModel, navController, movie)
+                RateWatchlistButton(sharedViewModel, navController, movie)
 
                 HorizontalDivider(thickness = 2.dp)
 
@@ -207,8 +207,6 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
                     fontWeight = FontWeight.Bold
                 )
-
-                HorizontalDivider(thickness = 1.dp)
 
                 DisplayRatings(sharedViewModel)
 
@@ -288,10 +286,8 @@ fun DisplayMovieBanner(bannerPath: String, sharedViewModel: SharedViewModel, mov
     }
 }
 
-
-
 @Composable
-fun DisplayRateMovie(sharedViewModel: SharedViewModel, navController: NavController, movie: Movie) {
+fun RateWatchlistButton(sharedViewModel: SharedViewModel, navController: NavController, movie: Movie) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -303,7 +299,6 @@ fun DisplayRateMovie(sharedViewModel: SharedViewModel, navController: NavControl
         val starsRated = remember { mutableIntStateOf(-1) }
 
         LaunchedEffect(true) {
-            starsRated.intValue = sharedViewModel.getStarsRated()
             starsRated.intValue = sharedViewModel.getStarsRated()
         }
 
@@ -370,7 +365,6 @@ fun DisplayRateMovie(sharedViewModel: SharedViewModel, navController: NavControl
 fun CastData(movieID: Int) {
     var castData by remember { mutableStateOf<JSONArray?>(null) }
 
-    //Fetch movie data from the TMDB API
     LaunchedEffect(true) {
         castData = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/movie/$movieID/credits?language=en-US", "cast") as JSONArray?
     }
@@ -381,7 +375,6 @@ fun CastData(movieID: Int) {
 @Composable
 fun ReadCastData(data: JSONArray?) {
     if (data == null) {
-        Log.d("movie", "DATA ISN UL!L!L!")
         return
     }
 
@@ -396,7 +389,6 @@ fun ReadCastData(data: JSONArray?) {
             val profilePath = item.getString("profile_path")
 
             val actor = Actor(name, character, profilePath)
-
             DisplayActor(actor)
         }
     }
@@ -477,7 +469,6 @@ fun DisplayRatings(sharedViewModel: SharedViewModel) {
         modifier = Modifier.padding(horizontal = 8.dp)
     ) {
         for (rating in ratingList) {
-            Log.d("rating", "Smo notr")
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

@@ -51,6 +51,7 @@ fun Profile(sharedViewModel: SharedViewModel) {
                 DisplayWatchedList(sharedViewModel, navController)
                 DisplayFavouriteGenres(navController)
             }
+
             BottomMenuBar(navController)
         }
     }
@@ -66,6 +67,7 @@ fun DisplaySettingsIcon(navController: NavController) {
             .fillMaxWidth(),
     ) {
         Spacer(modifier = Modifier.weight(1f))
+
         Icon(
             painter = painterResource(id = R.drawable.settings),
             contentDescription = "Settings",
@@ -80,8 +82,6 @@ fun DisplaySettingsIcon(navController: NavController) {
 
 @Composable
 fun DisplayProfileIcon() {
-
-    // Profile Picture
     Row(
         modifier = Modifier
             .fillMaxWidth(),
@@ -153,6 +153,7 @@ fun DisplayFavMoviesButton(sharedViewModel: SharedViewModel, navController: NavC
 }
 
 
+//Display watch list button
 @Composable
 fun DisplayWatchList(sharedViewModel: SharedViewModel, navController: NavController) {
     Row(
@@ -188,6 +189,7 @@ fun DisplayWatchList(sharedViewModel: SharedViewModel, navController: NavControl
     }
 }
 
+//Display watched list button
 @Composable
 fun DisplayWatchedList(sharedViewModel: SharedViewModel, navController: NavController) {
     Row(
@@ -223,6 +225,7 @@ fun DisplayWatchedList(sharedViewModel: SharedViewModel, navController: NavContr
     }
 }
 
+//Display favorite genres button
 @Composable
 fun DisplayFavouriteGenres(navController : NavController) {
     Row(
@@ -231,7 +234,7 @@ fun DisplayFavouriteGenres(navController : NavController) {
             .padding(top = 2.dp, bottom = 2.dp),
         horizontalArrangement = Arrangement.Center,
     ) {
-        // Rate movie button
+
         Button(
             onClick = {
                 navController.navigate("favourite_genres")

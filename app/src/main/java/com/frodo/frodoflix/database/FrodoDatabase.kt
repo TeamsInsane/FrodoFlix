@@ -26,7 +26,6 @@ class FrodoDatabase {
     suspend fun getFavList(username: String): List<Int> {
         return try {
             val snapshot = database.getReference("users").child(username).child("favlist").get().await()
-            Log.d("firebase", snapshot.toString())
             snapshot.children.mapNotNull { it.getValue(Int::class.java) }
         } catch (e: Exception) {
             Log.e("Firebase", "Error getting fav list", e)
@@ -37,7 +36,6 @@ class FrodoDatabase {
     suspend fun getWatchedList(username: String): List<Int> {
         return try {
             val snapshot = database.getReference("users").child(username).child("watchedlist").get().await()
-            Log.d("firebase", snapshot.toString())
             snapshot.children.mapNotNull { it.getValue(Int::class.java) }
         } catch (e: Exception) {
             Log.e("Firebase", "Error getting watched list", e)
@@ -49,7 +47,6 @@ class FrodoDatabase {
     suspend fun getRatingList(movieID: Int): List<Rating> {
         return try {
             val snapshot = database.getReference("movies").child(movieID.toString()).get().await()
-            Log.d("firebase", snapshot.toString())
             snapshot.children.mapNotNull { it.getValue(Rating::class.java) }
         } catch (e: Exception) {
             Log.e("Firebase", "Error getting rating list", e)
@@ -69,7 +66,6 @@ class FrodoDatabase {
     suspend fun getWatchList(username: String): List<Int> {
         return try {
             val snapshot = database.getReference("users").child(username).child("watchlist").get().await()
-            Log.d("firebase", snapshot.toString())
             snapshot.children.mapNotNull { it.getValue(Int::class.java) }
         } catch (e: Exception) {
             Log.e("Firebase", "Error getting watch list", e)
@@ -106,7 +102,6 @@ class FrodoDatabase {
             database.getReference("users").child(username).child("genres").setValue(genres)
                 .addOnFailureListener { exception ->
                     Log.e("Firebase", "Ni ratal shrant v db", exception)
-                    //TODO: Let the user know
                 }
         }
     }
@@ -121,10 +116,7 @@ class FrodoDatabase {
                     }
                     .addOnFailureListener { exception ->
                         Log.e("Firebase", "Ni ratal shrant v db", exception)
-                        //TODO: Let the user know
                     }
-            } else {
-                Log.d("Firebase", "if ne dela")
             }
         }
     }
@@ -134,7 +126,6 @@ class FrodoDatabase {
             database.getReference("users").child(username).get()
                 .addOnSuccessListener { snapshot ->
                     val user = snapshot.getValue(User::class.java)
-                    Log.d("user", user.toString())
                     onResult(user)
                 }
                 .addOnFailureListener { exception ->
@@ -194,12 +185,9 @@ class FrodoDatabase {
 
             moviesRef.addListenerForSingleValueEvent(object: ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-
                     for (movieSnapshot in snapshot.children) {
                         for (reviewSnapshot in movieSnapshot.children) {
                             val username = reviewSnapshot.child("username").getValue(String::class.java)
-
-                            Log.d("review", username!!)
 
                             if (username == oldUsername) {
                                 reviewSnapshot.ref.child("username").setValue(newUsername)

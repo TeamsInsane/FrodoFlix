@@ -306,6 +306,7 @@ class SharedViewModel : ViewModel() {
         with(this.sharedPreferences.edit()) {
             remove("username")
             remove("password")
+            remove("isDarkTheme")
             apply()
         }
 

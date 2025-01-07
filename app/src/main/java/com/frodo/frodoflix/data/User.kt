@@ -1,6 +1,5 @@
 package com.frodo.frodoflix.data
 
-
 data class User(
     var username: String = "",
     val email: String = "",

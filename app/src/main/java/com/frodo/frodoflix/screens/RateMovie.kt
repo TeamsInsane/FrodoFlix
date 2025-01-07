@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -29,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -60,6 +58,7 @@ fun RateMovie(sharedViewModel: SharedViewModel) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            //Rate movie text
             Text(
                 text = "Rate Movie",
                 fontSize = 28.sp,
@@ -70,10 +69,12 @@ fun RateMovie(sharedViewModel: SharedViewModel) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            //Movie details and image
             sharedViewModel.selectedMovie?.let { DisplayMovieDetails(it) }
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            //Option to select rating
             DisplayRatingDropdown { rating ->
                 if (rating != null) {
                     selectedRating = rating
@@ -82,12 +83,14 @@ fun RateMovie(sharedViewModel: SharedViewModel) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            //Option to write a review
             DisplayReview { comment ->
                 if (comment != null) {
                     writtenComment = comment
                 }
             }
 
+            //Button to save
             DisplaySaveReview(sharedViewModel, selectedRating, writtenComment)
         }
 

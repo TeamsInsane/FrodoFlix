@@ -41,6 +41,7 @@ fun DisplayFavMoviesPage(sharedViewModel: SharedViewModel) {
                     fontWeight = FontWeight.Bold
                 )
 
+                //Display fav movies
                 DisplayMoviesColumnFavList(sharedViewModel)
             }
         }

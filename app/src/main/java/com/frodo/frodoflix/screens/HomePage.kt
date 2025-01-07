@@ -186,7 +186,6 @@ fun UpcomingMovies(sharedViewModel: SharedViewModel) {
     val minDate = LocalDate.now()
     val maxDate = minDate.plusMonths(6)
 
-    //Fetch movie data from the TMDB API
     LaunchedEffect(true) {
         movies = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en&page=1&primary_release_date.gte=$minDate&primary_release_date.lte=$maxDate&sort_by=popularity.desc", "results") as JSONArray?
     }
@@ -332,7 +331,6 @@ fun DisplayMovie(movie: Movie, sharedViewModel: SharedViewModel) {
         //Movie title
         Text(
             text = movie.title,
-
             fontSize = 16.sp,
             modifier = Modifier.padding(top = 8.dp),
             maxLines = 1,

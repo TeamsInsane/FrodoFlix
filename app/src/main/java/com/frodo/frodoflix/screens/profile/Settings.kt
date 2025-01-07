@@ -59,7 +59,7 @@ fun SettingsScreen(sharedViewModel: SharedViewModel) {
     }
 }
 
-
+//Dark theme button
 @Composable
 fun DisplayDarkTheme(sharedViewModel: SharedViewModel){
     Column(
@@ -91,11 +91,8 @@ fun DisplayDarkTheme(sharedViewModel: SharedViewModel){
     }
 
     HorizontalDivider(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp, bottom = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 16.dp),
         thickness = 1.dp,
-
         color = MaterialTheme.colorScheme.onSurface
     )
 }
@@ -117,8 +114,8 @@ fun SettingsUsername(sharedViewModel: SharedViewModel ,username: String, isEditi
             fontSize = 18.sp,
         )
 
+        //User editing username
         if (isEditingUsername) {
-
             TextField(
                 value = username,
                 onValueChange = { onUsernameChange(it) },
@@ -136,7 +133,6 @@ fun SettingsUsername(sharedViewModel: SharedViewModel ,username: String, isEditi
             }
 
             Row {
-
                 Button(
                     onClick = {
                         sharedViewModel.changeUsername(username) { result ->
@@ -166,6 +162,7 @@ fun SettingsUsername(sharedViewModel: SharedViewModel ,username: String, isEditi
                     Text("Cancel")
                 }
             }
+            //User is not editing username
         } else {
             Row(
                 modifier = Modifier
@@ -265,6 +262,7 @@ fun SettingsPassword(
             fontSize = 18.sp,
         )
 
+        //User is editing username
         if (isEditingPassword) {
             // Old password field
             TextField(
@@ -323,6 +321,7 @@ fun SettingsPassword(
                     Text("Cancel")
                 }
             }
+            //User is not editing username
         } else {
             Row(
                 modifier = Modifier
@@ -368,7 +367,6 @@ fun DisplaySignOut(sharedViewModel: SharedViewModel){
             .padding(top = 2.dp, bottom = 2.dp),
         horizontalArrangement = Arrangement.Center,
     ) {
-        // Rate movie button
         Button(
             onClick = {
                 sharedViewModel.signOut()

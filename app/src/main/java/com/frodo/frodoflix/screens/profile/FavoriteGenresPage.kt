@@ -44,6 +44,7 @@ fun FavoriteGenresPage(sharedViewModel: SharedViewModel) {
             ) {
                 BackToPreviousScreen(navController)
 
+                //Display text
                 Text(
                     text = "Select your favorite genres",
                     color = MaterialTheme.colorScheme.onSurface,
@@ -51,6 +52,7 @@ fun FavoriteGenresPage(sharedViewModel: SharedViewModel) {
                     modifier = Modifier.padding(16.dp)
                 )
 
+                //Display the list of all genres
                 GenresList(
                     genreList = genresUiState.genresList,
                     onCheckedChange = { index ->
@@ -71,7 +73,6 @@ fun GenresList(genreList: List<GenreList>, onCheckedChange: (Int) -> Unit) {
     ) {
         items(genreList.size) { index ->
             val genreItem = genreList[index]
-
             val genre = genreItem.genre
             val isChecked = genreItem.status
 
