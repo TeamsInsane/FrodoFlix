@@ -23,7 +23,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.security.MessageDigest
 import java.security.SecureRandom
+import java.text.SimpleDateFormat
 import java.util.Base64
+import java.util.Locale
 
 class SharedViewModel : ViewModel() {
     var selectedMovie: Movie? = null
@@ -307,6 +309,7 @@ class SharedViewModel : ViewModel() {
             remove("username")
             remove("password")
             remove("isDarkTheme")
+            remove("lastOnline")
             apply()
         }
 
@@ -380,6 +383,28 @@ class SharedViewModel : ViewModel() {
             } else {
                 callback(false)
             }
+        }
+    }
+
+    fun getLastOnlineTime(): String {
+        val lastOnline = this.sharedPreferences.getLong("lastOnline", 0)
+
+        return if (lastOnline > 0) {
+            val formatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+            formatter.format(lastOnline)
+        } else {
+            "Never"
+        }
+    }
+
+    fun saveLastOnlineTime(time: Long) {
+        try {
+            with(this.sharedPreferences.edit()) {
+                putLong("lastOnline", time)
+                apply()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -45,7 +46,7 @@ fun Profile(sharedViewModel: SharedViewModel) {
             ) {
                 DisplaySettingsIcon(navController)
                 DisplayProfileIcon()
-                DisplayUsername(sharedViewModel.getUsername())
+                DisplayUsernameAndOnlineText(sharedViewModel)
                 DisplayFavMoviesButton(sharedViewModel, navController)
                 DisplayWatchList(sharedViewModel, navController)
                 DisplayWatchedList(sharedViewModel, navController)
@@ -100,18 +101,29 @@ fun DisplayProfileIcon() {
 }
 
 @Composable
-fun DisplayUsername(username: String) {
-    Row(
+fun DisplayUsernameAndOnlineText(sharedViewModel: SharedViewModel) {
+    val lastOnlineTime = sharedViewModel.getLastOnlineTime()
+    val username = sharedViewModel.getUsername()
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 8.dp, bottom = 100.dp),
-        horizontalArrangement = Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = username,
             color = MaterialTheme.colorScheme.onSurface,
             fontSize = 40.sp,
             style = MaterialTheme.typography.titleMedium
+        )
+
+        Text(
+            text = "Last Online: $lastOnlineTime",
+            color = MaterialTheme.colorScheme.onSurface,
+            fontSize = 22.sp,
+            style = MaterialTheme.typography.bodyLarge
         )
     }
 }
