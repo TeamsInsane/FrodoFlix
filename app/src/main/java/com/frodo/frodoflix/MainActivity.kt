@@ -5,6 +5,19 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.frodo.frodoflix.screens.profile.Profile
@@ -23,11 +36,14 @@ import com.frodo.frodoflix.screens.profile.DisplayWatchedPage
 import com.frodo.frodoflix.screens.registration.LoginPage
 import com.frodo.frodoflix.screens.profile.SettingsScreen
 import com.frodo.frodoflix.screens.registration.RegisterPage
+import com.frodo.frodoflix.viewmodels.LifecycleViewModel
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
 class MainActivity : ComponentActivity() {
     private lateinit var sharedViewModel: SharedViewModel
     private lateinit var navController : NavHostController
+    private val lifecycleViewModel: LifecycleViewModel by viewModels()
+    private var hasBeenPaused = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,114 +51,137 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
+            val appStatus = lifecycleViewModel.appStatus.collectAsState()
+            val snackbarHostState = remember { SnackbarHostState() }
+
+            LaunchedEffect(appStatus.value) {
+                if (appStatus.value == "Resumed" && hasBeenPaused) {
+                    snackbarHostState.showSnackbar("Welcome back to FrodoFlix!")
+                }
+            }
+
             sharedViewModel = viewModel()
             sharedViewModel.initializeGenresViewModel(this)
             navController = rememberNavController()
             sharedViewModel.navController = navController
             sharedViewModel.sharedPreferences = this.getSharedPreferences("login", MODE_PRIVATE)
 
-            FrodoFlixTheme (darkTheme = sharedViewModel.isDarkTheme.value){
-                NavHost(navController = navController, startDestination = "login_page") {
-                    // First screen (Home Page)
-                    composable("home_page") {
-                        DrawMainPage(sharedViewModel)
+            FrodoFlixTheme(darkTheme = sharedViewModel.isDarkTheme.value) {
+                Scaffold(
+                    snackbarHost = {
+                        Column (
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Top,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            SnackbarHost(snackbarHostState)
+                        }
                     }
+                ) { contentPadding ->
+                    NavHost(navController = navController, startDestination = "login_page") {
+                        //Breaks without this?
+                        contentPadding
 
-                    // Search page
-                    composable("search_page"){
-                        SearchPage(sharedViewModel)
-                    }
+                        // First screen (Home Page)
+                        composable("home_page") {
+                            DrawMainPage(sharedViewModel)
+                        }
 
-                    // Profile Page
-                    composable("profile") {
-                        Profile(sharedViewModel)
-                    }
+                        // Search page
+                        composable("search_page") {
+                            SearchPage(sharedViewModel)
+                        }
 
-                    //Login page
-                    composable("login_page") {
-                        LoginPage(sharedViewModel)
-                    }
+                        // Profile Page
+                        composable("profile") {
+                            Profile(sharedViewModel)
+                        }
 
-                    //Register page
-                    composable("register_page") {
-                        RegisterPage(sharedViewModel)
-                    }
+                        //Login page
+                        composable("login_page") {
+                            LoginPage(sharedViewModel)
+                        }
 
-                    // Settings
-                    composable("settings"){
-                        SettingsScreen(sharedViewModel)
-                    }
+                        //Register page
+                        composable("register_page") {
+                            RegisterPage(sharedViewModel)
+                        }
 
-                    // Favourite genres
-                    composable("favourite_genres") {
-                        FavoriteGenresPage(sharedViewModel)
-                    }
+                        // Settings
+                        composable("settings") {
+                            SettingsScreen(sharedViewModel)
+                        }
 
-                    // Movie page
-                    composable("movie_page") {
-                        DisplayMoviePage(sharedViewModel)
-                    }
+                        // Favourite genres
+                        composable("favourite_genres") {
+                            FavoriteGenresPage(sharedViewModel)
+                        }
 
-                    // Rate movie
-                    composable("rate_movie"){
-                        RateMovie(sharedViewModel)
-                    }
+                        // Movie page
+                        composable("movie_page") {
+                            DisplayMoviePage(sharedViewModel)
+                        }
 
-                    // Watch list page
-                    composable("watch_list"){
-                        DisplayWantToWatchPage(sharedViewModel)
-                    }
+                        // Rate movie
+                        composable("rate_movie") {
+                            RateMovie(sharedViewModel)
+                        }
 
-                    // Fav movies list page
-                    composable("fav_page"){
-                        DisplayFavMoviesPage(sharedViewModel)
-                    }
+                        // Watch list page
+                        composable("watch_list") {
+                            DisplayWantToWatchPage(sharedViewModel)
+                        }
 
-                    // Watched list page
-                    composable("watched_list"){
-                        DisplayWatchedPage(sharedViewModel)
+                        // Fav movies list page
+                        composable("fav_page") {
+                            DisplayFavMoviesPage(sharedViewModel)
+                        }
+
+                        // Watched list page
+                        composable("watched_list") {
+                            DisplayWatchedPage(sharedViewModel)
+                        }
                     }
                 }
-            }
 
-            //Fix za dark theme switch
-            if (!sharedViewModel.isUserSet()) {
-                sharedViewModel.checkSavedLogin { result ->
-                    if (result) {
-                        navController.navigate("home_page")
+                //Fix za dark theme switch
+                if (!sharedViewModel.isUserSet()) {
+                    sharedViewModel.checkSavedLogin { result ->
+                        if (result) {
+                            navController.navigate("home_page")
+                        }
                     }
                 }
             }
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        Log.d("cikel", "onStart() called")
-    }
-
     override fun onResume() {
         super.onResume()
-        Log.d("cikel", "onResume() called")
+        lifecycleViewModel.setAppStatus("Resumed")
+    }
+
+
+    override fun onStart() {
+        super.onStart()
+        lifecycleViewModel.setAppStatus("Resumed")
     }
 
     override fun onPause() {
         super.onPause()
-        Log.d("cikel", "onPause() called")
+        hasBeenPaused = true
+        lifecycleViewModel.setAppStatus("Paused")
+
+        val currentTime = System.currentTimeMillis()
+        this.sharedViewModel.saveLastOnlineTime(currentTime)
     }
 
     override fun onStop() {
         super.onStop()
-        Log.d("cikel", "onStop() called")
-    }
+        hasBeenPaused = true
+        lifecycleViewModel.setAppStatus("Paused")
 
-    override fun onRestart() {
-        super.onRestart()
-        Log.d("cikel", "onRestart() called")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d("cikel", "onDestroy() called")
+        val currentTime = System.currentTimeMillis()
+        this.sharedViewModel.saveLastOnlineTime(currentTime)
     }
 }
