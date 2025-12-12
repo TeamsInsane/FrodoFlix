@@ -43,7 +43,7 @@ This class encapsulates all interactions with the application's backend database
 
 This directory contains all the composable functions that represent the different screens of the application. Each file in this directory corresponds to a specific screen, such as:
 
-*   **`DrawMainPage.kt`**: The home screen of the application.
+*   **`MainPage.kt`**: The home screen of the application.
 *   **`SearchPage.kt`**: The screen where users can search for movies.
 *   **`Profile.kt`**: The user's profile screen.
 *   **`LoginPage.kt` and `RegisterPage.kt`**: Screens for user authentication.

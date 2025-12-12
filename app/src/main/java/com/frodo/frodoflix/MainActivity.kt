@@ -21,12 +21,13 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.frodo.frodoflix.screens.profile.Profile
-import com.frodo.frodoflix.screens.DrawMainPage
+import com.frodo.frodoflix.screens.HomePage
 import com.frodo.frodoflix.screens.profile.FavoriteGenresPage
 import com.frodo.frodoflix.ui.theme.FrodoFlixTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.frodo.frodoflix.screens.ChatPage
 import com.frodo.frodoflix.screens.DisplayMoviePage
 import com.frodo.frodoflix.screens.RateMovie
 import com.frodo.frodoflix.screens.SearchPage
@@ -56,7 +57,7 @@ class MainActivity : ComponentActivity() {
 
             LaunchedEffect(appStatus.value) {
                 if (appStatus.value == "Resumed" && hasBeenPaused) {
-                    snackbarHostState.showSnackbar("Welcome back to Frodoboxd!")
+                    snackbarHostState.showSnackbar("Welcome back to FrodoFlix!")
                 }
             }
 
@@ -84,12 +85,17 @@ class MainActivity : ComponentActivity() {
 
                         // First screen (Home Page)
                         composable("home_page") {
-                            DrawMainPage(sharedViewModel)
+                            HomePage(sharedViewModel)
                         }
 
                         // Search page
                         composable("search_page") {
                             SearchPage(sharedViewModel)
+                        }
+
+                        // Chat page
+                        composable("chat_page") {
+                            ChatPage(sharedViewModel)
                         }
 
                         // Profile Page

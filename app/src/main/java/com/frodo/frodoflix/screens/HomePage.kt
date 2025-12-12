@@ -40,7 +40,7 @@ import org.json.JSONArray
 import java.time.LocalDate
 
 @Composable
-fun DrawMainPage(sharedViewModel: SharedViewModel) {
+fun HomePage(sharedViewModel: SharedViewModel) {
     val navController = sharedViewModel.navController ?: return
 
     Scaffold {innerPadding ->

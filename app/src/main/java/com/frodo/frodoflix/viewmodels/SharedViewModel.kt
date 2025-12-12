@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.frodo.frodoflix.data.Group
 import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.data.User
@@ -50,6 +51,9 @@ class SharedViewModel : ViewModel() {
     private val _watchedList = MutableStateFlow<List<Int>>(emptyList())
     val watchedList: StateFlow<List<Int>> = _watchedList.asStateFlow()
 
+    private val _groups = MutableStateFlow<List<Group>>(emptyList())
+    val groups: StateFlow<List<Group>> = _groups.asStateFlow()
+
     private fun loadDataFromDB() {
         val currentUser = this.currentUser
         if (currentUser == null) {
@@ -71,7 +75,27 @@ class SharedViewModel : ViewModel() {
             _watchedList.update { watchedList }
         }
 
+        loadUserGroups()
         loadThemeData()
+    }
+
+    fun createGroup(groupId: String, groupName: String) {
+        val username = currentUser?.username ?: return
+        databaseReference.createGroup(groupId, groupName, username, viewModelScope)
+        loadUserGroups()
+    }
+
+    fun joinGroup(groupId: String) {
+        val username = currentUser?.username ?: return
+        databaseReference.joinGroup(groupId, username, "member", viewModelScope)
+        loadUserGroups()
+    }
+
+    fun loadUserGroups() {
+        val username = currentUser?.username ?: return
+        databaseReference.getUserGroups(username, viewModelScope) { groups ->
+            _groups.update { groups }
+        }
     }
 
     private fun loadThemeData() {
