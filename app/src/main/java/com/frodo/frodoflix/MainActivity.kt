@@ -1,7 +1,6 @@
 package com.frodo.frodoflix
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -9,7 +8,6 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -30,12 +28,14 @@ import androidx.navigation.compose.rememberNavController
 import com.frodo.frodoflix.screens.DisplayMoviePage
 import com.frodo.frodoflix.screens.RateMovie
 import com.frodo.frodoflix.screens.SearchPage
+import com.frodo.frodoflix.screens.user.SearchUserPage
 import com.frodo.frodoflix.screens.profile.DisplayFavMoviesPage
 import com.frodo.frodoflix.screens.profile.DisplayWantToWatchPage
 import com.frodo.frodoflix.screens.profile.DisplayWatchedPage
 import com.frodo.frodoflix.screens.registration.LoginPage
 import com.frodo.frodoflix.screens.profile.SettingsScreen
 import com.frodo.frodoflix.screens.registration.RegisterPage
+import com.frodo.frodoflix.screens.user.DisplayUserPage
 import com.frodo.frodoflix.viewmodels.LifecycleViewModel
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
@@ -92,6 +92,11 @@ class MainActivity : ComponentActivity() {
                             SearchPage(sharedViewModel)
                         }
 
+                        // Search page
+                        composable("search_user_page") {
+                            SearchUserPage(sharedViewModel)
+                        }
+
                         // Profile Page
                         composable("profile") {
                             Profile(sharedViewModel)
@@ -120,6 +125,11 @@ class MainActivity : ComponentActivity() {
                         // Movie page
                         composable("movie_page") {
                             DisplayMoviePage(sharedViewModel)
+                        }
+
+                        // User page
+                        composable("user_page") {
+                            DisplayUserPage(sharedViewModel)
                         }
 
                         // Rate movie
