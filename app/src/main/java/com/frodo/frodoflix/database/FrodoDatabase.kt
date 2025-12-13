@@ -5,6 +5,7 @@ import com.frodo.frodoflix.data.Group
 import com.frodo.frodoflix.data.GroupMember
 import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.data.User
+import com.frodo.frodoflix.data.UserCard
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -152,6 +153,16 @@ class FrodoDatabase {
                         Log.e("Firebase", "Ni ratal shrant v db", exception)
                     }
             }
+        }
+    }
+
+    suspend fun fetchAllUsers(): List<UserCard> {
+        return try {
+            val snapshot = database.getReference("users").get().await()
+            snapshot.children.mapNotNull { it.getValue(UserCard::class.java) }
+        } catch (e: Exception) {
+            Log.e("Firebase", "Error getting all users", e)
+            emptyList()
         }
     }
 

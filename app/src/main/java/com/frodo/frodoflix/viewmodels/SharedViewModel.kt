@@ -14,6 +14,7 @@ import com.frodo.frodoflix.data.Group
 import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.data.User
+import com.frodo.frodoflix.data.UserCard
 import com.frodo.frodoflix.database.FrodoDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,6 +54,9 @@ class SharedViewModel : ViewModel() {
 
     private val _groups = MutableStateFlow<List<Group>>(emptyList())
     val groups: StateFlow<List<Group>> = _groups.asStateFlow()
+    
+    private val _allUsers = MutableStateFlow<List<UserCard>>(emptyList())
+    val allUsers: StateFlow<List<UserCard>> = _allUsers.asStateFlow()
 
     private fun loadDataFromDB() {
         val currentUser = this.currentUser
@@ -102,6 +106,13 @@ class SharedViewModel : ViewModel() {
         val darkTheme = this.sharedPreferences.getBoolean("isDarkTheme", false)
         if (darkTheme) {
             toggleTheme()
+        }
+    }
+
+    suspend fun getAllUsers() {
+        viewModelScope.launch {
+            val users = databaseReference.fetchAllUsers()
+            _allUsers.value = users
         }
     }
 
@@ -232,7 +243,7 @@ class SharedViewModel : ViewModel() {
                         genresViewModel.loadGenresFromApi(user.genres)
                         genresViewModel.genresUiState.first { it.genresList.isNotEmpty() }
 
-                        navController?.navigate("home_page")
+                        navController?.navigate("search_user_page")
                     }
                 } else {
                     Log.e("Firebase", "Wrong username or password!")
@@ -262,7 +273,7 @@ class SharedViewModel : ViewModel() {
                             genresViewModel.loadGenresFromApi(user.genres)
                             genresViewModel.genresUiState.first { it.genresList.isNotEmpty() }
                             callback(true)
-                            navController?.navigate("home_page")
+                            navController?.navigate("search_user_page")
                         }
                     } else {
                         callback(false)
