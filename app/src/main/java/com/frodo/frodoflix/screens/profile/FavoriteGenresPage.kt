@@ -31,37 +31,31 @@ fun FavoriteGenresPage(sharedViewModel: SharedViewModel) {
     val genresUiState by genresViewModel.genresUiState.collectAsState()
     val navController = sharedViewModel.navController ?: return
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        Box(
+    Box {
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-            ) {
-                BackToPreviousScreen(navController)
+            BackToPreviousScreen(navController)
 
-                //Display text
-                Text(
-                    text = "Select your favorite genres",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 24.sp,
-                    modifier = Modifier.padding(16.dp)
-                )
+            //Display text
+            Text(
+                text = "Select your favorite genres",
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 24.sp,
+                modifier = Modifier.padding(16.dp)
+            )
 
-                //Display the list of all genres
-                GenresList(
-                    genreList = genresUiState.genresList,
-                    onCheckedChange = { index ->
-                        genresViewModel.toggleGenreStatus(index)
-                        sharedViewModel.updateUserGenres(genresViewModel.getFavouriteGenresList())
-                    }
-                )
+            //Display the list of all genres
+            GenresList(
+                genreList = genresUiState.genresList,
+                onCheckedChange = { index ->
+                    genresViewModel.toggleGenreStatus(index)
+                    sharedViewModel.updateUserGenres(genresViewModel.getFavouriteGenresList())
+                }
+            )
 
-            }
         }
     }
 }

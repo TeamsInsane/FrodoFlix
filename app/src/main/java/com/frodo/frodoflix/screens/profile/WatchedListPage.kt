@@ -21,31 +21,21 @@ import kotlin.math.min
 fun DisplayWatchedPage(sharedViewModel: SharedViewModel) {
     val navController = sharedViewModel.navController ?: return
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(innerPadding)
-        ) {
-            item {
-                BackToPreviousScreen(navController)
+    LazyColumn {
+        item {
+            BackToPreviousScreen(navController)
 
-                // Watchedlist movies text
-                Text(
-                    text = "Watched Movies",
-                    fontSize = 28.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
-                    fontWeight = FontWeight.Bold
-                )
+            // Watchedlist movies text
+            Text(
+                text = "Watched Movies",
+                fontSize = 28.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
+                fontWeight = FontWeight.Bold
+            )
 
-                DisplayMoviesColumnW(sharedViewModel)
-            }
+            DisplayMoviesColumnW(sharedViewModel)
         }
-
-        BottomMenuBar(navController)
     }
 }
 

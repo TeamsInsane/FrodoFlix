@@ -77,30 +77,27 @@ fun DisplaySearch(sharedViewModel: SharedViewModel, savedMovieName: String) {
         }
     }
 
-    Column {
-        Row(
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        OutlinedTextField(
+            value = movieName,
+            onValueChange = { movieName = it; sharedViewModel.searchPrompt = movieName },
+            label = { Text("Name of the movie ...") },
+            singleLine = true,
+            shape = RoundedCornerShape(16.dp),
             modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            OutlinedTextField(
-                value = movieName,
-                onValueChange = { movieName = it; sharedViewModel.searchPrompt = movieName },
-                label = { Text("Name of the movie ...") },
-                singleLine = true,
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp)
-            )
-        }
+                .weight(1f)
+                .padding(end = 8.dp)
+        )
+    }
 
-        if (movies != null) {
-            val nonNullMovies = movies as JSONArray
-            SplitSearchedMovies(nonNullMovies, sharedViewModel)
-        }
+    if (movies != null) {
+        val nonNullMovies = movies as JSONArray
+        SplitSearchedMovies(nonNullMovies, sharedViewModel)
     }
 }
 

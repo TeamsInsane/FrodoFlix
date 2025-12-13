@@ -92,16 +92,12 @@ class MainActivity : ComponentActivity() {
                             BottomMenuBar(navController)
                         }
                     },
-                    contentWindowInsets = WindowInsets.safeDrawing
-                ) { contentPadding ->
+                ) { innerPadding ->
                     NavHost(
                         navController = navController,
                         startDestination = "login_page",
-//                        modifier = Modifier.padding(contentPadding) // why does this break?
+                        modifier = Modifier.padding(innerPadding)
                     ) {
-                        // suppress unused warning
-                        contentPadding
-
                         // First screen (Home Page)
                         composable("home_page") {
                             HomePage(sharedViewModel )

@@ -21,32 +21,22 @@ import androidx.compose.ui.unit.sp
 fun DisplayFavMoviesPage(sharedViewModel: SharedViewModel) {
     val navController = sharedViewModel.navController ?: return
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        LazyColumn (
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(innerPadding)
-        ) {
-            item {
-                BackToPreviousScreen(navController)
+    LazyColumn {
+        item {
+            BackToPreviousScreen(navController)
 
-                // Favorite movie text
-                Text(
-                    text = "Favourite Movies",
-                    fontSize = 28.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
-                    fontWeight = FontWeight.Bold
-                )
+            // Favorite movie text
+            Text(
+                text = "Favourite Movies",
+                fontSize = 28.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
+                fontWeight = FontWeight.Bold
+            )
 
-                //Display fav movies
-                DisplayMoviesColumnFavList(sharedViewModel)
-            }
+            //Display fav movies
+            DisplayMoviesColumnFavList(sharedViewModel)
         }
-
-        BottomMenuBar(navController)
     }
 }
 

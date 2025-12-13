@@ -44,9 +44,7 @@ import java.time.LocalDate
 
 @Composable
 fun HomePage(sharedViewModel: SharedViewModel) {
-    LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
+    LazyColumn {
         //Trending
         item {
             Text(
@@ -157,10 +155,6 @@ fun HomePage(sharedViewModel: SharedViewModel) {
 
         item {
             HorizontalDivider(thickness = 15.dp, color = MaterialTheme.colorScheme.background)
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(30.dp))
         }
     }
 }

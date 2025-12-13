@@ -46,31 +46,21 @@ import kotlin.math.min
 fun DisplayWantToWatchPage(sharedViewModel: SharedViewModel) {
     val navController = sharedViewModel.navController ?: return
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(innerPadding)
-        ) {
-            item {
-                BackToPreviousScreen(navController)
+    LazyColumn {
+        item {
+            BackToPreviousScreen(navController)
 
-                // Watchlist movies text
-                Text(
-                    text = "Watchlist Movies",
-                    fontSize = 28.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
-                    fontWeight = FontWeight.Bold
-                )
+            // Watchlist movies text
+            Text(
+                text = "Watchlist Movies",
+                fontSize = 28.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
+                fontWeight = FontWeight.Bold
+            )
 
-                DisplayMoviesColumnWTW(sharedViewModel)
-            }
+            DisplayMoviesColumnWTW(sharedViewModel)
         }
-
-        BottomMenuBar(navController)
     }
 }
 

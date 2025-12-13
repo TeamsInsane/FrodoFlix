@@ -21,8 +21,6 @@ import com.frodo.frodoflix.R
 @Composable
 fun BottomMenuBar(navController: NavController) {
     Box(
-        modifier = Modifier
-            .fillMaxSize(),
         contentAlignment = Alignment.BottomCenter
     ) {
         Surface(

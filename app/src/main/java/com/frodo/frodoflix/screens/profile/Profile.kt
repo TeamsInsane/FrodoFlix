@@ -25,10 +25,7 @@ import com.frodo.frodoflix.viewmodels.SharedViewModel
 fun Profile(sharedViewModel: SharedViewModel) {
     val navController = sharedViewModel.navController ?: return
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
+    Box {
         // Background Image
         Image(
             painter = painterResource(id = R.drawable.background_image),
@@ -52,8 +49,6 @@ fun Profile(sharedViewModel: SharedViewModel) {
                 DisplayWatchedList(sharedViewModel, navController)
                 DisplayFavouriteGenres(navController)
             }
-
-            BottomMenuBar(navController)
         }
     }
 }

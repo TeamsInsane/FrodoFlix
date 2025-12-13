@@ -49,52 +49,45 @@ fun RateMovie(sharedViewModel: SharedViewModel) {
     var selectedRating by remember { mutableIntStateOf(0) }
     var writtenComment by remember { mutableStateOf("") }
 
-    Scaffold(
-        bottomBar = { BottomMenuBar(navController) }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-        ) {
-            BackToPreviousScreen(navController)
+    Column {
+        BackToPreviousScreen(navController)
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            //Rate movie text
-            Text(
-                text = "Rate Movie",
-                fontSize = 28.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
-                fontWeight = FontWeight.Bold
-            )
+        //Rate movie text
+        Text(
+            text = "Rate Movie",
+            fontSize = 28.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
+            fontWeight = FontWeight.Bold
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            //Movie details and image
-            sharedViewModel.selectedMovie?.let { DisplayMovieDetails(it) }
+        //Movie details and image
+        sharedViewModel.selectedMovie?.let { DisplayMovieDetails(it) }
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            //Option to select rating
-            DisplayRatingDropdown { rating ->
-                if (rating != null) {
-                    selectedRating = rating
-                }
+        //Option to select rating
+        DisplayRatingDropdown { rating ->
+            if (rating != null) {
+                selectedRating = rating
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            //Option to write a review
-            DisplayReview { comment ->
-                if (comment != null) {
-                    writtenComment = comment
-                }
-            }
-
-            //Button to save
-            DisplaySaveReview(sharedViewModel, selectedRating, writtenComment)
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        //Option to write a review
+        DisplayReview { comment ->
+            if (comment != null) {
+                writtenComment = comment
+            }
+        }
+
+        //Button to save
+        DisplaySaveReview(sharedViewModel, selectedRating, writtenComment)
     }
 }
 
