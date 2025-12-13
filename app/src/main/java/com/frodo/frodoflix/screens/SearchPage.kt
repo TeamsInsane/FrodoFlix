@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,7 +15,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,10 +35,7 @@ import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Movie
-
-import com.frodo.frodoflix.staticitems.BottomMenuBar
 import com.frodo.frodoflix.viewmodels.SharedViewModel
-
 import org.json.JSONArray
 
 @Composable
@@ -117,7 +112,7 @@ fun SplitSearchedMovies(movies: JSONArray, sharedViewModel: SharedViewModel) {
     val groupedMovies = sortedMovies.chunked(3)
 
     LazyColumn(
-        modifier = Modifier.padding(8.dp).fillMaxHeight()//height(500.dp) // TODO: Fix this, not ideal
+        modifier = Modifier.padding(8.dp)
     ) {
         items(groupedMovies) { rowMovies ->
             Row (

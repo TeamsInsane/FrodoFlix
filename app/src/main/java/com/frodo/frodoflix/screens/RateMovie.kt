@@ -17,7 +17,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -39,7 +38,6 @@ import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.staticitems.BackToPreviousScreen
-import com.frodo.frodoflix.staticitems.BottomMenuBar
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 import kotlinx.coroutines.launch
 

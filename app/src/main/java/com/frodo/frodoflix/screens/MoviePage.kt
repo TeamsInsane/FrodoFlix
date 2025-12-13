@@ -27,7 +27,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -60,7 +59,6 @@ import com.frodo.frodoflix.data.Actor
 import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.staticitems.BackToPreviousScreen
-import com.frodo.frodoflix.staticitems.BottomMenuBar
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 import org.json.JSONArray
 import org.json.JSONObject
