@@ -17,7 +17,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -39,7 +38,6 @@ import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.staticitems.BackToPreviousScreen
-import com.frodo.frodoflix.staticitems.BottomMenuBar
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 import kotlinx.coroutines.launch
 
@@ -49,52 +47,45 @@ fun RateMovie(sharedViewModel: SharedViewModel) {
     var selectedRating by remember { mutableIntStateOf(0) }
     var writtenComment by remember { mutableStateOf("") }
 
-    Scaffold { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-        ) {
-            BackToPreviousScreen(navController)
+    Column {
+        BackToPreviousScreen(navController)
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            //Rate movie text
-            Text(
-                text = "Rate Movie",
-                fontSize = 28.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
-                fontWeight = FontWeight.Bold
-            )
+        //Rate movie text
+        Text(
+            text = "Rate Movie",
+            fontSize = 28.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
+            fontWeight = FontWeight.Bold
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            //Movie details and image
-            sharedViewModel.selectedMovie?.let { DisplayMovieDetails(it) }
+        //Movie details and image
+        sharedViewModel.selectedMovie?.let { DisplayMovieDetails(it) }
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            //Option to select rating
-            DisplayRatingDropdown { rating ->
-                if (rating != null) {
-                    selectedRating = rating
-                }
+        //Option to select rating
+        DisplayRatingDropdown { rating ->
+            if (rating != null) {
+                selectedRating = rating
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            //Option to write a review
-            DisplayReview { comment ->
-                if (comment != null) {
-                    writtenComment = comment
-                }
-            }
-
-            //Button to save
-            DisplaySaveReview(sharedViewModel, selectedRating, writtenComment)
         }
 
-        BottomMenuBar(navController)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        //Option to write a review
+        DisplayReview { comment ->
+            if (comment != null) {
+                writtenComment = comment
+            }
+        }
+
+        //Button to save
+        DisplaySaveReview(sharedViewModel, selectedRating, writtenComment)
     }
 }
 

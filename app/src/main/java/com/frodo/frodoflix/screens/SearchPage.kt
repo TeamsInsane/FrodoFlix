@@ -15,7 +15,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,36 +35,23 @@ import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Movie
-
-import com.frodo.frodoflix.staticitems.BottomMenuBar
 import com.frodo.frodoflix.viewmodels.SharedViewModel
-
 import org.json.JSONArray
-
-
 
 @Composable
 fun SearchPage(sharedViewModel: SharedViewModel){
     val navController = sharedViewModel.navController ?: return
     val savedMovieName = sharedViewModel.searchPrompt
 
-    Scaffold { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-        ) {
+     Column {
+        Text(
+            text = "Search for movies",
+            color = MaterialTheme.colorScheme.onSurface,
+            fontSize = 24.sp,
+            modifier = Modifier.padding(16.dp)
+        )
 
-            Text(
-                text = "Search for movies",
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 24.sp,
-                modifier = Modifier.padding(16.dp)
-            )
-
-            DisplaySearch(sharedViewModel, savedMovieName)
-        }
-
-        BottomMenuBar(navController)
+        DisplaySearch(sharedViewModel, savedMovieName)
     }
 }
 
@@ -85,8 +71,6 @@ fun DisplaySearch(sharedViewModel: SharedViewModel, savedMovieName: String) {
 
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(60.dp)
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

@@ -40,29 +40,19 @@ fun SearchUserPage(sharedViewModel: SharedViewModel) {
         sharedViewModel.getAllUsers()
     }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(innerPadding)
-        ) {
-            item {
-                BackToPreviousScreen(navController)
+    LazyColumn {
+        item {
+            BackToPreviousScreen(navController)
 
-                Text(
-                    text = "Search For Users",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(16.dp)
-                )
+            Text(
+                text = "Search For Users",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(16.dp)
+            )
 
-                UserList(sharedViewModel)
-            }
+            UserList(sharedViewModel)
         }
-
-        BottomMenuBar(navController)
     }
 }
 

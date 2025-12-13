@@ -1,6 +1,8 @@
 package com.frodo.frodoflix.database
 
 import android.util.Log
+import com.frodo.frodoflix.data.Group
+import com.frodo.frodoflix.data.GroupMember
 import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.data.User
 import com.frodo.frodoflix.data.UserCard
@@ -23,6 +25,38 @@ class FrodoDatabase {
 
     private val DATABASE_REFERENCE: String = dotenv["DATABASE_REFERENCE"]
     private val database = Firebase.database(DATABASE_REFERENCE)
+
+    fun createGroup(groupId: String, groupName: String, createdBy: String, scope: CoroutineScope) {
+        scope.launch(Dispatchers.IO) {
+            val group = Group(groupId, groupName, createdBy)
+            database.getReference("groups").child(groupId).setValue(group).await()
+            joinGroup(groupId, createdBy, "admin", scope)
+        }
+    }
+
+    fun joinGroup(groupId: String, username: String, role: String, scope: CoroutineScope) {
+        scope.launch(Dispatchers.IO) {
+            val member = GroupMember(role)
+            database.getReference("groups").child(groupId).child("members").child(username).setValue(member).await()
+            database.getReference("users").child(username).child("groups").child(groupId).setValue(member).await()
+        }
+    }
+
+    fun getUserGroups(username: String, scope: CoroutineScope, onResult: (List<Group>) -> Unit) {
+        scope.launch(Dispatchers.IO) {
+            val groupIdsSnapshot = database.getReference("users").child(username).child("groups").get().await()
+            val groupIds = groupIdsSnapshot.children.map { it.key!! }
+            val groups = mutableListOf<Group>()
+            for (groupId in groupIds) {
+                val groupSnapshot = database.getReference("groups").child(groupId).get().await()
+                val group = groupSnapshot.getValue(Group::class.java)
+                if (group != null) {
+                    groups.add(group)
+                }
+            }
+            onResult(groups)
+        }
+    }
 
     suspend fun getFavList(username: String): List<Int> {
         return try {
