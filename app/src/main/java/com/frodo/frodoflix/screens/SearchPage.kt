@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -47,19 +48,15 @@ fun SearchPage(sharedViewModel: SharedViewModel){
     val navController = sharedViewModel.navController ?: return
     val savedMovieName = sharedViewModel.searchPrompt
 
-     LazyColumn {
-        item {
-            Text(
-                text = "Search for movies",
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 24.sp,
-                modifier = Modifier.padding(16.dp)
-            )
-        }
+     Column {
+        Text(
+            text = "Search for movies",
+            color = MaterialTheme.colorScheme.onSurface,
+            fontSize = 24.sp,
+            modifier = Modifier.padding(16.dp)
+        )
 
-        item {
-            DisplaySearch(sharedViewModel, savedMovieName)
-        }
+        DisplaySearch(sharedViewModel, savedMovieName)
     }
 }
 
@@ -79,7 +76,6 @@ fun DisplaySearch(sharedViewModel: SharedViewModel, savedMovieName: String) {
 
     Row(
         modifier = Modifier
-            .fillMaxWidth()
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -121,7 +117,7 @@ fun SplitSearchedMovies(movies: JSONArray, sharedViewModel: SharedViewModel) {
     val groupedMovies = sortedMovies.chunked(3)
 
     LazyColumn(
-        modifier = Modifier.padding(8.dp).height(500.dp) // TODO: Fix this, not ideal
+        modifier = Modifier.padding(8.dp).fillMaxHeight()//height(500.dp) // TODO: Fix this, not ideal
     ) {
         items(groupedMovies) { rowMovies ->
             Row (
