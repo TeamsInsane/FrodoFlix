@@ -42,30 +42,24 @@ import com.frodo.frodoflix.viewmodels.SharedViewModel
 
 import org.json.JSONArray
 
-
-
 @Composable
 fun SearchPage(sharedViewModel: SharedViewModel){
     val navController = sharedViewModel.navController ?: return
     val savedMovieName = sharedViewModel.searchPrompt
 
-    Scaffold { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-        ) {
-
+     LazyColumn {
+        item {
             Text(
                 text = "Search for movies",
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 24.sp,
                 modifier = Modifier.padding(16.dp)
             )
-
-            DisplaySearch(sharedViewModel, savedMovieName)
         }
 
-        BottomMenuBar(navController)
+        item {
+            DisplaySearch(sharedViewModel, savedMovieName)
+        }
     }
 }
 
@@ -83,28 +77,30 @@ fun DisplaySearch(sharedViewModel: SharedViewModel, savedMovieName: String) {
         }
     }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(60.dp)
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        OutlinedTextField(
-            value = movieName,
-            onValueChange = { movieName = it; sharedViewModel.searchPrompt = movieName },
-            label = { Text("Name of the movie ...") },
-            singleLine = true,
-            shape = RoundedCornerShape(16.dp),
+    Column {
+        Row(
             modifier = Modifier
-                .weight(1f)
-                .padding(end = 8.dp)
-        )
-    }
+                .fillMaxWidth()
+                .height(60.dp)
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = movieName,
+                onValueChange = { movieName = it; sharedViewModel.searchPrompt = movieName },
+                label = { Text("Name of the movie ...") },
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp)
+            )
+        }
 
-    if (movies != null) {
-        val nonNullMovies = movies as JSONArray
-        SplitSearchedMovies(nonNullMovies, sharedViewModel)
+        if (movies != null) {
+            val nonNullMovies = movies as JSONArray
+            SplitSearchedMovies(nonNullMovies, sharedViewModel)
+        }
     }
 }
 
@@ -128,7 +124,7 @@ fun SplitSearchedMovies(movies: JSONArray, sharedViewModel: SharedViewModel) {
     val groupedMovies = sortedMovies.chunked(3)
 
     LazyColumn(
-        modifier = Modifier.padding(8.dp)
+        modifier = Modifier.padding(8.dp).height(500.dp) // TODO: Fix this, not ideal
     ) {
         items(groupedMovies) { rowMovies ->
             Row (

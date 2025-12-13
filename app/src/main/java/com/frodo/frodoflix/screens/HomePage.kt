@@ -2,9 +2,12 @@ package com.frodo.frodoflix.screens
 
 import android.util.Log
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -41,128 +44,124 @@ import java.time.LocalDate
 
 @Composable
 fun HomePage(sharedViewModel: SharedViewModel) {
-    val navController = sharedViewModel.navController ?: return
-
-    Scaffold {innerPadding ->
-        LazyColumn (modifier = Modifier.padding(innerPadding)) {
-            //Trending
-            item {
-                Text(
-                    text = "Trending Movies",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 24.sp,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-
-            item {
-                TrendingMovies(sharedViewModel)
-            }
-
-            item {
-                HorizontalDivider(thickness = 2.dp)
-            }
-
-            //Upcoming
-            item {
-                Text(
-                    text = "Upcoming Movies",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 24.sp,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-
-            item {
-                UpcomingMovies(sharedViewModel)
-            }
-
-            item {
-                HorizontalDivider(thickness = 2.dp)
-            }
-
-            //For You
-            item {
-                Text(
-                    text = "For You",
-                    color = MaterialTheme.colorScheme.onSurface,
-
-                    fontSize = 24.sp,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-
-            item {
-                ForYouMovies(sharedViewModel)
-            }
-
-            item {
-                HorizontalDivider(thickness = 2.dp)
-            }
-
-            //Family
-            item {
-                Text(
-                    text = "Family",
-                    color = MaterialTheme.colorScheme.onSurface,
-
-                    fontSize = 24.sp,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-
-            item {
-                FamilyMovies(sharedViewModel)
-            }
-
-            item {
-                HorizontalDivider(thickness = 2.dp)
-            }
-
-            //Horror
-            item {
-                Text(
-                    text = "Horror",
-                    color = MaterialTheme.colorScheme.onSurface,
-
-                    fontSize = 24.sp,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-
-            item {
-                HorrorMovies(sharedViewModel)
-            }
-
-            item {
-                HorizontalDivider(thickness = 2.dp)
-            }
-
-            //Top rated
-            item {
-                Text(
-                    text = "Top Rated",
-                    color = MaterialTheme.colorScheme.onSurface,
-
-                    fontSize = 24.sp,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-
-            item {
-                TopRatedMovies(sharedViewModel)
-            }
-
-            item {
-                HorizontalDivider(thickness = 15.dp, color = MaterialTheme.colorScheme.background)
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(30.dp))
-            }
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        //Trending
+        item {
+            Text(
+                text = "Trending Movies",
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 24.sp,
+                modifier = Modifier.padding(16.dp)
+            )
         }
 
-        BottomMenuBar(navController)
+        item {
+            TrendingMovies(sharedViewModel)
+        }
+
+        item {
+            HorizontalDivider(thickness = 2.dp)
+        }
+
+        //Upcoming
+        item {
+            Text(
+                text = "Upcoming Movies",
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 24.sp,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+
+        item {
+            UpcomingMovies(sharedViewModel)
+        }
+
+        item {
+            HorizontalDivider(thickness = 2.dp)
+        }
+
+        //For You
+        item {
+            Text(
+                text = "For You",
+                color = MaterialTheme.colorScheme.onSurface,
+
+                fontSize = 24.sp,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+
+        item {
+            ForYouMovies(sharedViewModel)
+        }
+
+        item {
+            HorizontalDivider(thickness = 2.dp)
+        }
+
+        //Family
+        item {
+            Text(
+                text = "Family",
+                color = MaterialTheme.colorScheme.onSurface,
+
+                fontSize = 24.sp,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+
+        item {
+            FamilyMovies(sharedViewModel)
+        }
+
+        item {
+            HorizontalDivider(thickness = 2.dp)
+        }
+
+        //Horror
+        item {
+            Text(
+                text = "Horror",
+                color = MaterialTheme.colorScheme.onSurface,
+
+                fontSize = 24.sp,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+
+        item {
+            HorrorMovies(sharedViewModel)
+        }
+
+        item {
+            HorizontalDivider(thickness = 2.dp)
+        }
+
+        //Top rated
+        item {
+            Text(
+                text = "Top Rated",
+                color = MaterialTheme.colorScheme.onSurface,
+
+                fontSize = 24.sp,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+
+        item {
+            TopRatedMovies(sharedViewModel)
+        }
+
+        item {
+            HorizontalDivider(thickness = 15.dp, color = MaterialTheme.colorScheme.background)
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(30.dp))
+        }
     }
 }
 

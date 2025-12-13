@@ -8,8 +8,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -26,7 +29,9 @@ import com.frodo.frodoflix.screens.profile.FavoriteGenresPage
 import com.frodo.frodoflix.ui.theme.FrodoFlixTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.runtime.getValue
 import com.frodo.frodoflix.screens.ChatPage
 import com.frodo.frodoflix.screens.DisplayMoviePage
 import com.frodo.frodoflix.screens.RateMovie
@@ -37,8 +42,10 @@ import com.frodo.frodoflix.screens.profile.DisplayWatchedPage
 import com.frodo.frodoflix.screens.registration.LoginPage
 import com.frodo.frodoflix.screens.profile.SettingsScreen
 import com.frodo.frodoflix.screens.registration.RegisterPage
+import com.frodo.frodoflix.staticitems.BottomMenuBar
 import com.frodo.frodoflix.viewmodels.LifecycleViewModel
 import com.frodo.frodoflix.viewmodels.SharedViewModel
+
 
 class MainActivity : ComponentActivity() {
     private lateinit var sharedViewModel: SharedViewModel
@@ -77,15 +84,27 @@ class MainActivity : ComponentActivity() {
                         ) {
                             SnackbarHost(snackbarHostState)
                         }
-                    }
+                    },
+                    bottomBar = {
+                        val navBackStackEntry by navController.currentBackStackEntryAsState()
+                        val currentRoute = navBackStackEntry?.destination?.route
+                        if (currentRoute in listOf("home_page", "search_page", "chat_page", "profile")) {
+                            BottomMenuBar(navController)
+                        }
+                    },
+                    contentWindowInsets = WindowInsets.safeDrawing
                 ) { contentPadding ->
-                    NavHost(navController = navController, startDestination = "login_page") {
-                        //Breaks without this?
+                    NavHost(
+                        navController = navController,
+                        startDestination = "login_page",
+//                        modifier = Modifier.padding(contentPadding) // why does this break?
+                    ) {
+                        // suppress unused warning
                         contentPadding
 
                         // First screen (Home Page)
                         composable("home_page") {
-                            HomePage(sharedViewModel)
+                            HomePage(sharedViewModel )
                         }
 
                         // Search page

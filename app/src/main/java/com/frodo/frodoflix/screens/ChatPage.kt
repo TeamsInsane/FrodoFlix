@@ -27,13 +27,13 @@ import com.frodo.frodoflix.viewmodels.SharedViewModel
 fun ChatPage(viewModel: SharedViewModel) {
     val navController = viewModel.navController ?: return
 
-    Scaffold {innerPadding ->
-        var createGroupId by remember { mutableStateOf("") }
-        var createGroupName by remember { mutableStateOf("") }
-        var joinGroupId by remember { mutableStateOf("") }
-        val groups by viewModel.groups.collectAsState()
+    var createGroupId by remember { mutableStateOf("") }
+    var createGroupName by remember { mutableStateOf("") }
+    var joinGroupId by remember { mutableStateOf("") }
+    val groups by viewModel.groups.collectAsState()
 
-        Column(modifier = Modifier.padding(innerPadding).padding(16.dp)) {
+    LazyColumn {
+        item {
             // Create Group
             OutlinedTextField(
                 value = createGroupId,
@@ -62,20 +62,16 @@ fun ChatPage(viewModel: SharedViewModel) {
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+        }
 
-            // Group List
-            LazyColumn {
-                items(groups) { group ->
-                    Row {
-                        Text(text = group.groupName)
-                        Button(onClick = { /* TODO: Navigate to chat */ }) {
-                            Text("Open Chat")
-                        }
-                    }
+        // Group List
+        items(groups) { group ->
+            Row {
+                Text(text = group.groupName)
+                Button(onClick = { /* TODO: Navigate to chat */ }) {
+                    Text("Open Chat")
                 }
             }
         }
-
-        BottomMenuBar(navController)
     }
 }

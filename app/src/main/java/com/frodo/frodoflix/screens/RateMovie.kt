@@ -49,7 +49,9 @@ fun RateMovie(sharedViewModel: SharedViewModel) {
     var selectedRating by remember { mutableIntStateOf(0) }
     var writtenComment by remember { mutableStateOf("") }
 
-    Scaffold { innerPadding ->
+    Scaffold(
+        bottomBar = { BottomMenuBar(navController) }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -93,8 +95,6 @@ fun RateMovie(sharedViewModel: SharedViewModel) {
             //Button to save
             DisplaySaveReview(sharedViewModel, selectedRating, writtenComment)
         }
-
-        BottomMenuBar(navController)
     }
 }
 
