@@ -3,7 +3,8 @@ package com.frodo.frodoflix.data
 data class Group(
     val groupId: String = "",
     val groupName: String = "",
-    val createdBy: String = ""
+    val groupDescription: String = "",
+    val createdBy: String = "",
 )
 
 data class GroupMember(

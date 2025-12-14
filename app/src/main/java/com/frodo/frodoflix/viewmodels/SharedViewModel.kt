@@ -54,7 +54,10 @@ class SharedViewModel : ViewModel() {
 
     private val _groups = MutableStateFlow<List<Group>>(emptyList())
     val groups: StateFlow<List<Group>> = _groups.asStateFlow()
-    
+
+    private val _allGroups = MutableStateFlow<List<Group>>(emptyList())
+    val allGroups: StateFlow<List<Group>> = _allGroups.asStateFlow()
+
     private val _allUsers = MutableStateFlow<List<UserCard>>(emptyList())
     val allUsers: StateFlow<List<UserCard>> = _allUsers.asStateFlow()
 
@@ -83,9 +86,9 @@ class SharedViewModel : ViewModel() {
         loadThemeData()
     }
 
-    fun createGroup(groupId: String, groupName: String) {
+    fun createGroup(groupId: String, groupName: String, groupDescription: String) {
         val username = currentUser?.username ?: return
-        databaseReference.createGroup(groupId, groupName, username, viewModelScope)
+        databaseReference.createGroup(groupId, groupName, groupDescription, username, viewModelScope)
         loadUserGroups()
     }
 
@@ -100,6 +103,12 @@ class SharedViewModel : ViewModel() {
         databaseReference.getUserGroups(username, viewModelScope) { groups ->
             _groups.update { groups }
         }
+    }
+
+    fun searchGroups(query: String) {
+        databaseReference.searchGroups(query = query, scope = viewModelScope, onResult = { groups ->
+            _allGroups.value = groups
+        })
     }
 
     private fun loadThemeData() {
