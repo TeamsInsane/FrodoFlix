@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
 
             LaunchedEffect(appStatus.value) {
                 if (appStatus.value == "Resumed" && hasBeenPaused) {
-                    snackbarHostState.showSnackbar("Welcome back to FrodoFlix!")
+                    snackbarHostState.showSnackbar("Welcome back to Frodoboxd!")
                 }
             }
 
