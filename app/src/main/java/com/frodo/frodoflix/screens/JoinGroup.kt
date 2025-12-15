@@ -10,8 +10,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,7 +26,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.frodo.frodoflix.data.Group
 import com.frodo.frodoflix.staticitems.BackToPreviousScreen
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
@@ -39,8 +46,8 @@ fun JoinGroup(viewModel: SharedViewModel) {
             BackToPreviousScreen(navController)
             OutlinedTextField(
                 value = searchQuery,
-                onValueChange = { 
-                    searchQuery = it 
+                onValueChange = {
+                    searchQuery = it
                     viewModel.searchGroups(it)
                 },
                 label = { Text("Search for groups") },
@@ -49,20 +56,61 @@ fun JoinGroup(viewModel: SharedViewModel) {
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn {
                 items(allGroups) { group ->
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        Text(text = group.groupName, modifier = Modifier.weight(1f))
-                        Button(
-                            onClick = { viewModel.joinGroup(group.groupId) },
-                            enabled = !isLoading
-                        ) {
-                            Text("Join")
-                        }
-                    }
+                    GroupRowItem(
+                        group = group,
+                        isLoading = isLoading,
+                        onJoin = { viewModel.joinGroup(group.groupId) }
+                    )
                 }
             }
         }
         if (isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        }
+    }
+}
+
+@Composable
+fun GroupRowItem(
+    group: Group,
+    isLoading: Boolean,
+    onJoin: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                Text(
+                    text = group.groupName,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp
+                )
+
+                Text(
+                    text = group.groupDescription,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    maxLines = 1
+                )
+            }
+            Button(
+                onClick = onJoin,
+                enabled = !isLoading
+            ) {
+                Text("Join")
+            }
         }
     }
 }
