@@ -25,8 +25,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.frodo.frodoflix.screens.ChatPage
+import com.frodo.frodoflix.screens.CreateGroup
 import com.frodo.frodoflix.screens.DisplayMoviePage
 import com.frodo.frodoflix.screens.HomePage
+import com.frodo.frodoflix.screens.JoinGroup
 import com.frodo.frodoflix.screens.RateMovie
 import com.frodo.frodoflix.screens.SearchPage
 import com.frodo.frodoflix.screens.user.SearchUserPage
@@ -62,7 +64,7 @@ class MainActivity : ComponentActivity() {
 
             LaunchedEffect(appStatus.value) {
                 if (appStatus.value == "Resumed" && hasBeenPaused) {
-                    snackbarHostState.showSnackbar("Welcome back to FrodoFlix!")
+                    snackbarHostState.showSnackbar("Welcome back to Frodoboxd!")
                 }
             }
 
@@ -169,6 +171,14 @@ class MainActivity : ComponentActivity() {
                         // Watched list page
                         composable("watched_list") {
                             DisplayWatchedPage(sharedViewModel)
+                        }
+
+                        composable("join_group") {
+                            JoinGroup(sharedViewModel)
+                        }
+
+                        composable("create_group") {
+                            CreateGroup(sharedViewModel)
                         }
                     }
                 }
