@@ -177,7 +177,7 @@ fun SettingsUsername(sharedViewModel: SharedViewModel ,username: String, isEditi
                 Spacer(modifier = Modifier.weight(1f))
 
                 Icon(
-                    painter = painterResource(id = R.drawable.pen),
+                    painter = painterResource(id = R.drawable.chat_bubble_outline),
                     contentDescription = "Edit username",
                     tint = MaterialTheme.colorScheme.primary,
 

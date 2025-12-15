@@ -17,3 +17,4 @@ local.properties
 env
 .idea
 app/src/main/res/.env
+.kotlin
