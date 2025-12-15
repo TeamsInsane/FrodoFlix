@@ -43,6 +43,9 @@ class SharedViewModel : ViewModel() {
     private val _isDarkTheme = mutableStateOf(false)
     val isDarkTheme: State<Boolean> = _isDarkTheme
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     private val _watchlist = MutableStateFlow<List<Int>>(emptyList())
     val watchlist: StateFlow<List<Int>> = _watchlist.asStateFlow()
 
@@ -88,14 +91,20 @@ class SharedViewModel : ViewModel() {
 
     fun createGroup(groupId: String, groupName: String, groupDescription: String) {
         val username = currentUser?.username ?: return
-        databaseReference.createGroup(groupId, groupName, groupDescription, username, viewModelScope)
-        loadUserGroups()
+        _isLoading.value = true
+        databaseReference.createGroup(groupId, groupName, groupDescription, username, viewModelScope) {
+            loadUserGroups()
+            _isLoading.value = false
+        }
     }
 
     fun joinGroup(groupId: String) {
         val username = currentUser?.username ?: return
-        databaseReference.joinGroup(groupId, username, "member", viewModelScope)
-        loadUserGroups()
+        _isLoading.value = true
+        databaseReference.joinGroup(groupId, username, "member", viewModelScope) {
+            loadUserGroups()
+            _isLoading.value = false
+        }
     }
 
     fun loadUserGroups() {
@@ -118,7 +127,7 @@ class SharedViewModel : ViewModel() {
         }
     }
 
-    suspend fun getAllUsers() {
+    fun getAllUsers() {
         viewModelScope.launch {
             val users = databaseReference.fetchAllUsers()
             _allUsers.value = users
