@@ -12,15 +12,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.*
 import com.frodo.frodoflix.staticitems.BackToPreviousScreen
 import com.frodo.frodoflix.viewmodels.GenreList
 import com.frodo.frodoflix.viewmodels.SharedViewModel
@@ -31,37 +31,31 @@ fun FavoriteGenresPage(sharedViewModel: SharedViewModel) {
     val genresUiState by genresViewModel.genresUiState.collectAsState()
     val navController = sharedViewModel.navController ?: return
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        Box(
+    Box {
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-            ) {
-                BackToPreviousScreen(navController)
+            BackToPreviousScreen(navController)
 
-                //Display text
-                Text(
-                    text = "Select your favorite genres",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 24.sp,
-                    modifier = Modifier.padding(16.dp)
-                )
+            //Display text
+            Text(
+                text = "Select your favorite genres",
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 24.sp,
+                modifier = Modifier.padding(16.dp)
+            )
 
-                //Display the list of all genres
-                GenresList(
-                    genreList = genresUiState.genresList,
-                    onCheckedChange = { index ->
-                        genresViewModel.toggleGenreStatus(index)
-                        sharedViewModel.updateUserGenres(genresViewModel.getFavouriteGenresList())
-                    }
-                )
+            //Display the list of all genres
+            GenresList(
+                genreList = genresUiState.genresList,
+                onCheckedChange = { index ->
+                    genresViewModel.toggleGenreStatus(index)
+                    sharedViewModel.updateUserGenres(genresViewModel.getFavouriteGenresList())
+                }
+            )
 
-            }
         }
     }
 }

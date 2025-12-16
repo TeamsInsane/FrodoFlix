@@ -2,7 +2,15 @@ package com.frodo.frodoflix.staticitems
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -21,8 +29,6 @@ import com.frodo.frodoflix.R
 @Composable
 fun BottomMenuBar(navController: NavController) {
     Box(
-        modifier = Modifier
-            .fillMaxSize(),
         contentAlignment = Alignment.BottomCenter
     ) {
         Surface(
@@ -52,6 +58,13 @@ fun BottomMenuBar(navController: NavController) {
                     contentDescription = "Search",
                     isSelected = currentDestination == "search_page",
                     onClick = { navController.navigate("search_page") }
+                )
+
+                BottomMenuItem(
+                    iconRes = R.drawable.chat_bubble_outline,
+                    contentDescription = "Chat",
+                    isSelected = currentDestination == "chat_page",
+                    onClick = { navController.navigate("chat_page") }
                 )
 
                 BottomMenuItem(

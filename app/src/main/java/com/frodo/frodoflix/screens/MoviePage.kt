@@ -27,7 +27,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -60,7 +59,6 @@ import com.frodo.frodoflix.data.Actor
 import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.staticitems.BackToPreviousScreen
-import com.frodo.frodoflix.staticitems.BottomMenuBar
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 import org.json.JSONArray
 import org.json.JSONObject
@@ -89,133 +87,127 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
 
     val nonNullData = data as JSONObject
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            item {
-                BackToPreviousScreen(navController)
-                DisplayMovieBanner(nonNullData.getString("backdrop_path"), sharedViewModel, movie)
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        item {
+            BackToPreviousScreen(navController)
+            DisplayMovieBanner(nonNullData.getString("backdrop_path"), sharedViewModel, movie)
 
-                // Title Text
-                Text(
-                    text = movie.title,
-                    fontSize = 28.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
-                    fontWeight = FontWeight.Bold
-                )
+            // Title Text
+            Text(
+                text = movie.title,
+                fontSize = 28.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
+                fontWeight = FontWeight.Bold
+            )
 
-                Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-                // Rating, Duration, Release Date
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Rating
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Filled.Star,
-                            contentDescription = "Star",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(16.dp)
-                        )
+            // Rating, Duration, Release Date
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Rating
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Filled.Star,
+                        contentDescription = "Star",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(16.dp)
+                    )
 
-                        Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
 
-                        Text(
-                            text = BigDecimal(nonNullData.getString("vote_average").toDouble()).setScale(1, RoundingMode.HALF_EVEN).toString() + "/10",
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    // Duration
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(R.drawable.timelapse),
-                            contentDescription = "Duration Icon",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "${nonNullData.getString("runtime")} min",
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    // Release Date
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(R.drawable.calendar_month),
-                            contentDescription = "Release Date Icon",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = movie.releaseDate,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    Text(
+                        text = BigDecimal(nonNullData.getString("vote_average").toDouble()).setScale(1, RoundingMode.HALF_EVEN).toString() + "/10",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                // Duration
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(R.drawable.timelapse),
+                        contentDescription = "Duration Icon",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "${nonNullData.getString("runtime")} min",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
-                // Description Text
-                Text(
-                    text = nonNullData.getString("overview"),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp)
-                )
-
-                RateWatchlistButton(sharedViewModel, navController, movie)
-
-                HorizontalDivider(thickness = 2.dp)
-
-                // Cast Section Title
-                Text(
-                    text = "Cast",
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-                    fontWeight = FontWeight.Bold
-                )
-
-                CastData(movie.id)
-
-                HorizontalDivider(thickness = 2.dp)
-
-
-                // Rating Section Title
-                Text(
-                    text = "Ratings",
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-                    fontWeight = FontWeight.Bold
-                )
-
-                DisplayRatings(sharedViewModel)
-
-                Spacer(modifier = Modifier.height(50.dp))
+                // Release Date
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(R.drawable.calendar_month),
+                        contentDescription = "Release Date Icon",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = movie.releaseDate,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Description Text
+            Text(
+                text = nonNullData.getString("overview"),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp)
+            )
+
+            RateWatchlistButton(sharedViewModel, navController, movie)
+
+            HorizontalDivider(thickness = 2.dp)
+
+            // Cast Section Title
+            Text(
+                text = "Cast",
+                fontSize = 20.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                fontWeight = FontWeight.Bold
+            )
+
+            CastData(movie.id)
+
+            HorizontalDivider(thickness = 2.dp)
+
+
+            // Rating Section Title
+            Text(
+                text = "Ratings",
+                fontSize = 20.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                fontWeight = FontWeight.Bold
+            )
+
+            DisplayRatings(sharedViewModel)
+
+            Spacer(modifier = Modifier.height(50.dp))
         }
     }
-
-    BottomMenuBar(navController)
 }
 
 

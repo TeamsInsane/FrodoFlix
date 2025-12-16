@@ -10,9 +10,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.frodo.frodoflix.data.Group
 import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.data.User
+import com.frodo.frodoflix.data.UserCard
 import com.frodo.frodoflix.database.FrodoDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,6 +43,9 @@ class SharedViewModel : ViewModel() {
     private val _isDarkTheme = mutableStateOf(false)
     val isDarkTheme: State<Boolean> = _isDarkTheme
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     private val _watchlist = MutableStateFlow<List<Int>>(emptyList())
     val watchlist: StateFlow<List<Int>> = _watchlist.asStateFlow()
 
@@ -49,6 +54,15 @@ class SharedViewModel : ViewModel() {
 
     private val _watchedList = MutableStateFlow<List<Int>>(emptyList())
     val watchedList: StateFlow<List<Int>> = _watchedList.asStateFlow()
+
+    private val _groups = MutableStateFlow<List<Group>>(emptyList())
+    val groups: StateFlow<List<Group>> = _groups.asStateFlow()
+
+    private val _allGroups = MutableStateFlow<List<Group>>(emptyList())
+    val allGroups: StateFlow<List<Group>> = _allGroups.asStateFlow()
+
+    private val _allUsers = MutableStateFlow<List<UserCard>>(emptyList())
+    val allUsers: StateFlow<List<UserCard>> = _allUsers.asStateFlow()
 
     private fun loadDataFromDB() {
         val currentUser = this.currentUser
@@ -71,13 +85,52 @@ class SharedViewModel : ViewModel() {
             _watchedList.update { watchedList }
         }
 
+        loadUserGroups()
         loadThemeData()
+    }
+
+    fun createGroup(groupId: String, groupName: String, groupDescription: String) {
+        val username = currentUser?.username ?: return
+        _isLoading.value = true
+        databaseReference.createGroup(groupId, groupName, groupDescription, username, viewModelScope) {
+            loadUserGroups()
+            _isLoading.value = false
+        }
+    }
+
+    fun joinGroup(groupId: String) {
+        val username = currentUser?.username ?: return
+        _isLoading.value = true
+        databaseReference.joinGroup(groupId, username, "member", viewModelScope) {
+            loadUserGroups()
+            _isLoading.value = false
+        }
+    }
+
+    fun loadUserGroups() {
+        val username = currentUser?.username ?: return
+        databaseReference.getUserGroups(username, viewModelScope) { groups ->
+            _groups.update { groups }
+        }
+    }
+
+    fun searchGroups(query: String) {
+        databaseReference.searchGroups(query = query, scope = viewModelScope, onResult = { groups ->
+            _allGroups.value = groups
+        })
     }
 
     private fun loadThemeData() {
         val darkTheme = this.sharedPreferences.getBoolean("isDarkTheme", false)
         if (darkTheme) {
             toggleTheme()
+        }
+    }
+
+    fun getAllUsers() {
+        viewModelScope.launch {
+            val users = databaseReference.fetchAllUsers()
+            _allUsers.value = users
         }
     }
 
@@ -208,7 +261,7 @@ class SharedViewModel : ViewModel() {
                         genresViewModel.loadGenresFromApi(user.genres)
                         genresViewModel.genresUiState.first { it.genresList.isNotEmpty() }
 
-                        navController?.navigate("home_page")
+                        navController?.navigate("search_user_page")
                     }
                 } else {
                     Log.e("Firebase", "Wrong username or password!")
@@ -238,7 +291,7 @@ class SharedViewModel : ViewModel() {
                             genresViewModel.loadGenresFromApi(user.genres)
                             genresViewModel.genresUiState.first { it.genresList.isNotEmpty() }
                             callback(true)
-                            navController?.navigate("home_page")
+                            navController?.navigate("search_user_page")
                         }
                     } else {
                         callback(false)
