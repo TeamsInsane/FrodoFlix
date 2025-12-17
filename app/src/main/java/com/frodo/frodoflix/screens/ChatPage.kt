@@ -1,14 +1,16 @@
 package com.frodo.frodoflix.screens
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -46,15 +48,26 @@ fun ChatPage(sharedViewModel: SharedViewModel, groupId: String) {
             }
         }
 
-        Row(modifier = Modifier.fillMaxWidth()) {
-            TextField(
-                value = newMessage,
-                onValueChange = { newMessage = it },
-                modifier = Modifier.weight(1f)
-            )
-            Button(onClick = { sharedViewModel.sendMessage(groupId, newMessage); newMessage = "" }) {
-                Text("Send")
+        TextField(
+            value = newMessage,
+            onValueChange = { newMessage = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            placeholder = { Text("Send a message") },
+            trailingIcon = {
+                IconButton(onClick = {
+                    if (newMessage.isNotBlank()) {
+                        sharedViewModel.sendMessage(groupId, newMessage)
+                        newMessage = ""
+                    }
+                }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Send,
+                        contentDescription = "Send"
+                    )
+                }
             }
-        }
+        )
     }
 }
