@@ -40,7 +40,7 @@ fun ChatPage(sharedViewModel: SharedViewModel, groupId: String) {
     val messages by sharedViewModel.messages.collectAsState()
     var newMessage by remember { mutableStateOf("") }
     val navController = sharedViewModel.navController ?: return
-    val currentUser = sharedViewModel.currentUser.value
+    val currentUser = sharedViewModel.getUsername()
 
     LaunchedEffect(groupId) {
         sharedViewModel.listenForMessages(groupId)
@@ -54,7 +54,7 @@ fun ChatPage(sharedViewModel: SharedViewModel, groupId: String) {
             .padding(horizontal = 8.dp)) {
             items(messages) {
                 message ->
-                MessageBubble(message = message, isCurrentUser = message.username == currentUser?.username)
+                MessageBubble(message = message, isCurrentUser = message.username == currentUser)
             }
         }
 
