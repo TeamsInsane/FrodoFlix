@@ -113,21 +113,27 @@ class SharedViewModel : ViewModel() {
         loadThemeData()
     }
 
-    fun createGroup(groupId: String, groupName: String, groupDescription: String) {
+    fun createGroup(groupId: String, groupName: String, groupDescription: String, onResult: (Boolean) -> Unit) {
         val username = currentUser?.username ?: return
         _isLoading.value = true
-        databaseReference.createGroup(groupId, groupName, groupDescription, username, viewModelScope) {
-            loadUserGroups()
-            _isLoading.value = false
+        databaseReference.createGroup(groupId, groupName, groupDescription, username, viewModelScope) { success ->
+            viewModelScope.launch(Dispatchers.Main) {
+                loadUserGroups()
+                _isLoading.value = false
+                onResult(success)
+            }
         }
     }
 
-    fun joinGroup(groupId: String) {
+    fun joinGroup(groupId: String, onResult: (Boolean) -> Unit) {
         val username = currentUser?.username ?: return
         _isLoading.value = true
-        databaseReference.joinGroup(groupId, username, "member", viewModelScope) {
-            loadUserGroups()
-            _isLoading.value = false
+        databaseReference.joinGroup(groupId, username, "member", viewModelScope) { success ->
+            viewModelScope.launch(Dispatchers.Main) {
+                loadUserGroups()
+                _isLoading.value = false
+                onResult(success)
+            }
         }
     }
 

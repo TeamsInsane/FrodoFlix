@@ -46,20 +46,38 @@ class FrodoDatabase {
         })
     }
 
-    fun createGroup(groupId: String, groupName: String, groupDescription: String, createdBy: String, scope: CoroutineScope, onResult: () -> Unit) {
+    fun createGroup(groupId: String, groupName: String, groupDescription: String, createdBy: String, scope: CoroutineScope, onResult: (Boolean) -> Unit) {
         scope.launch(Dispatchers.IO) {
-            val group = Group(groupId, groupName, groupDescription, createdBy)
-            database.getReference("groups").child(groupId).setValue(group).await()
-            joinGroup(groupId, createdBy, "admin", scope, onResult)
+            try {
+                val groupRef = database.getReference("groups").child(groupId)
+                val snapshot = groupRef.get().await()
+                if (snapshot.exists()) {
+                    onResult(false)
+                } else {
+                    val group = Group(groupId, groupName, groupDescription, createdBy)
+                    groupRef.setValue(group).await()
+                    joinGroup(groupId, createdBy, "admin", scope) { success ->
+                        onResult(success)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("Firebase", "Error creating group", e)
+                onResult(false)
+            }
         }
     }
 
-    fun joinGroup(groupId: String, username: String, role: String, scope: CoroutineScope, onResult: () -> Unit) {
+    fun joinGroup(groupId: String, username: String, role: String, scope: CoroutineScope, onResult: (Boolean) -> Unit) {
         scope.launch(Dispatchers.IO) {
-            val member = GroupMember(role)
-            database.getReference("groups").child(groupId).child("members").child(username).setValue(member).await()
-            database.getReference("users").child(username).child("groups").child(groupId).setValue(member).await()
-            onResult()
+            try {
+                val member = GroupMember(role)
+                database.getReference("groups").child(groupId).child("members").child(username).setValue(member).await()
+                database.getReference("users").child(username).child("groups").child(groupId).setValue(member).await()
+                onResult(true)
+            } catch (e: Exception) {
+                Log.e("Firebase", "Error joining group", e)
+                onResult(false)
+            }
         }
     }
 
@@ -84,7 +102,7 @@ class FrodoDatabase {
             val groupsRef = database.getReference("groups")
             groupsRef.orderByChild("groupName")
                 .startAt(query)
-                .endAt(query + "\uf8ff")
+                .endAt(query + "")
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         val groups = mutableListOf<Group>()

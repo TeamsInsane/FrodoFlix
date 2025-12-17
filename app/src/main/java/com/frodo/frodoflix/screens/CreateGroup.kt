@@ -1,5 +1,6 @@
 package com.frodo.frodoflix.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.frodo.frodoflix.staticitems.BackToPreviousScreen
 import com.frodo.frodoflix.viewmodels.SharedViewModel
@@ -29,6 +31,7 @@ fun CreateGroup(viewModel: SharedViewModel) {
     var groupDescription by remember { mutableStateOf("") }
     val navController = viewModel.navController ?: return
     val isLoading by viewModel.isLoading.collectAsState()
+    val context = LocalContext.current
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -50,7 +53,19 @@ fun CreateGroup(viewModel: SharedViewModel) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = { viewModel.createGroup(groupId, groupName, groupDescription) },
+                onClick = {
+                    if (groupId.isNotBlank()) {
+                        viewModel.createGroup(groupId, groupName, groupDescription) { success ->
+                            if (success) {
+                                navController.popBackStack()
+                            } else {
+                                Toast.makeText(context, "Group ID already exists", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    } else {
+                        Toast.makeText(context, "Group ID cannot be empty", Toast.LENGTH_SHORT).show()
+                    }
+                },
                 enabled = !isLoading
             ) {
                 Text("Create Group")
