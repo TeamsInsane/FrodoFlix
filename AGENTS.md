@@ -50,9 +50,10 @@ This directory contains all the composable functions that represent the differen
 *   **`LoginPage.kt` and `RegisterPage.kt`**: Screens for user authentication.
 *   **`DisplayMoviePage.kt`**: The screen that displays the details of a selected movie.
 *   **`RateMovie.kt`**: A screen for users to rate movies.
-*   **`ChatPage.kt`**: Displays a list of the user's groups and provides buttons to join or create new groups.
+*   **`GroupPage.kt`**: Displays a list of the user's groups and provides buttons to join or create new groups.
 *   **`CreateGroup.kt`**: A screen with input fields for group ID, name, and description, and a button to create a new group.
 *   **`JoinGroup.kt`**: A screen with a search bar to find and join existing groups.
+*   **`ChatPage.kt`**: A screen for group messages that contains previous messages and an input for sending new messages.
 *   And various other screens for managing user lists and settings.
 
 ## Application Flow

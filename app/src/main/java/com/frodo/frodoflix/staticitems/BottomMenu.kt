@@ -62,9 +62,9 @@ fun BottomMenuBar(navController: NavController) {
 
                 BottomMenuItem(
                     iconRes = R.drawable.chat_bubble_outline,
-                    contentDescription = "Chat",
-                    isSelected = currentDestination == "chat_page",
-                    onClick = { navController.navigate("chat_page") }
+                    contentDescription = "Groups",
+                    isSelected = currentDestination == "Group_page",
+                    onClick = { navController.navigate("group_page") }
                 )
 
                 BottomMenuItem(

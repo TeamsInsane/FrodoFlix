@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.frodo.frodoflix.data.Group
+import com.frodo.frodoflix.data.Message
 import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.data.User
@@ -27,6 +28,7 @@ import java.security.MessageDigest
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util.Base64
+import java.util.Date
 import java.util.Locale
 
 class SharedViewModel : ViewModel() {
@@ -63,6 +65,21 @@ class SharedViewModel : ViewModel() {
 
     private val _allUsers = MutableStateFlow<List<UserCard>>(emptyList())
     val allUsers: StateFlow<List<UserCard>> = _allUsers.asStateFlow()
+
+    private val _messages = MutableStateFlow<List<Message>>(emptyList())
+    val messages: StateFlow<List<Message>> = _messages.asStateFlow()
+
+    fun sendMessage(groupId: String, content: String) {
+        val username = currentUser?.username ?: return
+        val message = Message(groupId, username, content, Date().time)
+        databaseReference.sendMessage(message, viewModelScope)
+    }
+
+    fun listenForMessages(groupId: String) {
+        databaseReference.listenForMessages(groupId) { message ->
+            _messages.update { it + message }
+        }
+    }
 
     private fun loadDataFromDB() {
         val currentUser = this.currentUser

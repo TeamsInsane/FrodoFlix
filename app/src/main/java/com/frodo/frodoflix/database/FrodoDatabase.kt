@@ -3,6 +3,7 @@ package com.frodo.frodoflix.database
 import android.util.Log
 import com.frodo.frodoflix.data.Group
 import com.frodo.frodoflix.data.GroupMember
+import com.frodo.frodoflix.data.Message
 import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.data.User
 import com.frodo.frodoflix.data.UserCard
@@ -25,6 +26,25 @@ class FrodoDatabase {
 
     private val DATABASE_REFERENCE: String = dotenv["DATABASE_REFERENCE"]
     private val database = Firebase.database(DATABASE_REFERENCE)
+
+    fun sendMessage(message: Message, scope: CoroutineScope) {
+        scope.launch(Dispatchers.IO) {
+            database.getReference("messages").child(message.groupId!!).push().setValue(message).await()
+        }
+    }
+
+    fun listenForMessages(groupId: String, onMessage: (Message) -> Unit) {
+        val messagesRef = database.getReference("messages").child(groupId)
+        messagesRef.orderByChild("sentAt").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                snapshot.children.mapNotNull { it.getValue(Message::class.java) }.forEach(onMessage)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("Firebase", "Error getting messages", error.toException())
+            }
+        })
+    }
 
     fun createGroup(groupId: String, groupName: String, groupDescription: String, createdBy: String, scope: CoroutineScope, onResult: () -> Unit) {
         scope.launch(Dispatchers.IO) {
@@ -273,5 +293,3 @@ class FrodoDatabase {
         }
     }
 }
-
-
