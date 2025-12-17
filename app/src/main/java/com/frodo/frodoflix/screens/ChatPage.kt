@@ -40,7 +40,7 @@ fun ChatPage(sharedViewModel: SharedViewModel, groupId: String) {
     val messages by sharedViewModel.messages.collectAsState()
     var newMessage by remember { mutableStateOf("") }
     val navController = sharedViewModel.navController ?: return
-    val currentUser = sharedViewModel.getUsername()
+    val currentUser = sharedViewModel.currentUser.value
 
     LaunchedEffect(groupId) {
         sharedViewModel.listenForMessages(groupId)
@@ -54,7 +54,7 @@ fun ChatPage(sharedViewModel: SharedViewModel, groupId: String) {
             .padding(horizontal = 8.dp)) {
             items(messages) {
                 message ->
-                MessageBubble(message = message, isCurrentUser = message.username == currentUser)
+                MessageBubble(message = message, isCurrentUser = message.username == currentUser?.username)
             }
         }
 
@@ -84,8 +84,8 @@ fun ChatPage(sharedViewModel: SharedViewModel, groupId: String) {
 
 @Composable
 fun MessageBubble(message: Message, isCurrentUser: Boolean) {
-    val bubbleColor = if (isCurrentUser) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface
-    val textColor = MaterialTheme.colorScheme.onSurface
+    val bubbleColor = if (isCurrentUser) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surfaceContainer
+    val textColor = if (isCurrentUser) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
 
     Row(
         modifier = Modifier
