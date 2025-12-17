@@ -35,7 +35,7 @@ class FrodoDatabase {
 
     fun listenForMessages(groupId: String, onMessage: (Message) -> Unit) {
         val messagesRef = database.getReference("messages").child(groupId)
-        messagesRef.orderByChild("sentAt").addValueEventListener(object : ValueEventListener {
+        messagesRef.orderByChild("timestamp").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 snapshot.children.mapNotNull { it.getValue(Message::class.java) }.forEach(onMessage)
             }

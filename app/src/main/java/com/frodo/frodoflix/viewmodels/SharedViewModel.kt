@@ -76,15 +76,22 @@ class SharedViewModel : ViewModel() {
     }
 
     fun listenForMessages(groupId: String) {
+        _messages.value = emptyList()
         databaseReference.listenForMessages(groupId) { message ->
-            _messages.update { it + message }
+            _messages.update { currentMessages ->
+                if (currentMessages.any { it.timestamp == message.timestamp && it.username == message.username }) {
+                    currentMessages
+                } else {
+                    (currentMessages + message).sortedBy { it.timestamp }
+                }
+            }
         }
     }
 
     private fun loadDataFromDB() {
         val currentUser = this.currentUser
         if (currentUser == null) {
-            Log.d("user", "ERORR null")
+            Log.d("user", "ERROR null")
             return
         }
 

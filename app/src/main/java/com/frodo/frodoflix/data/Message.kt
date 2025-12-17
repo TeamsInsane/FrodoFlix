@@ -7,5 +7,5 @@ data class Message(
     val groupId: String? = null,
     val username: String? = null,
     val content: String? = null,
-    val sentAt: Long? = null
+    val timestamp: Long? = null
 )
