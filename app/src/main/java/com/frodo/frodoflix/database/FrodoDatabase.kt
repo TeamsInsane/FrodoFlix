@@ -221,16 +221,6 @@ class FrodoDatabase {
         }
     }
 
-    suspend fun fetchAllUsers(): List<UserCard> {
-        return try {
-            val snapshot = database.getReference("users").get().await()
-            snapshot.children.mapNotNull { it.getValue(UserCard::class.java) }
-        } catch (e: Exception) {
-            Log.e("Firebase", "Error getting all users", e)
-            emptyList()
-        }
-    }
-
     fun fetchUser(username: String, scope: CoroutineScope, onResult: (User?) -> Unit) {
         scope.launch(Dispatchers.IO) {
             database.getReference("users").child(username).get()
@@ -310,4 +300,28 @@ class FrodoDatabase {
             })
         }
     }
+
+    suspend fun searchUsers(
+        query: String,
+        limit: Int = 20
+    ): List<UserCard> {
+        return try {
+            val snapshot = database
+                .getReference("users")
+                .orderByChild("username")
+                .startAt(query)
+                .endAt(query + "\uf8ff")
+                .limitToFirst(limit)
+                .get()
+                .await()
+
+            snapshot.children.mapNotNull {
+                it.getValue(UserCard::class.java)
+            }
+        } catch (e: Exception) {
+            Log.e("Firebase", "Error searching users", e)
+            emptyList()
+        }
+    }
+
 }

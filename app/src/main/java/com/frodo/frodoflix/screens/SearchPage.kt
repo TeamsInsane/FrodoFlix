@@ -1,5 +1,6 @@
 package com.frodo.frodoflix.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,13 +9,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,40 +29,201 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontWeight.Companion.SemiBold
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Movie
+import com.frodo.frodoflix.data.UserCard
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 import org.json.JSONArray
 
+enum class SearchMode {
+    MOVIES,
+    USERS
+}
+
 @Composable
-fun SearchPage(sharedViewModel: SharedViewModel){
-    val navController = sharedViewModel.navController ?: return
-    val savedMovieName = sharedViewModel.searchPrompt
+fun SearchToggle(
+    selected: SearchMode,
+    onSelected: (SearchMode) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        ToggleItem(
+            text = "Movies",
+            selected = selected == SearchMode.MOVIES,
+            modifier = Modifier.weight(1f)
+        ) { onSelected(SearchMode.MOVIES) }
 
-     Column {
-        Text(
-            text = "Search for movies",
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 24.sp,
-            modifier = Modifier.padding(16.dp)
-        )
-
-        DisplaySearch(sharedViewModel, savedMovieName)
+        ToggleItem(
+            text = "Users",
+            selected = selected == SearchMode.USERS,
+            modifier = Modifier.weight(1f)
+        ) { onSelected(SearchMode.USERS) }
     }
 }
 
 @Composable
-fun DisplaySearch(sharedViewModel: SharedViewModel, savedMovieName: String) {
+private fun ToggleItem(
+    text: String,
+    selected: Boolean,
+    modifier: Modifier,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .clickable { onClick() }
+            .padding(vertical = 12.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                if (selected) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.surfaceVariant
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            fontWeight = FontWeight.SemiBold,
+            color = if (selected)
+                MaterialTheme.colorScheme.onPrimary
+            else
+                MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Composable
+fun SearchPage(sharedViewModel: SharedViewModel) {
+    var searchMode by remember { mutableStateOf(SearchMode.MOVIES) }
+
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(innerPadding)
+        ) {
+
+            SearchToggle(
+                selected = searchMode,
+                onSelected = { searchMode = it }
+            )
+
+            when (searchMode) {
+                SearchMode.MOVIES -> {
+                    MovieSearchContent(sharedViewModel)
+                }
+
+                SearchMode.USERS -> {
+                    UserSearchContent(sharedViewModel)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MovieSearchContent(sharedViewModel: SharedViewModel) {
+    Text(
+        text = "Search for movies",
+        fontSize = 24.sp,
+        modifier = Modifier.padding(16.dp)
+    )
+
+    DisplayMoviesSearch(
+        sharedViewModel,
+        sharedViewModel.movieSearchPrompt
+    )
+}
+
+@Composable
+fun UserSearchContent(sharedViewModel: SharedViewModel) {
+
+    var userName by remember { mutableStateOf(sharedViewModel.userSearchPrompt) }
+    var searchedUsers by remember { mutableStateOf<List<UserCard>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(false) }
+
+    Text(
+        text = "Search for users",
+        fontSize = 24.sp,
+        modifier = Modifier.padding(16.dp)
+    )
+
+    Row(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        OutlinedTextField(
+            value = userName,
+            onValueChange = {
+                userName = it
+                sharedViewModel.userSearchPrompt = it
+            },
+            label = { Text("Name of user...") },
+            singleLine = true,
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 8.dp, bottom = 8.dp)
+        )
+    }
+
+    // Launch search when username changes
+    LaunchedEffect(userName) {
+        if (userName.isNotBlank()) {
+            isLoading = true
+
+            sharedViewModel.searchUsers(userName, limit = 20) { users ->
+                searchedUsers = users
+            }
+
+            isLoading = false
+        } else {
+            searchedUsers = emptyList()
+        }
+    }
+
+    if (isLoading) {
+        Text(
+            "Loading...",
+            modifier = Modifier.padding(16.dp)
+        )
+    }
+
+    LazyColumn {
+        items(searchedUsers) { user ->
+            UserRowItem(user) {
+                sharedViewModel.navController?.navigate("user_page")
+            }
+        }
+    }
+}
+
+
+
+@Composable
+fun DisplayMoviesSearch(sharedViewModel: SharedViewModel, savedMovieName: String) {
     var movieName by remember { mutableStateOf(savedMovieName) }
     var movies by remember { mutableStateOf<JSONArray?>(null) }
 
@@ -76,7 +243,7 @@ fun DisplaySearch(sharedViewModel: SharedViewModel, savedMovieName: String) {
     ) {
         OutlinedTextField(
             value = movieName,
-            onValueChange = { movieName = it; sharedViewModel.searchPrompt = movieName },
+            onValueChange = { movieName = it; sharedViewModel.movieSearchPrompt = movieName },
             label = { Text("Name of the movie ...") },
             singleLine = true,
             shape = RoundedCornerShape(16.dp),
@@ -148,7 +315,6 @@ fun DisplaySearchedMovie(movie: Movie, sharedViewModel: SharedViewModel) {
                 .width((LocalConfiguration.current.screenWidthDp / 3 - 2 * 8).dp)
                 .height(180.dp)
         ) {
-            // Loading states for images (loading image before the image is loaded...)
             SubcomposeAsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data("https://image.tmdb.org/t/p/w500/${movie.posterUrl}")
@@ -179,5 +345,55 @@ fun DisplaySearchedMovie(movie: Movie, sharedViewModel: SharedViewModel) {
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
+    }
+}
+
+@Composable
+fun UserRowItem(
+    user: UserCard,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal =  18.dp, vertical = 8.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(4.dp),
+            verticalAlignment = CenterVertically
+        ) {
+
+            AsyncImage(
+                model = user.profileImageUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(CircleShape)
+            )
+
+            Column(
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .weight(1f)
+            ) {
+                Text(
+                    text = user.username,
+                    fontWeight = SemiBold,
+                    fontSize = 18.sp
+                )
+
+                Text(
+                    text = user.description,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    maxLines = 1
+                )
+            }
+        }
     }
 }

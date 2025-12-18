@@ -1,5 +1,6 @@
 package com.frodo.frodoflix.viewmodels
 
+import android.R
 import android.content.SharedPreferences
 import android.util.Log
 
@@ -33,7 +34,9 @@ import java.util.Locale
 
 class SharedViewModel : ViewModel() {
     var selectedMovie: Movie? = null
-    var searchPrompt: String = ""
+    var selectedUser: UserCard? = null
+    var movieSearchPrompt: String = ""
+    var userSearchPrompt: String = ""
 
     var navController: NavController? = null
     private val databaseReference = FrodoDatabase()
@@ -62,9 +65,6 @@ class SharedViewModel : ViewModel() {
 
     private val _allGroups = MutableStateFlow<List<Group>>(emptyList())
     val allGroups: StateFlow<List<Group>> = _allGroups.asStateFlow()
-
-    private val _allUsers = MutableStateFlow<List<UserCard>>(emptyList())
-    val allUsers: StateFlow<List<UserCard>> = _allUsers.asStateFlow()
 
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
     val messages: StateFlow<List<Message>> = _messages.asStateFlow()
@@ -154,13 +154,6 @@ class SharedViewModel : ViewModel() {
         val darkTheme = this.sharedPreferences.getBoolean("isDarkTheme", false)
         if (darkTheme) {
             toggleTheme()
-        }
-    }
-
-    fun getAllUsers() {
-        viewModelScope.launch {
-            val users = databaseReference.fetchAllUsers()
-            _allUsers.value = users
         }
     }
 
@@ -291,7 +284,7 @@ class SharedViewModel : ViewModel() {
                         genresViewModel.loadGenresFromApi(user.genres)
                         genresViewModel.genresUiState.first { it.genresList.isNotEmpty() }
 
-                        navController?.navigate("search_user_page")
+                        navController?.navigate("home_page")
                     }
                 } else {
                     Log.e("Firebase", "Wrong username or password!")
@@ -321,7 +314,7 @@ class SharedViewModel : ViewModel() {
                             genresViewModel.loadGenresFromApi(user.genres)
                             genresViewModel.genresUiState.first { it.genresList.isNotEmpty() }
                             callback(true)
-                            navController?.navigate("search_user_page")
+                            navController?.navigate("home_page")
                         }
                     } else {
                         callback(false)
@@ -489,5 +482,10 @@ class SharedViewModel : ViewModel() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    suspend fun searchUsers(userName: String, limit: Int, callback: (List<UserCard>) -> Unit) {
+        val users = databaseReference.searchUsers(userName, limit)
+        callback(users)
     }
 }
