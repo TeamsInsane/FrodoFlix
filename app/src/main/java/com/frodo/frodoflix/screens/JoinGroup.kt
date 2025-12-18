@@ -1,5 +1,6 @@
 package com.frodo.frodoflix.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,6 +40,7 @@ fun JoinGroup(viewModel: SharedViewModel) {
     var searchQuery by remember { mutableStateOf("") }
     val allGroups by viewModel.allGroups.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val context = LocalContext.current
 
     val navController = viewModel.navController ?: return
 
@@ -59,7 +62,16 @@ fun JoinGroup(viewModel: SharedViewModel) {
                     GroupRowItem(
                         group = group,
                         isLoading = isLoading,
-                        onJoin = { viewModel.joinGroup(group.groupId) }
+                        onJoin = {
+                            viewModel.joinGroup(group.groupId) { success ->
+                                if (success) {
+                                    Toast.makeText(context, "Successfully joined group", Toast.LENGTH_SHORT).show()
+                                    navController.popBackStack()
+                                } else {
+                                    Toast.makeText(context, "Failed to join group", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
                     )
                 }
             }

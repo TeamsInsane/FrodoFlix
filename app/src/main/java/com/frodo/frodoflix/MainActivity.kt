@@ -25,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.frodo.frodoflix.screens.ChatPage
+import com.frodo.frodoflix.screens.GroupPage
 import com.frodo.frodoflix.screens.CreateGroup
 import com.frodo.frodoflix.screens.DisplayMoviePage
 import com.frodo.frodoflix.screens.HomePage
@@ -88,7 +89,7 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         val navBackStackEntry by navController.currentBackStackEntryAsState()
                         val currentRoute = navBackStackEntry?.destination?.route
-                        if (currentRoute in listOf("home_page", "search_page", "chat_page", "profile")) {
+                        if (currentRoute in listOf("home_page", "search_page", "group_page", "profile")) {
                             BottomMenuBar(navController)
                         }
                     },
@@ -108,11 +109,11 @@ class MainActivity : ComponentActivity() {
                             SearchPage(sharedViewModel)
                         }
 
-                        // Chat page
-                        composable("chat_page") {
-                            ChatPage(sharedViewModel)
+                        // Group page
+                        composable("group_page") {
+                            GroupPage(sharedViewModel)
                         }
-                      
+
                         // Search page
                         composable("search_user_page") {
                             SearchUserPage(sharedViewModel)
@@ -179,6 +180,13 @@ class MainActivity : ComponentActivity() {
 
                         composable("create_group") {
                             CreateGroup(sharedViewModel)
+                        }
+
+                        composable("chat_page/{groupId}") { backStackEntry ->
+                            val groupId = backStackEntry.arguments?.getString("groupId")
+                            if (groupId != null) {
+                                ChatPage(sharedViewModel, groupId)
+                            }
                         }
                     }
                 }

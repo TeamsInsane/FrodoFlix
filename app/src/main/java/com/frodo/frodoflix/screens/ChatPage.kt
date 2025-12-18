@@ -1,113 +1,115 @@
 package com.frodo.frodoflix.screens
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.frodo.frodoflix.data.Group
+import com.frodo.frodoflix.data.Message
+import com.frodo.frodoflix.staticitems.BackToPreviousScreen
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatPage(viewModel: SharedViewModel) {
-    val groups by viewModel.groups.collectAsState()
+fun ChatPage(sharedViewModel: SharedViewModel, groupId: String) {
+    val messages by sharedViewModel.messages.collectAsState()
+    var newMessage by remember { mutableStateOf("") }
+    val navController = sharedViewModel.navController ?: return
+    val currentUser = sharedViewModel.getUsername()
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Button(onClick = { viewModel.navController?.navigate("join_group") }) {
-                Text("Join Groups")
-            }
-            Button(onClick = { viewModel.navController?.navigate("create_group") }) {
-                Text("Create Groups")
+    LaunchedEffect(groupId) {
+        sharedViewModel.listenForMessages(groupId)
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        BackToPreviousScreen(navController)
+
+        LazyColumn(modifier = Modifier
+            .weight(1f)
+            .padding(horizontal = 8.dp)) {
+            items(messages) {
+                message ->
+                MessageBubble(message = message, isCurrentUser = message.username == currentUser)
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Your groups",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
-
-        LazyColumn {
-            items(groups) { group ->
-                Spacer(modifier = Modifier.height(8.dp))
-                GroupRowItem(group) {
-                    // TODO: Navigate to chat
+        TextField(
+            value = newMessage,
+            onValueChange = { newMessage = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            placeholder = { Text("Send a message") },
+            trailingIcon = {
+                IconButton(onClick = {
+                    if (newMessage.isNotBlank()) {
+                        sharedViewModel.sendMessage(groupId, newMessage)
+                        newMessage = ""
+                    }
+                }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Send,
+                        contentDescription = "Send"
+                    )
                 }
             }
-        }
+        )
     }
 }
 
 @Composable
-fun GroupRowItem(
-    group: Group,
-    onClick: () -> Unit
-) {
-    Card(
+fun MessageBubble(message: Message, isCurrentUser: Boolean) {
+    val bubbleColor = if (isCurrentUser) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surfaceContainer
+    val textColor = if (isCurrentUser) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
+            .padding(vertical = 4.dp),
+        horizontalArrangement = if (isCurrentUser) Arrangement.End else Arrangement.Start
     ) {
-        Row(
+        Box(
             modifier = Modifier
-                .padding(4.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .clip(RoundedCornerShape(8.dp))
+                .background(bubbleColor)
+                .padding(8.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(start = 16.dp)
-                    .weight(1f)
-            ) {
+            Column {
                 Text(
-                    text = group.groupName,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp
+                    text = message.username,
+                    fontSize = 12.sp,
+                    color = textColor
                 )
-
                 Text(
-                    text = group.groupDescription,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    maxLines = 1
+                    text = message.content,
+                    color = textColor
                 )
             }
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "Open group",
-                modifier = Modifier.padding(end = 16.dp)
-            )
         }
     }
 }
