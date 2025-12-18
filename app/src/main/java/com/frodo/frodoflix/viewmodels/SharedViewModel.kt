@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.frodo.frodoflix.data.Group
+import com.frodo.frodoflix.data.Message
 import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.data.User
@@ -27,6 +28,7 @@ import java.security.MessageDigest
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util.Base64
+import java.util.Date
 import java.util.Locale
 
 class SharedViewModel : ViewModel() {
@@ -64,10 +66,32 @@ class SharedViewModel : ViewModel() {
     private val _allUsers = MutableStateFlow<List<UserCard>>(emptyList())
     val allUsers: StateFlow<List<UserCard>> = _allUsers.asStateFlow()
 
+    private val _messages = MutableStateFlow<List<Message>>(emptyList())
+    val messages: StateFlow<List<Message>> = _messages.asStateFlow()
+
+    fun sendMessage(groupId: String, content: String) {
+        val username = currentUser?.username ?: return
+        val message = Message(groupId, username, content, Date().time)
+        databaseReference.sendMessage(message, viewModelScope)
+    }
+
+    fun listenForMessages(groupId: String) {
+        _messages.value = emptyList()
+        databaseReference.listenForMessages(groupId) { message ->
+            _messages.update { currentMessages ->
+                if (currentMessages.any { it.timestamp == message.timestamp && it.username == message.username }) {
+                    currentMessages
+                } else {
+                    (currentMessages + message).sortedBy { it.timestamp }
+                }
+            }
+        }
+    }
+
     private fun loadDataFromDB() {
         val currentUser = this.currentUser
         if (currentUser == null) {
-            Log.d("user", "ERORR null")
+            Log.d("user", "ERROR null")
             return
         }
 
@@ -89,21 +113,27 @@ class SharedViewModel : ViewModel() {
         loadThemeData()
     }
 
-    fun createGroup(groupId: String, groupName: String, groupDescription: String) {
+    fun createGroup(groupId: String, groupName: String, groupDescription: String, onResult: (Boolean) -> Unit) {
         val username = currentUser?.username ?: return
         _isLoading.value = true
-        databaseReference.createGroup(groupId, groupName, groupDescription, username, viewModelScope) {
-            loadUserGroups()
-            _isLoading.value = false
+        databaseReference.createGroup(groupId, groupName, groupDescription, username, viewModelScope) { success ->
+            viewModelScope.launch(Dispatchers.Main) {
+                loadUserGroups()
+                _isLoading.value = false
+                onResult(success)
+            }
         }
     }
 
-    fun joinGroup(groupId: String) {
+    fun joinGroup(groupId: String, onResult: (Boolean) -> Unit) {
         val username = currentUser?.username ?: return
         _isLoading.value = true
-        databaseReference.joinGroup(groupId, username, "member", viewModelScope) {
-            loadUserGroups()
-            _isLoading.value = false
+        databaseReference.joinGroup(groupId, username, "member", viewModelScope) { success ->
+            viewModelScope.launch(Dispatchers.Main) {
+                loadUserGroups()
+                _isLoading.value = false
+                onResult(success)
+            }
         }
     }
 

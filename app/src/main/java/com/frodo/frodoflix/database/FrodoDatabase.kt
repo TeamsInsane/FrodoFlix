@@ -3,6 +3,7 @@ package com.frodo.frodoflix.database
 import android.util.Log
 import com.frodo.frodoflix.data.Group
 import com.frodo.frodoflix.data.GroupMember
+import com.frodo.frodoflix.data.Message
 import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.data.User
 import com.frodo.frodoflix.data.UserCard
@@ -26,20 +27,57 @@ class FrodoDatabase {
     private val DATABASE_REFERENCE: String = dotenv["DATABASE_REFERENCE"]
     private val database = Firebase.database(DATABASE_REFERENCE)
 
-    fun createGroup(groupId: String, groupName: String, groupDescription: String, createdBy: String, scope: CoroutineScope, onResult: () -> Unit) {
+    fun sendMessage(message: Message, scope: CoroutineScope) {
         scope.launch(Dispatchers.IO) {
-            val group = Group(groupId, groupName, groupDescription, createdBy)
-            database.getReference("groups").child(groupId).setValue(group).await()
-            joinGroup(groupId, createdBy, "admin", scope, onResult)
+            database.getReference("messages").child(message.groupId!!).push().setValue(message).await()
         }
     }
 
-    fun joinGroup(groupId: String, username: String, role: String, scope: CoroutineScope, onResult: () -> Unit) {
+    fun listenForMessages(groupId: String, onMessage: (Message) -> Unit) {
+        val messagesRef = database.getReference("messages").child(groupId)
+        messagesRef.orderByChild("timestamp").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                snapshot.children.mapNotNull { it.getValue(Message::class.java) }.forEach(onMessage)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("Firebase", "Error getting messages", error.toException())
+            }
+        })
+    }
+
+    fun createGroup(groupId: String, groupName: String, groupDescription: String, createdBy: String, scope: CoroutineScope, onResult: (Boolean) -> Unit) {
         scope.launch(Dispatchers.IO) {
-            val member = GroupMember(role)
-            database.getReference("groups").child(groupId).child("members").child(username).setValue(member).await()
-            database.getReference("users").child(username).child("groups").child(groupId).setValue(member).await()
-            onResult()
+            try {
+                val groupRef = database.getReference("groups").child(groupId)
+                val snapshot = groupRef.get().await()
+                if (snapshot.exists()) {
+                    onResult(false)
+                } else {
+                    val group = Group(groupId, groupName, groupDescription, createdBy)
+                    groupRef.setValue(group).await()
+                    joinGroup(groupId, createdBy, "admin", scope) { success ->
+                        onResult(success)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("Firebase", "Error creating group", e)
+                onResult(false)
+            }
+        }
+    }
+
+    fun joinGroup(groupId: String, username: String, role: String, scope: CoroutineScope, onResult: (Boolean) -> Unit) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val member = GroupMember(role)
+                database.getReference("groups").child(groupId).child("members").child(username).setValue(member).await()
+                database.getReference("users").child(username).child("groups").child(groupId).setValue(member).await()
+                onResult(true)
+            } catch (e: Exception) {
+                Log.e("Firebase", "Error joining group", e)
+                onResult(false)
+            }
         }
     }
 
@@ -64,7 +102,7 @@ class FrodoDatabase {
             val groupsRef = database.getReference("groups")
             groupsRef.orderByChild("groupName")
                 .startAt(query)
-                .endAt(query + "\uf8ff")
+                .endAt(query + "")
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         val groups = mutableListOf<Group>()
@@ -273,5 +311,3 @@ class FrodoDatabase {
         }
     }
 }
-
-
