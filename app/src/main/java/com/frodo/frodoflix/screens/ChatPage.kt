@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
@@ -55,21 +56,33 @@ fun ChatPage(sharedViewModel: SharedViewModel, groupId: String) {
     val navController = sharedViewModel.navController ?: return
     val currentUser = sharedViewModel.getUsername()
 
+    val listState = rememberLazyListState()
+
     LaunchedEffect(groupId) {
         sharedViewModel.listenForMessages(groupId)
+    }
+
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) {
+            listState.scrollToItem(messages.lastIndex)
+        }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
         BackToPreviousScreen(navController)
 
         LazyColumn(
+            state = listState,
             modifier = Modifier
-            .weight(1f)
-            .padding(horizontal = 8.dp),
+                .weight(1f)
+                .padding(horizontal = 8.dp)
         ) {
-            items(messages) {
-                message ->
-                MessageBubble(message = message, isCurrentUser = message.username == currentUser, sharedViewModel = sharedViewModel)
+            items(messages) { message ->
+                MessageBubble(
+                    message = message,
+                    isCurrentUser = message.username == currentUser,
+                    sharedViewModel = sharedViewModel
+                )
             }
         }
 
