@@ -5,7 +5,11 @@ import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -23,11 +27,12 @@ fun BackToPreviousScreen(navController : NavController){
             .fillMaxWidth()
     ){
         Icon(
-            painter = painterResource(id = R.drawable.arrow_back),
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
             contentDescription = "Back to Home Page",
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier
-                .size(48.dp)
+                .padding(horizontal=8.dp, vertical=16.dp)
+                .size(30.dp)
                 .clickable {
                     Log.d("destination", navController.previousBackStackEntry?.destination?.route.toString())
 
