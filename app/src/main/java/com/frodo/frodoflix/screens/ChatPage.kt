@@ -34,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -81,7 +82,7 @@ fun ChatPage(sharedViewModel: SharedViewModel, groupId: String) {
                 MessageBubble(
                     message = message,
                     isCurrentUser = message.username == currentUser,
-                    sharedViewModel = sharedViewModel
+                    sharedViewModel = sharedViewModel,
                 )
             }
         }
@@ -111,7 +112,11 @@ fun ChatPage(sharedViewModel: SharedViewModel, groupId: String) {
 }
 
 @Composable
-fun MessageBubble(message: Message, isCurrentUser: Boolean, sharedViewModel: SharedViewModel) {
+fun MessageBubble(
+    message: Message,
+    isCurrentUser: Boolean,
+    sharedViewModel: SharedViewModel,
+) {
     val bubbleColor = if (isCurrentUser) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surfaceContainer
     val textColor = if (isCurrentUser) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
     val movieIdPattern = """\$(.*?)\$""".toRegex()
@@ -137,7 +142,10 @@ fun MessageBubble(message: Message, isCurrentUser: Boolean, sharedViewModel: Sha
                 )
                 if (matchResult != null) {
                     val movieId = matchResult.destructured.component1()
-                    SharedMovie(movieId = movieId, sharedViewModel = sharedViewModel)
+                    SharedMovie(
+                        movieId = movieId,
+                        sharedViewModel = sharedViewModel,
+                    )
                 } else {
                     Text(
                         text = message.content,
@@ -168,7 +176,13 @@ fun SharedMovie(movieId: String, sharedViewModel: SharedViewModel) {
     if (movie != null) {
         DisplayInlineMovie(movie!!, sharedViewModel)
     } else {
-        CircularProgressIndicator()
+        Box(
+            modifier = Modifier
+                .width(140.dp)
+                .height(300.dp)
+        ) {
+            CircularProgressIndicator()
+        }
     }
 }
 
@@ -196,7 +210,8 @@ fun DisplayInlineMovie(movie: Movie, sharedViewModel: SharedViewModel) {
                     .crossfade(true)
                     .build(),
                 contentDescription = "${movie.title} poster",
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
             ) {
                 when (painter.state) {
                     is AsyncImagePainter.State.Loading -> {

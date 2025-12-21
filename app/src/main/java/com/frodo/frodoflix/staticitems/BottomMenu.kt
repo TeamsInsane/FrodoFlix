@@ -33,7 +33,7 @@ fun BottomMenuBar(navController: NavController) {
     ) {
         Surface(
             modifier = Modifier
-                .fillMaxWidth(0.95f)
+                .fillMaxWidth()
                 .height(80.dp)
                 .padding(12.dp),
             shape = RoundedCornerShape(40.dp),

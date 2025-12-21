@@ -440,7 +440,7 @@ fun DisplayActor(actor: Actor) {
                 contentDescription = "${actor.name} profile picture",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(CircleShape)
+                    .clip(MaterialTheme.shapes.medium),
             ) {
                 // Progress indicator
                 when (painter.state) {
