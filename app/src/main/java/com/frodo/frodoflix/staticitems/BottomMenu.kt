@@ -33,7 +33,7 @@ fun BottomMenuBar(navController: NavController) {
     ) {
         Surface(
             modifier = Modifier
-                .fillMaxWidth(0.95f)
+                .fillMaxWidth()
                 .height(80.dp)
                 .padding(12.dp),
             shape = RoundedCornerShape(40.dp),
@@ -63,7 +63,7 @@ fun BottomMenuBar(navController: NavController) {
                 BottomMenuItem(
                     iconRes = R.drawable.chat_bubble_outline,
                     contentDescription = "Groups",
-                    isSelected = currentDestination == "Group_page",
+                    isSelected = currentDestination == "group_page",
                     onClick = { navController.navigate("group_page") }
                 )
 

@@ -291,7 +291,7 @@ class SharedViewModel : ViewModel() {
                         genresViewModel.loadGenresFromApi(user.genres)
                         genresViewModel.genresUiState.first { it.genresList.isNotEmpty() }
 
-                        navController?.navigate("search_user_page")
+                        navController?.navigate("home_page")
                     }
                 } else {
                     Log.e("Firebase", "Wrong username or password!")
@@ -321,7 +321,7 @@ class SharedViewModel : ViewModel() {
                             genresViewModel.loadGenresFromApi(user.genres)
                             genresViewModel.genresUiState.first { it.genresList.isNotEmpty() }
                             callback(true)
-                            navController?.navigate("search_user_page")
+                            navController?.navigate("home_page")
                         }
                     } else {
                         callback(false)

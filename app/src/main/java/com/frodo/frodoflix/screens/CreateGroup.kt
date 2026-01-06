@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -23,10 +24,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.frodo.frodoflix.staticitems.BackToPreviousScreen
 import com.frodo.frodoflix.viewmodels.SharedViewModel
+import java.util.UUID
 
 @Composable
 fun CreateGroup(viewModel: SharedViewModel) {
-    var groupId by remember { mutableStateOf("") }
     var groupName by remember { mutableStateOf("") }
     var groupDescription by remember { mutableStateOf("") }
     val navController = viewModel.navController ?: return
@@ -37,33 +38,31 @@ fun CreateGroup(viewModel: SharedViewModel) {
         Column(modifier = Modifier.padding(16.dp)) {
             BackToPreviousScreen(navController)
             OutlinedTextField(
-                value = groupId,
-                onValueChange = { groupId = it },
-                label = { Text("Group ID") }
-            )
-            OutlinedTextField(
                 value = groupName,
                 onValueChange = { groupName = it },
-                label = { Text("Group Name") }
+                label = { Text("Group Name") },
+                modifier = Modifier.fillMaxWidth()
             )
             OutlinedTextField(
                 value = groupDescription,
                 onValueChange = { groupDescription = it },
-                label = { Text("Group Description") }
+                label = { Text("Group Description") },
+                modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
-                    if (groupId.isNotBlank()) {
+                    if (groupName.isNotBlank()) {
+                        val groupId = UUID.randomUUID().toString()
                         viewModel.createGroup(groupId, groupName, groupDescription) { success ->
                             if (success) {
                                 navController.popBackStack()
                             } else {
-                                Toast.makeText(context, "Group ID already exists", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Failed to create group", Toast.LENGTH_SHORT).show()
                             }
                         }
                     } else {
-                        Toast.makeText(context, "Group ID cannot be empty", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Group Name cannot be empty", Toast.LENGTH_SHORT).show()
                     }
                 },
                 enabled = !isLoading

@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,6 +40,7 @@ import com.frodo.frodoflix.viewmodels.SharedViewModel
 fun JoinGroup(viewModel: SharedViewModel) {
     var searchQuery by remember { mutableStateOf("") }
     val allGroups by viewModel.allGroups.collectAsState()
+    val userGroups by viewModel.groups.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val context = LocalContext.current
 
@@ -57,22 +59,34 @@ fun JoinGroup(viewModel: SharedViewModel) {
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
-            LazyColumn {
-                items(allGroups) { group ->
-                    GroupRowItem(
-                        group = group,
-                        isLoading = isLoading,
-                        onJoin = {
-                            viewModel.joinGroup(group.groupId) { success ->
-                                if (success) {
-                                    Toast.makeText(context, "Successfully joined group", Toast.LENGTH_SHORT).show()
-                                    navController.popBackStack()
-                                } else {
-                                    Toast.makeText(context, "Failed to join group", Toast.LENGTH_SHORT).show()
+            if (searchQuery.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No groups found.")
+                }
+            } else {
+                LazyColumn {
+                    items(allGroups.take(15)) { group ->
+                        val isJoined = userGroups.any { it.groupId == group.groupId }
+                        GroupRowItem(
+                            group = group,
+                            isLoading = isLoading,
+                            isJoined = isJoined,
+                            onJoin = {
+                                viewModel.joinGroup(group.groupId) { success ->
+                                    if (success) {
+                                        Toast.makeText(context, "Successfully joined group", Toast.LENGTH_SHORT)
+                                            .show()
+                                        navController.popBackStack()
+                                    } else {
+                                        Toast.makeText(context, "Failed to join group", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -86,6 +100,7 @@ fun JoinGroup(viewModel: SharedViewModel) {
 fun GroupRowItem(
     group: Group,
     isLoading: Boolean,
+    isJoined: Boolean,
     onJoin: () -> Unit
 ) {
     Card(
@@ -117,11 +132,20 @@ fun GroupRowItem(
                     maxLines = 1
                 )
             }
-            Button(
-                onClick = onJoin,
-                enabled = !isLoading
-            ) {
-                Text("Join")
+            if (isJoined) {
+                Button(
+                    onClick = {},
+                    enabled = false,
+                ) {
+                    Text("Joined")
+                }
+            } else {
+                Button(
+                    onClick = onJoin,
+                    enabled = !isLoading
+                ) {
+                    Text("Join")
+                }
             }
         }
     }
