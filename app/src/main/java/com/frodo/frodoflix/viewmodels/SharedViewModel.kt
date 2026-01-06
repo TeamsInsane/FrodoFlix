@@ -1,6 +1,5 @@
 package com.frodo.frodoflix.viewmodels
 
-import android.R
 import android.content.SharedPreferences
 import android.util.Log
 
@@ -487,5 +486,36 @@ class SharedViewModel : ViewModel() {
     suspend fun searchUsers(userName: String, limit: Int, callback: (List<UserCard>) -> Unit) {
         val users = databaseReference.searchUsers(userName, limit)
         callback(users)
+    }
+
+    suspend fun doesUserFollow(
+        user: UserCard
+    ): Boolean {
+        val myName = currentUser!!.username
+        val targetName = user.username
+
+        return databaseReference.isUserFollowed(myName, targetName)
+    }
+
+    fun toggleFollow(user: UserCard) {
+        Log.d("toggle", user.username)
+
+        if (currentUser == null) return
+
+        Log.d("toggle", "mo kle")
+        val myName = currentUser!!.username
+        val targetName = user.username
+        if (myName == targetName) return
+
+        Log.d("toggle", "kle pa tud")
+        viewModelScope.launch {
+            val followed = databaseReference.isUserFollowed(myName, targetName)
+
+            if (followed) {
+                databaseReference.unfollowUser(myName, targetName)
+            } else {
+                databaseReference.followUser(myName, targetName)
+            }
+        }
     }
 }

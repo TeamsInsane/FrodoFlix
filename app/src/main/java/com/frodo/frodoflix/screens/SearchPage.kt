@@ -1,5 +1,6 @@
 package com.frodo.frodoflix.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +50,7 @@ import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.data.UserCard
 import com.frodo.frodoflix.viewmodels.SharedViewModel
+import com.google.firebase.logger.Logger
 import org.json.JSONArray
 
 enum class SearchMode {
@@ -159,7 +161,6 @@ fun MovieSearchContent(sharedViewModel: SharedViewModel) {
 
 @Composable
 fun UserSearchContent(sharedViewModel: SharedViewModel) {
-
     var userName by remember { mutableStateOf(sharedViewModel.userSearchPrompt) }
     var searchedUsers by remember { mutableStateOf<List<UserCard>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
@@ -214,6 +215,7 @@ fun UserSearchContent(sharedViewModel: SharedViewModel) {
     LazyColumn {
         items(searchedUsers) { user ->
             UserRowItem(user) {
+                sharedViewModel.selectedUser = user
                 sharedViewModel.navController?.navigate("user_page")
             }
         }

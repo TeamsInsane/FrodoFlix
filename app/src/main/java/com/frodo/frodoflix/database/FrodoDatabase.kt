@@ -10,6 +10,7 @@ import com.frodo.frodoflix.data.UserCard
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ServerValue
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import io.github.cdimascio.dotenv.dotenv
@@ -324,4 +325,44 @@ class FrodoDatabase {
         }
     }
 
+    suspend fun isUserFollowed(
+        myName: String,
+        targetName: String
+    ): Boolean {
+        return try {
+            val snapshot = database
+                .getReference("followers")
+                .child(targetName)
+                .child(myName)
+                .get()
+                .await()
+
+            snapshot.exists()
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+
+    fun followUser(myName: String, targetName: String) {
+        val updates = hashMapOf<String, Any>(
+            "/followers/$targetName/$myName" to true,
+            "following/$myName/$targetName" to true,
+            "/users/$targetName/followersCount" to ServerValue.increment(1),
+            "/users/$myName/followingCount" to ServerValue.increment(1)
+        )
+
+        database.getReference().updateChildren(updates)
+    }
+
+    fun unfollowUser(myName: String, targetName: String) {
+        val updates = hashMapOf<String, Any?>(
+            "/followers/$targetName/$myName" to null,
+            "/following/$myName/$targetName" to null,
+            "/users/$targetName/followersCount" to ServerValue.increment(-1),
+            "/users/$myName/followingCount" to ServerValue.increment(-1)
+        )
+
+        database.getReference().updateChildren(updates)
+    }
 }
