@@ -394,4 +394,24 @@ class FrodoDatabase {
 
         database.getReference().updateChildren(updates)
     }
+
+    suspend fun getFollowing(username: String): List<String> {
+        return try {
+            val followingSnapshot = database.getReference("following").child(username).get().await()
+            followingSnapshot.children.mapNotNull { it.key }
+        } catch (e: Exception) {
+            Log.e("Firebase", "Error getting following list", e)
+            emptyList()
+        }
+    }
+
+    suspend fun getUserRatings(username: String): List<Rating> {
+        return try {
+            val userRatingsSnapshot = database.getReference("user_ratings").child(username).get().await()
+            userRatingsSnapshot.children.mapNotNull { it.getValue(Rating::class.java) }
+        } catch (e: Exception) {
+            Log.e("Firebase", "Error getting user ratings", e)
+            emptyList()
+        }
+    }
 }

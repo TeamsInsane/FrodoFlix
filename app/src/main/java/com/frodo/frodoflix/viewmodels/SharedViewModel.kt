@@ -71,7 +71,21 @@ class SharedViewModel : ViewModel() {
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
     val messages: StateFlow<List<Message>> = _messages.asStateFlow()
 
+    private val _activityFeed = MutableStateFlow<List<Rating>>(emptyList())
+    val activityFeed: StateFlow<List<Rating>> = _activityFeed.asStateFlow()
+
     var searchMode by mutableStateOf(SearchMode.MOVIES)
+
+    fun fetchActivityFeed() {
+        viewModelScope.launch {
+            val following = databaseReference.getFollowing(currentUser!!.username)
+            val ratings = mutableListOf<Rating>()
+            for (user in following) {
+                ratings.addAll(databaseReference.getUserRatings(user))
+            }
+            _activityFeed.value = ratings.sortedByDescending { it.timestamp }
+        }
+    }
 
     fun sendMessage(groupId: String, content: String) {
         val username = currentUser?.username ?: return
@@ -111,6 +125,8 @@ class SharedViewModel : ViewModel() {
             val watchedList = databaseReference.getWatchedList(currentUser.username)
             currentUser.watchedlist = watchedList
             _watchedList.update { watchedList }
+
+            fetchActivityFeed()
         }
 
         loadUserGroups()
@@ -534,6 +550,8 @@ class SharedViewModel : ViewModel() {
             } else {
                 databaseReference.followUser(myName, targetName)
             }
+
+            fetchActivityFeed()
         }
     }
 }

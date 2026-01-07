@@ -24,6 +24,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.frodo.frodoflix.screens.ActivityPage
 import com.frodo.frodoflix.screens.ChatPage
 import com.frodo.frodoflix.screens.GroupPage
 import com.frodo.frodoflix.screens.CreateGroup
@@ -88,7 +89,7 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         val navBackStackEntry by navController.currentBackStackEntryAsState()
                         val currentRoute = navBackStackEntry?.destination?.route
-                        if (currentRoute in listOf("home_page", "search_page", "group_page", "user_page", "profile")) {
+                        if (currentRoute in listOf("home_page", "search_page", "activity_page", "group_page", "user_page", "profile")) {
                             BottomMenuBar(navController)
                         }
                     },
@@ -174,6 +175,10 @@ class MainActivity : ComponentActivity() {
 
                         composable("create_group") {
                             CreateGroup(sharedViewModel)
+                        }
+
+                        composable("activity_page") {
+                            ActivityPage(sharedViewModel)
                         }
 
                         composable("chat_page/{groupId}") { backStackEntry ->
