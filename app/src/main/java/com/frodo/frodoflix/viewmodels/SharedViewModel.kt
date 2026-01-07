@@ -181,7 +181,7 @@ class SharedViewModel : ViewModel() {
 
     suspend fun saveRating(rating: Int, comment: String) {
         val username = currentUser?.username ?: return
-        val newRating = Rating(rating, comment, username, System.currentTimeMillis())
+        val newRating = Rating(rating, comment, username, System.currentTimeMillis(), selectedMovie!!.id)
         databaseReference.saveRating(newRating, selectedMovie!!.id, username, viewModelScope)
     }
 

@@ -22,8 +22,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,7 +36,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.frodo.frodoflix.R
+import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.viewmodels.SharedViewModel
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -48,7 +54,14 @@ fun ActivityPage(sharedViewModel: SharedViewModel) {
         onRefresh = { sharedViewModel.fetchActivityFeed() }
     ) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(ratings) {
+            items(ratings) { it ->
+                var movieTitle by remember { mutableStateOf("") }
+
+                LaunchedEffect(it.movieId) {
+                    val movieDetails = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/movie/${it.movieId}", "") as? JSONObject
+                    movieTitle = movieDetails?.getString("title") ?: ""
+                }
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -85,8 +98,13 @@ fun ActivityPage(sharedViewModel: SharedViewModel) {
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
-
                         }
+
+                        Text(
+                            text = movieTitle,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold
+                        )
 
                         Spacer(modifier = Modifier.height(4.dp))
 
