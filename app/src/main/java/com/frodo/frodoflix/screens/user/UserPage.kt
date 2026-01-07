@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +28,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Movie
+import com.frodo.frodoflix.data.Rating
+import com.frodo.frodoflix.database.FrodoDatabase
 import com.frodo.frodoflix.screens.profile.DisplayMovie
 import com.frodo.frodoflix.staticitems.BackToPreviousScreen
 import com.frodo.frodoflix.viewmodels.SharedViewModel
@@ -38,6 +41,12 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
     val navController = sharedViewModel.navController ?: return
 
     if (user == null) return
+
+    var ratings by remember { mutableStateOf<List<Rating>>(emptyList()) }
+
+    LaunchedEffect(user.username) {
+        ratings = FrodoDatabase().getUserRatings(user.username)
+    }
 
 
     LazyColumn {
@@ -116,6 +125,70 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
                 ) {
                     Text(if (isFollowed) "Unfollow" else "Follow")
                 }
+            }
+        }
+
+        // Ratings
+        item {
+            Text(
+                text = "Ratings",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
+        items(ratings) { rating ->
+            var movie by remember { mutableStateOf<Movie?>(null) }
+
+            LaunchedEffect(rating.movieId) {
+                val movieDetails = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/movie/${rating.movieId}?language=en-US", "") as? JSONObject
+                if (movieDetails != null) {
+                    val id = movieDetails.getInt("id")
+                    val title = movieDetails.getString("title")
+                    val overview = movieDetails.getString("overview")
+                    val posterPath = movieDetails.getString("poster_path")
+                    val releaseDate = movieDetails.getString("release_date")
+                    movie = Movie(id, title, overview, posterPath, releaseDate)
+                }
+            }
+
+            if(movie != null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Review for ${movie!!.title}",
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            repeat(rating.rating) {
+                                Icon(
+                                    imageVector = Icons.Filled.Star,
+                                    contentDescription = "Star",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = rating.comment,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+                HorizontalDivider(thickness = 1.dp)
             }
         }
 
