@@ -1,7 +1,6 @@
 package com.frodo.frodoflix.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,12 +15,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,13 +37,18 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityPage(sharedViewModel: SharedViewModel) {
-    val ratings = sharedViewModel.activityFeed.collectAsState()
+    val ratings by sharedViewModel.activityFeed.collectAsState()
+    val isLoading by sharedViewModel.isLoading.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        LazyColumn {
-            items(ratings.value) {
+    PullToRefreshBox(
+        isRefreshing = isLoading,
+        onRefresh = { sharedViewModel.fetchActivityFeed() }
+    ) {
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            items(ratings) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

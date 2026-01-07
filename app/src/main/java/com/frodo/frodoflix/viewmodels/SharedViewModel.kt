@@ -78,12 +78,14 @@ class SharedViewModel : ViewModel() {
 
     fun fetchActivityFeed() {
         viewModelScope.launch {
+            _isLoading.value = true
             val following = databaseReference.getFollowing(currentUser!!.username)
             val ratings = mutableListOf<Rating>()
             for (user in following) {
                 ratings.addAll(databaseReference.getUserRatings(user))
             }
             _activityFeed.value = ratings.sortedByDescending { it.timestamp }
+            _isLoading.value = false
         }
     }
 
