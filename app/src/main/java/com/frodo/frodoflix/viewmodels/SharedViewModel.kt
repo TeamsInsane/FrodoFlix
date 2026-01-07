@@ -4,7 +4,9 @@ import android.content.SharedPreferences
 import android.util.Log
 
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
@@ -17,6 +19,7 @@ import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.data.User
 import com.frodo.frodoflix.data.UserCard
 import com.frodo.frodoflix.database.FrodoDatabase
+import com.frodo.frodoflix.screens.SearchMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -67,6 +70,8 @@ class SharedViewModel : ViewModel() {
 
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
     val messages: StateFlow<List<Message>> = _messages.asStateFlow()
+
+    var searchMode by mutableStateOf(SearchMode.MOVIES)
 
     fun sendMessage(groupId: String, content: String) {
         val username = currentUser?.username ?: return
@@ -405,6 +410,23 @@ class SharedViewModel : ViewModel() {
 
         return ""
     }
+
+    fun getFollowing(): Int {
+        if (currentUser != null) {
+            return currentUser!!.followingCount
+        }
+
+        return 0
+    }
+
+    fun getFollowers(): Int {
+        if (currentUser != null) {
+            return currentUser!!.followersCount
+        }
+
+        return 0
+    }
+
 
     fun getEmail(): String {
         if (currentUser != null) {

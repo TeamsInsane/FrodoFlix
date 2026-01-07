@@ -68,21 +68,58 @@ fun SearchToggle(
             .fillMaxWidth()
             .padding(12.dp)
             .clip(RoundedCornerShape(24.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant),
+            .background(MaterialTheme.colorScheme.surfaceVariant)
     ) {
-        ToggleItem(
-            text = "Movies",
-            selected = selected == SearchMode.MOVIES,
-            modifier = Modifier.weight(1f)
-        ) { onSelected(SearchMode.MOVIES) }
+        // Movies half
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .clickable { onSelected(SearchMode.MOVIES) }
+                .background(
+                    if (selected == SearchMode.MOVIES)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.surfaceVariant
+                )
+                .padding(vertical = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                "Movies",
+                fontWeight = SemiBold,
+                color = if (selected == SearchMode.MOVIES)
+                    MaterialTheme.colorScheme.onPrimary
+                else
+                    MaterialTheme.colorScheme.onSurface
+            )
+        }
 
-        ToggleItem(
-            text = "Users",
-            selected = selected == SearchMode.USERS,
-            modifier = Modifier.weight(1f)
-        ) { onSelected(SearchMode.USERS) }
+        // Users half
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .clickable { onSelected(SearchMode.USERS) }
+                .background(
+                    if (selected == SearchMode.USERS)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.surfaceVariant
+                )
+                .padding(vertical = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                "Users",
+                fontWeight = SemiBold,
+                color = if (selected == SearchMode.USERS)
+                    MaterialTheme.colorScheme.onPrimary
+                else
+                    MaterialTheme.colorScheme.onSurface
+            )
+        }
     }
 }
+
 
 @Composable
 private fun ToggleItem(
@@ -115,8 +152,6 @@ private fun ToggleItem(
 
 @Composable
 fun SearchPage(sharedViewModel: SharedViewModel) {
-    var searchMode by remember { mutableStateOf(SearchMode.MOVIES) }
-
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
@@ -128,18 +163,13 @@ fun SearchPage(sharedViewModel: SharedViewModel) {
         ) {
 
             SearchToggle(
-                selected = searchMode,
-                onSelected = { searchMode = it }
+                selected = sharedViewModel.searchMode,
+                onSelected = { sharedViewModel.searchMode = it }
             )
 
-            when (searchMode) {
-                SearchMode.MOVIES -> {
-                    MovieSearchContent(sharedViewModel)
-                }
-
-                SearchMode.USERS -> {
-                    UserSearchContent(sharedViewModel)
-                }
+            when (sharedViewModel.searchMode) {
+                SearchMode.MOVIES -> MovieSearchContent(sharedViewModel)
+                SearchMode.USERS -> UserSearchContent(sharedViewModel)
             }
         }
     }
@@ -158,6 +188,8 @@ fun MovieSearchContent(sharedViewModel: SharedViewModel) {
         sharedViewModel.movieSearchPrompt
     )
 }
+
+
 
 @Composable
 fun UserSearchContent(sharedViewModel: SharedViewModel) {
@@ -185,8 +217,8 @@ fun UserSearchContent(sharedViewModel: SharedViewModel) {
             singleLine = true,
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
-                .weight(1f)
-                .padding(end = 8.dp, bottom = 8.dp)
+                .fillMaxWidth()
+                .height(56.dp)
         )
     }
 
@@ -197,9 +229,8 @@ fun UserSearchContent(sharedViewModel: SharedViewModel) {
 
             sharedViewModel.searchUsers(userName, limit = 20) { users ->
                 searchedUsers = users
+                isLoading = false
             }
-
-            isLoading = false
         } else {
             searchedUsers = emptyList()
         }
@@ -222,8 +253,6 @@ fun UserSearchContent(sharedViewModel: SharedViewModel) {
     }
 }
 
-
-
 @Composable
 fun DisplayMoviesSearch(sharedViewModel: SharedViewModel, savedMovieName: String) {
     var movieName by remember { mutableStateOf(savedMovieName) }
@@ -232,7 +261,10 @@ fun DisplayMoviesSearch(sharedViewModel: SharedViewModel, savedMovieName: String
     LaunchedEffect(movieName) {
         if (movieName.isNotEmpty()) {
             kotlinx.coroutines.delay(300)
-            movies = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/search/movie?query=$movieName&include_adult=false&language=en-US&page=1", "results") as JSONArray?
+            movies = TMDB.getDataFromTMDB(
+                "https://api.themoviedb.org/3/search/movie?query=$movieName&include_adult=false&language=en-US&page=1",
+                "results"
+            ) as JSONArray?
         } else {
             movies = null
         }
@@ -240,18 +272,22 @@ fun DisplayMoviesSearch(sharedViewModel: SharedViewModel, savedMovieName: String
 
     Row(
         modifier = Modifier
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         OutlinedTextField(
             value = movieName,
-            onValueChange = { movieName = it; sharedViewModel.movieSearchPrompt = movieName },
+            onValueChange = {
+                movieName = it
+                sharedViewModel.movieSearchPrompt = movieName
+            },
             label = { Text("Name of the movie ...") },
             singleLine = true,
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
-                .weight(1f)
-                .padding(end = 8.dp)
+                .fillMaxWidth()
+                .height(56.dp)
         )
     }
 

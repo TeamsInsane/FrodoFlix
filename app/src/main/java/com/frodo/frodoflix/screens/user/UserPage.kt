@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,106 +39,110 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
 
     if (user == null) return
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-        ) {
-            item {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
+
+    LazyColumn {
+        item {
+            BackToPreviousScreen(navController)
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 24.dp)
+            ) {
+                // Avatar
+                Image(
+                    painter = rememberAsyncImagePainter(user.profileImageUrl),
+                    contentDescription = "User Avatar",
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 24.dp)
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surface),
+                    contentScale = ContentScale.Crop
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Name
+                Text(
+                    text = user.username,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                var isFollowed by remember { mutableStateOf(false) }
+                var followersCount by remember { mutableIntStateOf(user.followersCount) }
+
+                LaunchedEffect(user.username) {
+                    isFollowed = sharedViewModel.doesUserFollow(user)
+                    followersCount = user.followersCount
+                }
+
+                // Followers / Following
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    BackToPreviousScreen(navController)
-
-                    // Avatar
-                    Image(
-                        painter = rememberAsyncImagePainter(user.profileImageUrl),
-                        contentDescription = "User Avatar",
-                        modifier = Modifier
-                            .size(120.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surface),
-                        contentScale = ContentScale.Crop
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Name
-                    Text(
-                        text = user.username,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Followers / Following
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = "${user.followersCount}", fontWeight = FontWeight.Bold)
-                            Text(text = "Followers", fontSize = 12.sp)
-                        }
-
-                        Spacer(modifier = Modifier.width(32.dp))
-
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = "${user.followingCount}", fontWeight = FontWeight.Bold)
-                            Text(text = "Following", fontSize = 12.sp)
-                        }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "$followersCount", fontWeight = FontWeight.Bold)
+                        Text(text = "Followers", fontSize = 12.sp)
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.width(32.dp))
 
-                    var isFollowed by remember { mutableStateOf(false) }
-
-                    LaunchedEffect(user.username) {
-                        isFollowed = sharedViewModel.doesUserFollow(user)
-                    }
-
-                    // Follow / Unfollow Button
-                    Button(
-                        onClick = { sharedViewModel.toggleFollow(user) },
-                        shape = MaterialTheme.shapes.medium
-                    ) {
-                        Text(if (isFollowed) "Unfollow" else "Follow")
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "${user.followingCount}", fontWeight = FontWeight.Bold)
+                        Text(text = "Following", fontSize = 12.sp)
                     }
                 }
-            }
 
-            // WATCHLIST
-            item {
-                Text(
-                    text = "Watchlist",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
-            items(user.watchlist) { movie ->
-                MovieRowItem(movie)
-            }
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // Fav LIST
-            item {
-                Text(
-                    text = "Watched",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
+                // Follow / Unfollow Button
+                Button(
+                    onClick = {
+                        if (isFollowed) {
+                            followersCount -= 1
+                        } else {
+                            followersCount += 1
+                        }
+                        isFollowed = !isFollowed
+
+                        sharedViewModel.toggleFollow(user)
+                    },
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text(if (isFollowed) "Unfollow" else "Follow")
+                }
             }
-            items(user.favlist) { movie ->
-                MovieRowItem(movie)
-            }
+        }
+
+        // WATCHLIST
+        item {
+            Text(
+                text = "Watchlist",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
+        items(user.watchlist) { movie ->
+            MovieRowItem(movie)
+        }
+
+        // Fav LIST
+        item {
+            Text(
+                text = "Watched",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
+        items(user.favlist) { movie ->
+            MovieRowItem(movie)
         }
     }
 }
@@ -145,7 +150,7 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
 suspend fun getMovieFromTMDB(movieId: Int): JSONObject? {
     return try {
         val url = "https://api.themoviedb.org/3/movie/$movieId?language=en-US"
-        val data = TMDB.getDataFromTMDB(url, "") // tvoj TMDB helper
+        val data = TMDB.getDataFromTMDB(url, "")
         data as? JSONObject
     } catch (e: Exception) {
         null
@@ -194,4 +199,3 @@ fun MovieRowItem(movieId: Int) {
         }
     }
 }
-
