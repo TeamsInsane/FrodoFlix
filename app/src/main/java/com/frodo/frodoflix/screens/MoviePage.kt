@@ -72,6 +72,9 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
@@ -534,6 +537,19 @@ fun DisplayRatings(sharedViewModel: SharedViewModel) {
                         }
 
                     }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // Timestamp
+                    val date = Date(rating.timestamp)
+                    val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+                    Text(
+                        text = format.format(date),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
 
                     Spacer(modifier = Modifier.height(8.dp))
 

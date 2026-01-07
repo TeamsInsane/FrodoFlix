@@ -166,7 +166,7 @@ class SharedViewModel : ViewModel() {
 
         val ratingList = getRatingList().toMutableList()
         ratingList.removeAll { it.username == username }
-        ratingList.add(Rating(rating, comment, username))
+        ratingList.add(Rating(rating, comment, username, System.currentTimeMillis()))
 
         databaseReference.saveRating(ratingList, selectedMovie!!.id, viewModelScope)
     }
