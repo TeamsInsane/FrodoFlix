@@ -10,6 +10,7 @@ import com.frodo.frodoflix.data.UserCard
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ServerValue
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import io.github.cdimascio.dotenv.dotenv
@@ -221,16 +222,6 @@ class FrodoDatabase {
         }
     }
 
-    suspend fun fetchAllUsers(): List<UserCard> {
-        return try {
-            val snapshot = database.getReference("users").get().await()
-            snapshot.children.mapNotNull { it.getValue(UserCard::class.java) }
-        } catch (e: Exception) {
-            Log.e("Firebase", "Error getting all users", e)
-            emptyList()
-        }
-    }
-
     fun fetchUser(username: String, scope: CoroutineScope, onResult: (User?) -> Unit) {
         scope.launch(Dispatchers.IO) {
             database.getReference("users").child(username).get()
@@ -309,5 +300,69 @@ class FrodoDatabase {
                 override fun onCancelled(error: DatabaseError) {}
             })
         }
+    }
+
+    suspend fun searchUsers(
+        query: String,
+        limit: Int = 20
+    ): List<UserCard> {
+        return try {
+            val snapshot = database
+                .getReference("users")
+                .orderByChild("username")
+                .startAt(query)
+                .endAt(query + "\uf8ff")
+                .limitToFirst(limit)
+                .get()
+                .await()
+
+            snapshot.children.mapNotNull {
+                it.getValue(UserCard::class.java)
+            }
+        } catch (e: Exception) {
+            Log.e("Firebase", "Error searching users", e)
+            emptyList()
+        }
+    }
+
+    suspend fun isUserFollowed(
+        myName: String,
+        targetName: String
+    ): Boolean {
+        return try {
+            val snapshot = database
+                .getReference("followers")
+                .child(targetName)
+                .child(myName)
+                .get()
+                .await()
+
+            snapshot.exists()
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+
+    fun followUser(myName: String, targetName: String) {
+        val updates = hashMapOf<String, Any>(
+            "/followers/$targetName/$myName" to true,
+            "following/$myName/$targetName" to true,
+            "/users/$targetName/followersCount" to ServerValue.increment(1),
+            "/users/$myName/followingCount" to ServerValue.increment(1)
+        )
+
+        database.getReference().updateChildren(updates)
+    }
+
+    fun unfollowUser(myName: String, targetName: String) {
+        val updates = hashMapOf<String, Any?>(
+            "/followers/$targetName/$myName" to null,
+            "/following/$myName/$targetName" to null,
+            "/users/$targetName/followersCount" to ServerValue.increment(-1),
+            "/users/$myName/followingCount" to ServerValue.increment(-1)
+        )
+
+        database.getReference().updateChildren(updates)
     }
 }

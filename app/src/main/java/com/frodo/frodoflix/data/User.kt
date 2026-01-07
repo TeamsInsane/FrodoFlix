@@ -8,5 +8,7 @@ data class User(
     var genres: List<String> = emptyList(),
     var favlist: List<Int> = emptyList(),
     var watchlist: List<Int> = emptyList(),
-    var watchedlist: List<Int> = emptyList()
+    var watchedlist: List<Int> = emptyList(),
+    val followersCount: Int = 0,
+    val followingCount: Int = 0,
 )

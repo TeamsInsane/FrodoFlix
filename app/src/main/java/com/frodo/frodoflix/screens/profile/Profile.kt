@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -28,9 +29,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.frodo.frodoflix.R
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
@@ -39,31 +43,188 @@ import com.frodo.frodoflix.viewmodels.SharedViewModel
 fun Profile(sharedViewModel: SharedViewModel) {
     val navController = sharedViewModel.navController ?: return
 
-    Box {
-        // Background Image
-        Image(
-            painter = painterResource(id = R.drawable.background_image),
-            contentDescription = "Background Image",
-            modifier = Modifier.fillMaxSize()
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(horizontal = 20.dp)
+                .fillMaxSize()
+        ) {
+            ProfileTopBar(navController)
+            ProfileHeader(sharedViewModel)
+            ProfileStats(sharedViewModel)
+            Spacer(modifier = Modifier.height(24.dp))
+            ProfileActions(sharedViewModel, navController)
+        }
+    }
+}
+
+@Composable
+private fun ProfileTopBar(navController: NavController) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp),
+        horizontalArrangement = Arrangement.End
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.settings),
+            contentDescription = "Settings",
+            modifier = Modifier
+                .size(28.dp)
+                .clickable { navController.navigate("settings") }
+        )
+    }
+}
+
+@Composable
+private fun ProfileHeader(sharedViewModel: SharedViewModel) {
+    val username = sharedViewModel.getUsername()
+    val lastOnline = sharedViewModel.getLastOnlineTime()
+    val profileImageUrl = "https://sm.ign.com/ign_ap/review/s/sekiro-sha/sekiro-shadows-die-twice-review_3sf1.jpg"
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        AsyncImage(
+            model = profileImageUrl,
+            contentDescription = "Profile picture",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+                .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
         )
 
-        Scaffold(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.25f)
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .padding(20.dp),
-            ) {
-                DisplaySettingsIcon(navController)
-                DisplayProfileIcon()
-                DisplayUsernameAndOnlineText(sharedViewModel)
-                DisplayFavMoviesButton(sharedViewModel, navController)
-                DisplayWatchList(sharedViewModel, navController)
-                DisplayWatchedList(sharedViewModel, navController)
-                DisplayFavouriteGenres(navController)
-            }
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = username,
+            style = MaterialTheme.typography.titleLarge,
+            fontSize = 28.sp
+        )
+
+        Text(
+            text = "Last online • $lastOnline",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
+    }
+}
+
+@Composable
+private fun ProfileStats(sharedViewModel: SharedViewModel) {
+    val followers = sharedViewModel.getFollowers()
+    val following = sharedViewModel.getFollowing()
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 20.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        StatItem("Followers", followers) {
+            sharedViewModel.navController?.navigate("followers")
         }
+        StatItem("Following", following) {
+            sharedViewModel.navController?.navigate("following")
+        }
+    }
+}
+
+@Composable
+private fun StatItem(
+    label: String,
+    count: Int,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable { onClick() }
+    ) {
+        Text(
+            text = count.toString(),
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
+    }
+}
+
+@Composable
+private fun ProfileActions(
+    sharedViewModel: SharedViewModel,
+    navController: NavController
+) {
+    val favCount = sharedViewModel.favList.collectAsState().value.size
+    val watchCount = sharedViewModel.watchlist.collectAsState().value.size
+    val watchedCount = sharedViewModel.watchedList.collectAsState().value.size
+
+    // Column with weight spacer to push buttons to bottom
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp)
+    ) {
+        Spacer(modifier = Modifier.weight(1f)) // pushes buttons down
+
+        ProfileButton("Favourite movies", favCount) {
+            navController.navigate("fav_page")
+        }
+
+        ProfileButton("Watchlist", watchCount) {
+            navController.navigate("watch_list")
+        }
+
+        ProfileButton("Watched", watchedCount) {
+            navController.navigate("watched_list")
+        }
+
+        ProfileButton("Favourite genres") {
+            navController.navigate("favourite_genres")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp)) // extra space from bottom
+    }
+}
+
+
+@Composable
+private fun ProfileButton(
+    title: String,
+    count: Int? = null,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .padding(vertical = 6.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 6.dp,
+            pressedElevation = 2.dp,
+            disabledElevation = 0.dp
+        ),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        )
+    ) {
+        Text(
+            text = if (count != null) "$title • $count" else title,
+            style = MaterialTheme.typography.bodyLarge
+        )
     }
 }
 

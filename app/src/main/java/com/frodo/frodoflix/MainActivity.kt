@@ -32,7 +32,6 @@ import com.frodo.frodoflix.screens.HomePage
 import com.frodo.frodoflix.screens.JoinGroup
 import com.frodo.frodoflix.screens.RateMovie
 import com.frodo.frodoflix.screens.SearchPage
-import com.frodo.frodoflix.screens.user.SearchUserPage
 import com.frodo.frodoflix.screens.profile.DisplayFavMoviesPage
 import com.frodo.frodoflix.screens.profile.DisplayWantToWatchPage
 import com.frodo.frodoflix.screens.profile.DisplayWatchedPage
@@ -89,7 +88,7 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         val navBackStackEntry by navController.currentBackStackEntryAsState()
                         val currentRoute = navBackStackEntry?.destination?.route
-                        if (currentRoute in listOf("home_page", "search_page", "group_page", "profile")) {
+                        if (currentRoute in listOf("home_page", "search_page", "group_page", "user_page", "profile")) {
                             BottomMenuBar(navController)
                         }
                     },
@@ -112,11 +111,6 @@ class MainActivity : ComponentActivity() {
                         // Group page
                         composable("group_page") {
                             GroupPage(sharedViewModel)
-                        }
-
-                        // Search page
-                        composable("search_user_page") {
-                            SearchUserPage(sharedViewModel)
                         }
 
                         // Profile Page

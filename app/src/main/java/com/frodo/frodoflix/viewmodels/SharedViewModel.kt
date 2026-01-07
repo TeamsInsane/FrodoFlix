@@ -4,7 +4,9 @@ import android.content.SharedPreferences
 import android.util.Log
 
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
@@ -17,6 +19,7 @@ import com.frodo.frodoflix.data.Rating
 import com.frodo.frodoflix.data.User
 import com.frodo.frodoflix.data.UserCard
 import com.frodo.frodoflix.database.FrodoDatabase
+import com.frodo.frodoflix.screens.SearchMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +36,9 @@ import java.util.Locale
 
 class SharedViewModel : ViewModel() {
     var selectedMovie: Movie? = null
-    var searchPrompt: String = ""
+    var selectedUser: UserCard? = null
+    var movieSearchPrompt: String = ""
+    var userSearchPrompt: String = ""
 
     var navController: NavController? = null
     private val databaseReference = FrodoDatabase()
@@ -63,11 +68,10 @@ class SharedViewModel : ViewModel() {
     private val _allGroups = MutableStateFlow<List<Group>>(emptyList())
     val allGroups: StateFlow<List<Group>> = _allGroups.asStateFlow()
 
-    private val _allUsers = MutableStateFlow<List<UserCard>>(emptyList())
-    val allUsers: StateFlow<List<UserCard>> = _allUsers.asStateFlow()
-
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
     val messages: StateFlow<List<Message>> = _messages.asStateFlow()
+
+    var searchMode by mutableStateOf(SearchMode.MOVIES)
 
     fun sendMessage(groupId: String, content: String) {
         val username = currentUser?.username ?: return
@@ -154,13 +158,6 @@ class SharedViewModel : ViewModel() {
         val darkTheme = this.sharedPreferences.getBoolean("isDarkTheme", false)
         if (darkTheme) {
             toggleTheme()
-        }
-    }
-
-    fun getAllUsers() {
-        viewModelScope.launch {
-            val users = databaseReference.fetchAllUsers()
-            _allUsers.value = users
         }
     }
 
@@ -414,6 +411,23 @@ class SharedViewModel : ViewModel() {
         return ""
     }
 
+    fun getFollowing(): Int {
+        if (currentUser != null) {
+            return currentUser!!.followingCount
+        }
+
+        return 0
+    }
+
+    fun getFollowers(): Int {
+        if (currentUser != null) {
+            return currentUser!!.followersCount
+        }
+
+        return 0
+    }
+
+
     fun getEmail(): String {
         if (currentUser != null) {
             return currentUser!!.email
@@ -488,6 +502,42 @@ class SharedViewModel : ViewModel() {
             }
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    suspend fun searchUsers(userName: String, limit: Int, callback: (List<UserCard>) -> Unit) {
+        val users = databaseReference.searchUsers(userName, limit)
+        callback(users)
+    }
+
+    suspend fun doesUserFollow(
+        user: UserCard
+    ): Boolean {
+        val myName = currentUser!!.username
+        val targetName = user.username
+
+        return databaseReference.isUserFollowed(myName, targetName)
+    }
+
+    fun toggleFollow(user: UserCard) {
+        Log.d("toggle", user.username)
+
+        if (currentUser == null) return
+
+        Log.d("toggle", "mo kle")
+        val myName = currentUser!!.username
+        val targetName = user.username
+        if (myName == targetName) return
+
+        Log.d("toggle", "kle pa tud")
+        viewModelScope.launch {
+            val followed = databaseReference.isUserFollowed(myName, targetName)
+
+            if (followed) {
+                databaseReference.unfollowUser(myName, targetName)
+            } else {
+                databaseReference.followUser(myName, targetName)
+            }
         }
     }
 }

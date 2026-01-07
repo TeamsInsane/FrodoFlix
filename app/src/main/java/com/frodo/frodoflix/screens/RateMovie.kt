@@ -168,7 +168,7 @@ fun DisplayReview(onResult: (String?) -> Unit) {
             label = { Text("Add a review...") },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(150.dp)
                 .padding(16.dp)
         )
     }
@@ -228,7 +228,7 @@ fun DisplaySaveReview(sharedViewModel: SharedViewModel, selectedRating: Int, com
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 64.dp),
+            .padding(top = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Button(
