@@ -2,6 +2,7 @@ package com.frodo.frodoflix.screens
 
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,17 +17,24 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -280,6 +288,8 @@ fun DisplayMovieBanner(bannerPath: String, sharedViewModel: SharedViewModel, mov
 
 @Composable
 fun RateWatchlistButton(sharedViewModel: SharedViewModel, navController: NavController, movie: Movie) {
+    var showShareDialog by remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -315,7 +325,7 @@ fun RateWatchlistButton(sharedViewModel: SharedViewModel, navController: NavCont
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = if (starsRated.intValue != -1) "Rated: ${starsRated.intValue}" else "Rate Movie",
+                text = if (starsRated.intValue != -1) "Rated: ${starsRated.intValue}" else "Rate",
                 fontWeight = FontWeight.SemiBold
             )
         }
@@ -349,6 +359,29 @@ fun RateWatchlistButton(sharedViewModel: SharedViewModel, navController: NavCont
                 fontWeight = FontWeight.SemiBold
             )
         }
+
+        Button(
+            onClick = { showShareDialog = true },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Share,
+                contentDescription = "Share icon",
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+
+    if (showShareDialog) {
+        ShareMovieDialog(
+            sharedViewModel = sharedViewModel,
+            onDismiss = {showShareDialog = false}
+        )
     }
 }
 
@@ -407,7 +440,7 @@ fun DisplayActor(actor: Actor) {
                 contentDescription = "${actor.name} profile picture",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(CircleShape)
+                    .clip(MaterialTheme.shapes.medium),
             ) {
                 // Progress indicator
                 when (painter.state) {
@@ -516,4 +549,70 @@ fun DisplayRatings(sharedViewModel: SharedViewModel) {
         }
 
     }
+}
+
+@Composable
+fun ShareMovieDialog(sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
+    val groups by sharedViewModel.groups.collectAsState(initial = emptyList())
+    var searchQuery by remember { mutableStateOf("") }
+
+    val filteredGroups = if (searchQuery.isEmpty()) {
+        groups
+    } else {
+        groups.filter { it.groupName.contains(searchQuery, ignoreCase = true) }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Share Movie") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    label = { Text("Search Groups") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                LazyColumn {
+                    items(filteredGroups) { group ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(vertical = 6.dp, horizontal = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(text = group.groupName)
+                            IconButton(
+                                onClick = {
+                                    sharedViewModel.selectedMovie?.let { movie ->
+                                        sharedViewModel.sendMessage(group.groupId, "$${movie.id}$")
+                                    }
+                                    sharedViewModel.navController?.navigate("chat_page/${group.groupId}")
+                                    onDismiss()
+                                },
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.Send,
+                                    contentDescription = "Send"
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
