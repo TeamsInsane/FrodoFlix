@@ -1,6 +1,8 @@
 package com.frodo.frodoflix.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -32,11 +35,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
+import coil.request.ImageRequest
 import com.frodo.frodoflix.R
 import com.frodo.frodoflix.api.TMDB
+import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 import org.json.JSONObject
 import java.text.SimpleDateFormat
@@ -54,12 +63,19 @@ fun ActivityPage(sharedViewModel: SharedViewModel) {
         onRefresh = { sharedViewModel.fetchActivityFeed() }
     ) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(ratings) { it ->
-                var movieTitle by remember { mutableStateOf("") }
+            items(ratings) { rating ->
+                var movie by remember { mutableStateOf<Movie?>(null) }
 
-                LaunchedEffect(it.movieId) {
-                    val movieDetails = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/movie/${it.movieId}", "") as? JSONObject
-                    movieTitle = movieDetails?.getString("title") ?: ""
+                LaunchedEffect(rating.movieId) {
+                    val movieDetails = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/movie/${rating.movieId}?language=en-US", "") as? JSONObject
+                    if (movieDetails != null) {
+                        val id = movieDetails.getInt("id")
+                        val title = movieDetails.getString("title")
+                        val overview = movieDetails.getString("overview")
+                        val posterPath = movieDetails.getString("poster_path")
+                        val releaseDate = movieDetails.getString("release_date")
+                        movie = Movie(id, title, overview, posterPath, releaseDate)
+                    }
                 }
 
                 Row(
@@ -83,14 +99,14 @@ fun ActivityPage(sharedViewModel: SharedViewModel) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Review by ${it.username}",
+                                text = "Review by ${rating.username}",
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.Bold
                             )
 
                             Spacer(modifier = Modifier.width(8.dp))
 
-                            repeat(it.rating) {
+                            repeat(rating.rating) {
                                 Icon(
                                     imageVector = Icons.Filled.Star,
                                     contentDescription = "Star",
@@ -100,15 +116,50 @@ fun ActivityPage(sharedViewModel: SharedViewModel) {
                             }
                         }
 
-                        Text(
-                            text = movieTitle,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.Bold
-                        )
+                        if (movie != null) {
+                            Text(
+                                text = movie!!.title,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .width(140.dp)
+                                    .height(200.dp)
+                                    .clickable {
+                                        sharedViewModel.selectedMovie = movie
+                                        sharedViewModel.navController?.navigate("movie_page")
+                                    }
+                            ) {
+                                SubcomposeAsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data("https://image.tmdb.org/t/p/w500/${movie!!.posterUrl}")
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = "${movie!!.title} poster",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                ) {
+                                    when (painter.state) {
+                                        is AsyncImagePainter.State.Loading -> {
+                                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                                        }
+                                        is AsyncImagePainter.State.Success -> {
+                                            SubcomposeAsyncImageContent()
+                                        }
+                                        else -> {}
+                                    }
+                                }
+                            }
+                        }
+
 
                         Spacer(modifier = Modifier.height(4.dp))
 
-                        val date = Date(it.timestamp)
+                        val date = Date(rating.timestamp)
                         val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
                         Text(
@@ -121,7 +172,7 @@ fun ActivityPage(sharedViewModel: SharedViewModel) {
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = it.comment,
+                            text = rating.comment,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
