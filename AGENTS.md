@@ -19,9 +19,9 @@ This is a crucial component of the app's architecture. It serves as a central da
 
 *   **User Authentication**: Manages user login, registration, and session persistence using `SharedPreferences`.
 *   **Data Management**: Holds and manages all application data, including movie information, user preferences, and lists (favorites, watchlist, watched).
-*   **Database Interaction**: Communicates with `FrodoDatabase` to perform CRUD operations on user and movie data.
-*   **UI State Management**: Manages the state of the UI, such as the current theme (dark or light mode), and exposes it to the composable functions.
-*   **API Interaction**: It indirectly interacts with the TMDB API through other components to fetch movie data.
+*   **Database Interaction**: Communicates with `FrodoDatabase` to perform CRUD operations on user and movie data, including user search, following/unfollowing, and group management.
+*   **UI State Management**: Manages the state of the UI, such as the current theme (dark or light mode), search modes, and exposes it to the composable functions.
+*   **API/DB Logic**: Handles all application-specific business logic, such as user search, group management, and social features, by interacting with `FrodoDatabase`. It primarily manages state for movie search, which is executed directly by the Composable.
 
 ### 3. `api/TMDB.kt`
 
@@ -35,18 +35,21 @@ This file contains the networking client for The Movie Database (TMDB) API. Its 
 
 This class encapsulates all interactions with the application's backend database, for which Firebase is used. Its key responsibilities are:
 
-*   **User Data Persistence**: Stores and retrieves user information, including usernames, hashed passwords, and email addresses.
+*   **User Data Persistence**: Stores and retrieves user information, including usernames, hashed passwords, and email addresses. It also provides functionality for searching users by name.
+*   **Social Features**: Implements user following and unfollowing logic, and updates followers/following counts.
 *   **Movie List Management**: Manages user-specific movie lists, such as favorites, watchlist, and watched movies.
-*   **Rating System**: Stores and retrieves movie ratings provided by users.
+*   **Rating System**: Stores and retrieves movie ratings and handles rating username changes.
 *   **Group Management**: Handles the creation, joining, and searching of groups.
+*   **Chat/Messaging**: Provides functionality to send messages and listen for new messages within a group.
 
 ### 5. `screens/` Directory
 
 This directory contains all the composable functions that represent the different screens of the application. Each file in this directory corresponds to a specific screen, such as:
 
 *   **`MainPage.kt`**: The home screen of the application.
-*   **`SearchPage.kt`**: The screen where users can search for movies.
+*   **`SearchPage.kt`**: The screen where users can search for movies and other users, allowing the user to toggle between the two search modes.
 *   **`Profile.kt`**: The user's profile screen.
+*   **`UserPage.kt`**: Displays the profile of another user, including their follower/following count, and a toggle button to follow/unfollow them. It also shows a list of movies from the user's watchlist and favorite list.
 *   **`LoginPage.kt` and `RegisterPage.kt`**: Screens for user authentication.
 *   **`DisplayMoviePage.kt`**: The screen that displays the details of a selected movie.
 *   **`RateMovie.kt`**: A screen for users to rate movies.
