@@ -156,12 +156,16 @@ class FrodoDatabase {
     }
 
     suspend fun deleteRating(username: String, movieID: Int, scope: CoroutineScope) {
-        val snapshot = database.getReference("movies").child(movieID.toString()).get().await()
-        val ratingList = snapshot.children.mapNotNull { it.getValue(Rating::class.java) }.toMutableList()
+        scope.launch(Dispatchers.IO) {
+            database.getReference("user_ratings").child(username).child(movieID.toString()).removeValue()
 
-        ratingList.removeIf { it.username == username }
+            val snapshot = database.getReference("movies").child(movieID.toString()).get().await()
+            val ratingList = snapshot.children.mapNotNull { it.getValue(Rating::class.java) }.toMutableList()
 
-        saveRating(ratingList, movieID, scope)
+            ratingList.removeIf { it.username == username }
+
+            database.getReference("movies").child(movieID.toString()).setValue(ratingList)
+        }
     }
 
     suspend fun getWatchList(username: String): List<Int> {
@@ -174,8 +178,15 @@ class FrodoDatabase {
         }
     }
 
-    fun saveRating(ratingList: MutableList<Rating>, movieID: Int, scope: CoroutineScope) {
+    fun saveRating(rating: Rating, movieID: Int, username: String, scope: CoroutineScope) {
         scope.launch(Dispatchers.IO) {
+            database.getReference("user_ratings").child(username).child(movieID.toString()).setValue(rating)
+
+            val snapshot = database.getReference("movies").child(movieID.toString()).get().await()
+            val ratingList = snapshot.children.mapNotNull { it.getValue(Rating::class.java) }.toMutableList()
+            ratingList.removeIf { it.username == username }
+            ratingList.add(rating)
+
             database.getReference("movies").child(movieID.toString()).setValue(ratingList)
         }
     }
@@ -299,6 +310,24 @@ class FrodoDatabase {
 
                 override fun onCancelled(error: DatabaseError) {}
             })
+
+            val oldUserRatingsRef = database.getReference("user_ratings").child(oldUsername)
+            oldUserRatingsRef.get().addOnSuccessListener { userRatingsSnapshot ->
+                if (userRatingsSnapshot.exists()) {
+                    val ratingsData = userRatingsSnapshot.value as? Map<String, Any>
+                    if (ratingsData != null) {
+                        val newRatingsData = ratingsData.mapValues {
+                            val ratingMap = it.value as Map<String, Any>
+                            ratingMap.plus("username" to newUsername)
+                        }
+
+                        val newUserRatingsRef = database.getReference("user_ratings").child(newUsername)
+                        newUserRatingsRef.setValue(newRatingsData).addOnSuccessListener {
+                            oldUserRatingsRef.removeValue()
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -311,7 +340,7 @@ class FrodoDatabase {
                 .getReference("users")
                 .orderByChild("username")
                 .startAt(query)
-                .endAt(query + "\uf8ff")
+                .endAt(query + "")
                 .limitToFirst(limit)
                 .get()
                 .await()
