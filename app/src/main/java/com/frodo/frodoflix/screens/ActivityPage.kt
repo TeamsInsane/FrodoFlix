@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
@@ -63,6 +64,15 @@ fun ActivityPage(sharedViewModel: SharedViewModel) {
         onRefresh = { sharedViewModel.fetchActivityFeed() }
     ) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
+            item {
+                Text(
+                    text = "Recent Activities",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
             items(ratings) { rating ->
                 var movie by remember { mutableStateOf<Movie?>(null) }
 

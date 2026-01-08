@@ -1,6 +1,7 @@
 package com.frodo.frodoflix.database
 
 import android.util.Log
+import androidx.compose.runtime.setValue
 import com.frodo.frodoflix.data.Group
 import com.frodo.frodoflix.data.GroupMember
 import com.frodo.frodoflix.data.Message
@@ -10,9 +11,11 @@ import com.frodo.frodoflix.data.UserCard
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ServerValue
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
+import com.google.firebase.messaging.FirebaseMessaging
 import io.github.cdimascio.dotenv.dotenv
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -314,10 +317,10 @@ class FrodoDatabase {
             val oldUserRatingsRef = database.getReference("user_ratings").child(oldUsername)
             oldUserRatingsRef.get().addOnSuccessListener { userRatingsSnapshot ->
                 if (userRatingsSnapshot.exists()) {
-                    val ratingsData = userRatingsSnapshot.value as? Map<String, Any>
+                    val ratingsData = userRatingsSnapshot.value as? Map<*, *>
                     if (ratingsData != null) {
                         val newRatingsData = ratingsData.mapValues {
-                            val ratingMap = it.value as Map<String, Any>
+                            val ratingMap = it.value as Map<*, *>
                             ratingMap.plus("username" to newUsername)
                         }
 
@@ -389,7 +392,7 @@ class FrodoDatabase {
             "/followers/$targetName/$myName" to null,
             "/following/$myName/$targetName" to null,
             "/users/$targetName/followersCount" to ServerValue.increment(-1),
-            "/users/$myName/followingCount" to ServerValue.increment(-1)
+            "/users/$myName/followingCount" to ServerValue.increment(-1),
         )
 
         database.getReference().updateChildren(updates)
@@ -413,5 +416,29 @@ class FrodoDatabase {
             Log.e("Firebase", "Error getting user ratings", e)
             emptyList()
         }
+    }
+
+    fun subscribeToGroupTopic(groupId: String) {
+        FirebaseMessaging.getInstance()
+            .subscribeToTopic("group_$groupId")
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("FCM", "Subscribed to topic group_$groupId")
+                } else {
+                    Log.e("FCM", "Failed to subscribe to topic group_$groupId")
+                }
+            }
+    }
+
+    fun unsubscribeFromGroupTopic(groupId: String) {
+        FirebaseMessaging.getInstance()
+            .unsubscribeFromTopic("group_$groupId")
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("FCM", "Unsubscribed to topic group_$groupId")
+                } else {
+                    Log.e("FCM", "Failed to unsubscribe to topic group_$groupId")
+                }
+            }
     }
 }

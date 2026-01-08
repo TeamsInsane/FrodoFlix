@@ -152,6 +152,7 @@ class SharedViewModel : ViewModel() {
         _isLoading.value = true
         databaseReference.joinGroup(groupId, username, "member", viewModelScope) { success ->
             viewModelScope.launch(Dispatchers.Main) {
+                databaseReference.subscribeToGroupTopic(groupId)
                 loadUserGroups()
                 _isLoading.value = false
                 onResult(success)
@@ -301,6 +302,7 @@ class SharedViewModel : ViewModel() {
                     viewModelScope.launch(Dispatchers.Main) {
                         genresViewModel.loadGenresFromApi(user.genres)
                         genresViewModel.genresUiState.first { it.genresList.isNotEmpty() }
+                        Log.d("saved", "found saved user, sainv token")
 
                         navController?.navigate("home_page")
                     }
