@@ -1,5 +1,4 @@
 const admin = require("firebase-admin");
-
 const serviceAccount = require("./frodobase-key.json");
 
 admin.initializeApp({
@@ -9,40 +8,42 @@ admin.initializeApp({
 
 const db = admin.database();
 const messagesRef = db.ref("/messages");
+const groupsRef = db.ref("/groups");
 
-// Listen for new messages in all existing groups
-messagesRef.once("value", snapshot => {
-  snapshot.forEach(groupSnapshot => {
-    const groupId = groupSnapshot.key;
-    const groupMessagesRef = groupSnapshot.ref;
+const groupNameCache = new Map();
 
-    // Attach child_added listener once per group
-    groupMessagesRef.orderByChild("timestamp").on("child_added", async messageSnapshot => {
-      const message = messageSnapshot.val();
-      if (!message || !message.username) return;
+messagesRef.on("child_added", groupSnapshot => {
+  const groupId = groupSnapshot.key;
+  const groupMessagesRef = groupSnapshot.ref;
 
-      console.log(`New message in group ${groupId} from ${message.username}: ${message.content}`);
+  groupMessagesRef.orderByChild("timestamp").on("child_added", async messageSnapshot => {
+    const message = messageSnapshot.val();
+    if (!message || !message.username) return;
+
+    try {
+      let groupName = groupNameCache.get(groupId);
+      if (!groupName) {
+        const groupSnap = await groupsRef.child(groupId).once("value");
+        groupName = groupSnap.val()?.groupName || groupId;
+        groupNameCache.set(groupId, groupName);
+      }
 
       const payload = {
         notification: {
-          title: `New message in group ${groupId}`,
-          body: message.content || "New message"
+          title: `${groupName}`,
+          body: message.username + ": " + message.content
         },
         topic: `group_${groupId}`,
         data: {
-          groupId: groupId,
           sender: message.username,
-          messageId: messageSnapshot.key
         }
       };
 
-      try {
-        const response = await admin.messaging().send(payload);
-        console.log(`Notification sent to group_${groupId}`, response);
-      } catch (error) {
-        console.error("Error sending notification:", error);
-      }
-    });
+      const response = await admin.messaging().send(payload);
+      console.log(`Notification sent to group_${groupId}`, response);
+    } catch (error) {
+      console.error("Error sending notification:", error);
+    }
   });
 });
 

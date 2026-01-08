@@ -140,6 +140,7 @@ class SharedViewModel : ViewModel() {
         _isLoading.value = true
         databaseReference.createGroup(groupId, groupName, groupDescription, username, viewModelScope) { success ->
             viewModelScope.launch(Dispatchers.Main) {
+                databaseReference.subscribeToGroupTopic(groupId)
                 loadUserGroups()
                 _isLoading.value = false
                 onResult(success)

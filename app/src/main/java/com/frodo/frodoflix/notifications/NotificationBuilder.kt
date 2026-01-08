@@ -16,15 +16,28 @@ class MyFirebaseMessagingService : FirebaseMessagingService(){
         const val CHANNEL_ID = "default_channel"
     }
 
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         val sender = remoteMessage.data["sender"]
         val prefs = this.getSharedPreferences("login", MODE_PRIVATE)
+        val title = remoteMessage.notification?.title
+            ?: "New message in ${remoteMessage.data["groupName"]}"
+
+        val body = remoteMessage.data["message"] ?: "New message"
+
+        Log.d("noti", remoteMessage.notification?.title.toString())
+        Log.d("noti", remoteMessage.notification?.body.toString())
+        Log.d("noti", sender.toString())
+        Log.d("noti", title.toString())
+        Log.d("noti", body.toString())
 
         val currentUser = prefs.getString("username", "")
 
         if (sender == currentUser){
             return
         }
+
+        showNotification(title, body, sender)
     }
 
     override fun onNewToken(token: String) {
@@ -32,13 +45,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService(){
     }
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
-    private fun showNotification(title: String, body: String) {
+    private fun showNotification(title: String, message: String, sender: String?) {
         createChannelIfNeeded()
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher_round)
             .setContentTitle(title)
-            .setContentText(body)
+            .setContentText("$sender: $message")
             .setAutoCancel(true)
             .build()
 
