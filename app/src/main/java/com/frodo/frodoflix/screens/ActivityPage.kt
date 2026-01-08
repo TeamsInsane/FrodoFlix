@@ -139,20 +139,12 @@ fun ActivityPage(sharedViewModel: SharedViewModel) {
                             )
                         }
 
+                        Spacer(modifier = Modifier.height(4.dp))
 
                         if (movie != null) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = movie!!.title,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    fontWeight = FontWeight.SemiBold,
-                                    modifier = Modifier.widthIn(max = LocalConfiguration.current.screenWidthDp.dp * 0.5f)
-                                )
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
                                 repeat(rating.rating) {
                                     Icon(
                                         imageVector = Icons.Filled.Star,
@@ -162,6 +154,15 @@ fun ActivityPage(sharedViewModel: SharedViewModel) {
                                     )
                                 }
                             }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = movie!!.title,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.widthIn(max = LocalConfiguration.current.screenWidthDp.dp * 0.5f)
+                            )
 
                             Spacer(modifier = Modifier.height(8.dp))
 

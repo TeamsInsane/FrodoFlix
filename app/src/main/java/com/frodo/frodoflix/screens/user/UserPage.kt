@@ -3,6 +3,7 @@ package com.frodo.frodoflix.screens.user
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -157,19 +158,25 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
+                        .clickable {
+                            sharedViewModel.selectedMovie = movie
+                            sharedViewModel.navController?.navigate("movie_page")
+                        }
                 ) {
+                    val posterUrl = "https://image.tmdb.org/t/p/w500/" + movie!!.posterUrl
+                    Image(
+                        painter = rememberAsyncImagePainter(posterUrl),
+                        contentDescription = "Movie Poster",
+                        modifier = Modifier.size(60.dp),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
                     Column {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "Review for ${movie!!.title}",
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
                             repeat(rating.rating) {
                                 Icon(
                                     imageVector = Icons.Filled.Star,
@@ -180,7 +187,13 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "${movie!!.title}",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(modifier = Modifier.height(2.dp))
 
                         Text(
                             text = rating.comment,
