@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -63,7 +62,7 @@ fun BottomMenuBar(navController: NavController) {
                 )
 
                 BottomMenuItem(
-                    icon = Icons.Default.Notifications,
+                    iconRes = R.drawable.group,
                     contentDescription = "Activity",
                     isSelected = currentDestination == "activity_page",
                     onClick = { navController.navigate("activity_page") }
@@ -93,7 +92,7 @@ fun BottomMenuItem(
     icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
     contentDescription: String,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
