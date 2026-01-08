@@ -220,7 +220,7 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
             )
         }
         items(user.watchlist.asReversed().take(3)) { movie ->
-            MovieRowItem(movie)
+            MovieRowItem(movie, sharedViewModel)
         }
 
         item {
@@ -238,7 +238,7 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
             )
         }
         items(user.favlist.asReversed().take(3)) { movie ->
-            MovieRowItem(movie)
+            MovieRowItem(movie, sharedViewModel)
         }
     }
 }
@@ -254,7 +254,7 @@ suspend fun getMovieFromTMDB(movieId: Int): JSONObject? {
 }
 
 @Composable
-fun MovieRowItem(movieId: Int) {
+fun MovieRowItem(movieId: Int, sharedViewModel: SharedViewModel) {
     var movieJson by remember { mutableStateOf<JSONObject?>(null) }
 
     LaunchedEffect(movieId) {
@@ -270,10 +270,24 @@ fun MovieRowItem(movieId: Int) {
     val posterUrl = "https://image.tmdb.org/t/p/w500" + movieJson!!.getString("poster_path")
     val releaseDate = movieJson!!.getString("release_date")
 
+    var movie by remember { mutableStateOf<Movie?>(null) }
+    if (movieJson != null) {
+        val id = movieJson!!.getInt("id")
+        val title = movieJson!!.getString("title")
+        val overview = movieJson!!.getString("overview")
+        val posterPath = movieJson!!.getString("poster_path")
+        val releaseDate = movieJson!!.getString("release_date")
+        movie = Movie(id, title, overview, posterPath, releaseDate)
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable {
+                sharedViewModel.selectedMovie = movie
+                sharedViewModel.navController?.navigate("movie_page")
+        },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
