@@ -71,7 +71,23 @@ class SharedViewModel : ViewModel() {
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
     val messages: StateFlow<List<Message>> = _messages.asStateFlow()
 
+    private val _activityFeed = MutableStateFlow<List<Rating>>(emptyList())
+    val activityFeed: StateFlow<List<Rating>> = _activityFeed.asStateFlow()
+
     var searchMode by mutableStateOf(SearchMode.MOVIES)
+
+    fun fetchActivityFeed() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            val following = databaseReference.getFollowing(currentUser!!.username)
+            val ratings = mutableListOf<Rating>()
+            for (user in following) {
+                ratings.addAll(databaseReference.getUserRatings(user))
+            }
+            _activityFeed.value = ratings.sortedByDescending { it.timestamp }
+            _isLoading.value = false
+        }
+    }
 
     fun sendMessage(groupId: String, content: String) {
         val username = currentUser?.username ?: return
@@ -111,6 +127,8 @@ class SharedViewModel : ViewModel() {
             val watchedList = databaseReference.getWatchedList(currentUser.username)
             currentUser.watchedlist = watchedList
             _watchedList.update { watchedList }
+
+            fetchActivityFeed()
         }
 
         loadUserGroups()
@@ -122,6 +140,7 @@ class SharedViewModel : ViewModel() {
         _isLoading.value = true
         databaseReference.createGroup(groupId, groupName, groupDescription, username, viewModelScope) { success ->
             viewModelScope.launch(Dispatchers.Main) {
+                databaseReference.subscribeToGroupTopic(groupId)
                 loadUserGroups()
                 _isLoading.value = false
                 onResult(success)
@@ -134,6 +153,7 @@ class SharedViewModel : ViewModel() {
         _isLoading.value = true
         databaseReference.joinGroup(groupId, username, "member", viewModelScope) { success ->
             viewModelScope.launch(Dispatchers.Main) {
+                databaseReference.subscribeToGroupTopic(groupId)
                 loadUserGroups()
                 _isLoading.value = false
                 onResult(success)
@@ -163,12 +183,8 @@ class SharedViewModel : ViewModel() {
 
     suspend fun saveRating(rating: Int, comment: String) {
         val username = currentUser?.username ?: return
-
-        val ratingList = getRatingList().toMutableList()
-        ratingList.removeAll { it.username == username }
-        ratingList.add(Rating(rating, comment, username))
-
-        databaseReference.saveRating(ratingList, selectedMovie!!.id, viewModelScope)
+        val newRating = Rating(rating, comment, username, System.currentTimeMillis(), selectedMovie!!.id)
+        databaseReference.saveRating(newRating, selectedMovie!!.id, username, viewModelScope)
     }
 
     suspend fun deleteRating() {
@@ -287,6 +303,7 @@ class SharedViewModel : ViewModel() {
                     viewModelScope.launch(Dispatchers.Main) {
                         genresViewModel.loadGenresFromApi(user.genres)
                         genresViewModel.genresUiState.first { it.genresList.isNotEmpty() }
+                        Log.d("saved", "found saved user, sainv token")
 
                         navController?.navigate("home_page")
                     }
@@ -538,6 +555,8 @@ class SharedViewModel : ViewModel() {
             } else {
                 databaseReference.followUser(myName, targetName)
             }
+
+            fetchActivityFeed()
         }
     }
 }

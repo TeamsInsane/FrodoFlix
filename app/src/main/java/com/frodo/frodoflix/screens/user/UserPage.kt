@@ -3,12 +3,14 @@ package com.frodo.frodoflix.screens.user
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +29,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Movie
+import com.frodo.frodoflix.data.Rating
+import com.frodo.frodoflix.database.FrodoDatabase
 import com.frodo.frodoflix.screens.profile.DisplayMovie
 import com.frodo.frodoflix.staticitems.BackToPreviousScreen
 import com.frodo.frodoflix.viewmodels.SharedViewModel
@@ -38,6 +42,12 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
     val navController = sharedViewModel.navController ?: return
 
     if (user == null) return
+
+    var ratings by remember { mutableStateOf<List<Rating>>(emptyList()) }
+
+    LaunchedEffect(user.username) {
+        ratings = FrodoDatabase().getUserRatings(user.username).sortedByDescending { it.timestamp }
+    }
 
 
     LazyColumn {
@@ -119,6 +129,87 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
             }
         }
 
+        // Ratings
+        item {
+            Text(
+                text = "Ratings",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
+        items(ratings.take(3)) { rating ->
+            var movie by remember { mutableStateOf<Movie?>(null) }
+
+            LaunchedEffect(rating.movieId) {
+                val movieDetails = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/movie/${rating.movieId}?language=en-US", "") as? JSONObject
+                if (movieDetails != null) {
+                    val id = movieDetails.getInt("id")
+                    val title = movieDetails.getString("title")
+                    val overview = movieDetails.getString("overview")
+                    val posterPath = movieDetails.getString("poster_path")
+                    val releaseDate = movieDetails.getString("release_date")
+                    movie = Movie(id, title, overview, posterPath, releaseDate)
+                }
+            }
+
+            if(movie != null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .clickable {
+                            sharedViewModel.selectedMovie = movie
+                            sharedViewModel.navController?.navigate("movie_page")
+                        },
+                        verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    val posterUrl = "https://image.tmdb.org/t/p/w500/" + movie!!.posterUrl
+                    Image(
+                        painter = rememberAsyncImagePainter(posterUrl),
+                        contentDescription = "Movie Poster",
+                        modifier = Modifier.size(60.dp),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            repeat(rating.rating) {
+                                Icon(
+                                    imageVector = Icons.Filled.Star,
+                                    contentDescription = "Star",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+
+                        Text(
+                            text = "${movie!!.title}",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(modifier = Modifier.height(2.dp))
+
+                        Text(
+                            text = rating.comment,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider(thickness = 1.dp)
+        }
+
         // WATCHLIST
         item {
             Text(
@@ -128,8 +219,13 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
         }
-        items(user.watchlist) { movie ->
-            MovieRowItem(movie)
+        items(user.watchlist.asReversed().take(3)) { movie ->
+            MovieRowItem(movie, sharedViewModel)
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider(thickness = 1.dp)
         }
 
         // Fav LIST
@@ -141,8 +237,8 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
         }
-        items(user.favlist) { movie ->
-            MovieRowItem(movie)
+        items(user.favlist.asReversed().take(3)) { movie ->
+            MovieRowItem(movie, sharedViewModel)
         }
     }
 }
@@ -158,7 +254,7 @@ suspend fun getMovieFromTMDB(movieId: Int): JSONObject? {
 }
 
 @Composable
-fun MovieRowItem(movieId: Int) {
+fun MovieRowItem(movieId: Int, sharedViewModel: SharedViewModel) {
     var movieJson by remember { mutableStateOf<JSONObject?>(null) }
 
     LaunchedEffect(movieId) {
@@ -174,10 +270,24 @@ fun MovieRowItem(movieId: Int) {
     val posterUrl = "https://image.tmdb.org/t/p/w500" + movieJson!!.getString("poster_path")
     val releaseDate = movieJson!!.getString("release_date")
 
+    var movie by remember { mutableStateOf<Movie?>(null) }
+    if (movieJson != null) {
+        val id = movieJson!!.getInt("id")
+        val title = movieJson!!.getString("title")
+        val overview = movieJson!!.getString("overview")
+        val posterPath = movieJson!!.getString("poster_path")
+        val releaseDate = movieJson!!.getString("release_date")
+        movie = Movie(id, title, overview, posterPath, releaseDate)
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable {
+                sharedViewModel.selectedMovie = movie
+                sharedViewModel.navController?.navigate("movie_page")
+        },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(

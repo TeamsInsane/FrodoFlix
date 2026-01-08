@@ -1,10 +1,15 @@
 package com.frodo.frodoflix
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,12 +23,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.frodo.frodoflix.screens.ActivityPage
 import com.frodo.frodoflix.screens.ChatPage
 import com.frodo.frodoflix.screens.GroupPage
 import com.frodo.frodoflix.screens.CreateGroup
@@ -46,15 +54,32 @@ import com.frodo.frodoflix.screens.user.DisplayUserPage
 import com.frodo.frodoflix.viewmodels.LifecycleViewModel
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
-
 class MainActivity : ComponentActivity() {
     private lateinit var sharedViewModel: SharedViewModel
     private lateinit var navController : NavHostController
     private val lifecycleViewModel: LifecycleViewModel by viewModels()
     private var hasBeenPaused = false
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        when (PackageManager.PERMISSION_GRANTED) {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) -> {
+            }
+            else -> {
+                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
+
+
+        setContent {
+            // Your Compose content...
+        }
 
         enableEdgeToEdge()
 
@@ -88,7 +113,7 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         val navBackStackEntry by navController.currentBackStackEntryAsState()
                         val currentRoute = navBackStackEntry?.destination?.route
-                        if (currentRoute in listOf("home_page", "search_page", "group_page", "user_page", "profile")) {
+                        if (currentRoute in listOf("home_page", "search_page", "activity_page", "group_page", "user_page", "profile")) {
                             BottomMenuBar(navController)
                         }
                     },
@@ -176,6 +201,10 @@ class MainActivity : ComponentActivity() {
                             CreateGroup(sharedViewModel)
                         }
 
+                        composable("activity_page") {
+                            ActivityPage(sharedViewModel)
+                        }
+
                         composable("chat_page/{groupId}") { backStackEntry ->
                             val groupId = backStackEntry.arguments?.getString("groupId")
                             if (groupId != null) {
@@ -225,4 +254,13 @@ class MainActivity : ComponentActivity() {
         val currentTime = System.currentTimeMillis()
         this.sharedViewModel.saveLastOnlineTime(currentTime)
     }
+
+    private val requestNotificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                // Permission granted — you can send notifications now
+            } else {
+                // Permission denied — handle accordingly
+            }
+        }
 }
