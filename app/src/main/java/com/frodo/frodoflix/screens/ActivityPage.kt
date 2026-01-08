@@ -197,13 +197,14 @@ fun ActivityPage(sharedViewModel: SharedViewModel) {
                             }
                         }
 
+                        if (rating.comment.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(8.dp))
 
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = rating.comment,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
+                            Text(
+                                text = rating.comment,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
                     }
                 }
 

@@ -46,7 +46,7 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
     var ratings by remember { mutableStateOf<List<Rating>>(emptyList()) }
 
     LaunchedEffect(user.username) {
-        ratings = FrodoDatabase().getUserRatings(user.username)
+        ratings = FrodoDatabase().getUserRatings(user.username).sortedByDescending { it.timestamp }
     }
 
 
@@ -138,7 +138,7 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
         }
-        items(ratings) { rating ->
+        items(ratings.take(3)) { rating ->
             var movie by remember { mutableStateOf<Movie?>(null) }
 
             LaunchedEffect(rating.movieId) {
@@ -157,11 +157,12 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
                         .clickable {
                             sharedViewModel.selectedMovie = movie
                             sharedViewModel.navController?.navigate("movie_page")
-                        }
+                        },
+                        verticalAlignment = Alignment.CenterVertically,
                 ) {
                     val posterUrl = "https://image.tmdb.org/t/p/w500/" + movie!!.posterUrl
                     Image(
@@ -201,8 +202,12 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
                         )
                     }
                 }
-                HorizontalDivider(thickness = 1.dp)
             }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider(thickness = 1.dp)
         }
 
         // WATCHLIST
@@ -214,8 +219,13 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
         }
-        items(user.watchlist) { movie ->
+        items(user.watchlist.asReversed().take(3)) { movie ->
             MovieRowItem(movie)
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider(thickness = 1.dp)
         }
 
         // Fav LIST
@@ -227,7 +237,7 @@ fun DisplayUserPage(sharedViewModel: SharedViewModel) {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
         }
-        items(user.favlist) { movie ->
+        items(user.favlist.asReversed().take(3)) { movie ->
             MovieRowItem(movie)
         }
     }
