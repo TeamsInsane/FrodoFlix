@@ -37,7 +37,9 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.frodo.frodoflix.R
 import com.frodo.frodoflix.viewmodels.SharedViewModel
-
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 
 @Composable
 fun Profile(sharedViewModel: SharedViewModel) {
@@ -84,7 +86,16 @@ private fun ProfileTopBar(navController: NavController) {
 private fun ProfileHeader(sharedViewModel: SharedViewModel) {
     val username = sharedViewModel.getUsername()
     val lastOnline = sharedViewModel.getLastOnlineTime()
-    val profileImageUrl = "https://sm.ign.com/ign_ap/review/s/sekiro-sha/sekiro-shadows-die-twice-review_3sf1.jpg"
+
+    val profileImageUri = sharedViewModel.profileImageUri.collectAsState().value
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            sharedViewModel.setProfileImage(it)
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -92,13 +103,16 @@ private fun ProfileHeader(sharedViewModel: SharedViewModel) {
     ) {
 
         AsyncImage(
-            model = profileImageUrl,
+            model = profileImageUri ?: R.drawable.frodo, // fallback slika
             contentDescription = "Profile picture",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape)
                 .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                .clickable {
+                    imagePickerLauncher.launch("image/*")
+                }
         )
 
         Spacer(modifier = Modifier.height(12.dp))

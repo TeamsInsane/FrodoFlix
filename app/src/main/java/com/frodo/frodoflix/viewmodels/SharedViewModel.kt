@@ -33,6 +33,8 @@ import java.text.SimpleDateFormat
 import java.util.Base64
 import java.util.Date
 import java.util.Locale
+import android.net.Uri
+
 
 class SharedViewModel : ViewModel() {
     var selectedMovie: Movie? = null
@@ -73,6 +75,8 @@ class SharedViewModel : ViewModel() {
 
     var searchMode by mutableStateOf(SearchMode.MOVIES)
 
+    private val _profileImageUri = MutableStateFlow<Uri?>(null)
+    val profileImageUri: StateFlow<Uri?> = _profileImageUri
     fun sendMessage(groupId: String, content: String) {
         val username = currentUser?.username ?: return
         val message = Message(groupId, username, content, Date().time)
@@ -539,5 +543,10 @@ class SharedViewModel : ViewModel() {
                 databaseReference.followUser(myName, targetName)
             }
         }
+    }
+
+
+    fun setProfileImage(uri: Uri) {
+        _profileImageUri.value = uri
     }
 }
