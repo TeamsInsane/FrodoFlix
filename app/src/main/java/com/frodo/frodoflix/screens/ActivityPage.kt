@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -35,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -73,6 +75,17 @@ fun ActivityPage(sharedViewModel: SharedViewModel) {
                 )
             }
 
+            if (ratings.isEmpty()) {
+                item {
+                    Text(
+                        text = "No activity yet.",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+
             items(ratings) { rating ->
                 var movie by remember { mutableStateOf<Movie?>(null) }
 
@@ -109,29 +122,46 @@ fun ActivityPage(sharedViewModel: SharedViewModel) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Review by ${rating.username}",
+                                text = "${rating.username}",
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.Bold
                             )
 
                             Spacer(modifier = Modifier.width(8.dp))
 
-                            repeat(rating.rating) {
-                                Icon(
-                                    imageVector = Icons.Filled.Star,
-                                    contentDescription = "Star",
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
+                            val date = Date(rating.timestamp)
+                            val format = SimpleDateFormat("yyyy-MM-dd, hh:mm a", java.util.Locale.getDefault())
+
+                            Text(
+                                text = format.format(date),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
 
+
                         if (movie != null) {
-                            Text(
-                                text = movie!!.title,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = movie!!.title,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontWeight = FontWeight.SemiBold,
+                                    modifier = Modifier.widthIn(max = LocalConfiguration.current.screenWidthDp.dp * 0.5f)
+                                )
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                repeat(rating.rating) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Star,
+                                        contentDescription = "Star",
+                                        tint = MaterialTheme.colorScheme.onSurface,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
 
                             Spacer(modifier = Modifier.height(8.dp))
 
@@ -165,18 +195,6 @@ fun ActivityPage(sharedViewModel: SharedViewModel) {
                                 }
                             }
                         }
-
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        val date = Date(rating.timestamp)
-                        val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-
-                        Text(
-                            text = format.format(date),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
 
 
                         Spacer(modifier = Modifier.height(8.dp))
