@@ -103,7 +103,7 @@ private fun ProfileHeader(sharedViewModel: SharedViewModel) {
     ) {
 
         AsyncImage(
-            model = profileImageUri ?: R.drawable.frodo, // fallback slika
+            model = profileImageUri ?: R.drawable.user, // fallback slika
             contentDescription = "Profile picture",
             contentScale = ContentScale.Crop,
             modifier = Modifier
