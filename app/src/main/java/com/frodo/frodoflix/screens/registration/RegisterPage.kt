@@ -30,16 +30,13 @@ fun RegisterPage(sharedViewModel: SharedViewModel) {
     var emailValue by remember { mutableStateOf("") }
     var passwordValue by remember { mutableStateOf("") }
 
-    Scaffold { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(40.dp),
-        ) {
-            RegisterText(sharedViewModel)
-            RegisterForm(usernameValue, {usernameValue = it}, emailValue, {emailValue = it}, passwordValue, {passwordValue = it})
-            DisplayRegister(usernameValue, emailValue, passwordValue, sharedViewModel)
-        }
+    Column(
+        modifier = Modifier
+            .padding(vertical = 40.dp, horizontal = 40.dp),
+    ) {
+        RegisterText(sharedViewModel)
+        RegisterForm(usernameValue, {usernameValue = it}, emailValue, {emailValue = it}, passwordValue, {passwordValue = it})
+        DisplayRegister(usernameValue, emailValue, passwordValue, sharedViewModel)
     }
 }
 

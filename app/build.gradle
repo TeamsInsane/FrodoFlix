@@ -58,6 +58,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation libs.androidx.room.ktx
     implementation libs.androidx.room.common
+    implementation libs.androidx.appcompat
 //    implementation libs.firebase.crashlytics.buildtools
     def room_version = "2.6.1"
     implementation "androidx.room:room-runtime:$room_version"

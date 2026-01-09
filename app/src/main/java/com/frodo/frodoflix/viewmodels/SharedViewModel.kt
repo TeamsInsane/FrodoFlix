@@ -33,6 +33,8 @@ import java.text.SimpleDateFormat
 import java.util.Base64
 import java.util.Date
 import java.util.Locale
+import android.net.Uri
+
 
 class SharedViewModel : ViewModel() {
     var selectedMovie: Movie? = null
@@ -76,6 +78,9 @@ class SharedViewModel : ViewModel() {
 
     var searchMode by mutableStateOf(SearchMode.MOVIES)
 
+    private val _profileImageUrl = MutableStateFlow<String?>(null)
+    val profileImageUrl: StateFlow<String?> = _profileImageUrl
+  
     fun fetchActivityFeed() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -116,6 +121,9 @@ class SharedViewModel : ViewModel() {
         }
 
         viewModelScope.launch {
+            _profileImageUrl.value =
+                databaseReference.getProfileImageUrl(currentUser.username)
+
             val favList = databaseReference.getFavList(currentUser.username)
             currentUser.favlist = favList
             _favList.update { favList }
@@ -511,6 +519,13 @@ class SharedViewModel : ViewModel() {
         }
     }
 
+    fun setProfileImageUrl(url: String) {
+        val username = currentUser?.username ?: return
+
+        _profileImageUrl.value = url
+        databaseReference.saveProfileImageUrl(username, url)
+    }
+
     fun saveLastOnlineTime(time: Long) {
         try {
             with(this.sharedPreferences.edit()) {
@@ -559,4 +574,7 @@ class SharedViewModel : ViewModel() {
             fetchActivityFeed()
         }
     }
+
+
+
 }

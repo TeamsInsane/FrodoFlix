@@ -29,16 +29,13 @@ fun LoginPage(sharedViewModel: SharedViewModel) {
     var emailValue by remember { mutableStateOf("") }
     var passwordValue by remember { mutableStateOf("") }
 
-    Scaffold { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(40.dp),
-        ) {
-            LoginText(sharedViewModel)
-            LoginForm(emailValue, { emailValue = it}, passwordValue, {passwordValue = it})
-            DisplayLogin(emailValue, passwordValue, sharedViewModel)
-        }
+    Column(
+        modifier = Modifier
+            .padding(vertical = 60.dp, horizontal = 40.dp),
+    ) {
+        LoginText(sharedViewModel)
+        LoginForm(emailValue, { emailValue = it}, passwordValue, {passwordValue = it})
+        DisplayLogin(emailValue, passwordValue, sharedViewModel)
     }
 }
 

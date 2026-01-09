@@ -37,7 +37,17 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.frodo.frodoflix.R
 import com.frodo.frodoflix.viewmodels.SharedViewModel
-
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 @Composable
 fun Profile(sharedViewModel: SharedViewModel) {
@@ -82,9 +92,15 @@ private fun ProfileTopBar(navController: NavController) {
 
 @Composable
 private fun ProfileHeader(sharedViewModel: SharedViewModel) {
+
     val username = sharedViewModel.getUsername()
     val lastOnline = sharedViewModel.getLastOnlineTime()
-    val profileImageUrl = "https://sm.ign.com/ign_ap/review/s/sekiro-sha/sekiro-shadows-die-twice-review_3sf1.jpg"
+
+    val profileImageUrl =
+        sharedViewModel.profileImageUrl.collectAsState().value
+
+    var showDialog by remember { mutableStateOf(false) }
+    var urlInput by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -92,14 +108,39 @@ private fun ProfileHeader(sharedViewModel: SharedViewModel) {
     ) {
 
         AsyncImage(
-            model = profileImageUrl,
+            model = profileImageUrl ?: R.drawable.user,
             contentDescription = "Profile picture",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape)
                 .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                .clickable {
+                    showDialog = true
+                }
         )
+
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text("Profile image URL") },
+                text = {
+                    TextField(
+                        value = urlInput,
+                        onValueChange = { urlInput = it },
+                        placeholder = { Text("https://...") }
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            sharedViewModel.setProfileImageUrl(urlInput)
+                            showDialog = false
+                        }
+                    ) { Text("OK") }
+                }
+            )
+        }
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -116,6 +157,7 @@ private fun ProfileHeader(sharedViewModel: SharedViewModel) {
         )
     }
 }
+
 
 @Composable
 private fun ProfileStats(sharedViewModel: SharedViewModel) {
