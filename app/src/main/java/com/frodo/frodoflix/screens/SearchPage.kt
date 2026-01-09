@@ -1,6 +1,5 @@
 package com.frodo.frodoflix.screens
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -218,7 +217,6 @@ fun UserSearchContent(sharedViewModel: SharedViewModel) {
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
         )
     }
 
@@ -287,7 +285,6 @@ fun DisplayMoviesSearch(sharedViewModel: SharedViewModel, savedMovieName: String
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
         )
     }
 

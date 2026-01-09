@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -61,6 +62,13 @@ fun BottomMenuBar(navController: NavController) {
                 )
 
                 BottomMenuItem(
+                    iconRes = R.drawable.group,
+                    contentDescription = "Activity",
+                    isSelected = currentDestination == "activity_page",
+                    onClick = { navController.navigate("activity_page") }
+                )
+
+                BottomMenuItem(
                     iconRes = R.drawable.chat_bubble_outline,
                     contentDescription = "Groups",
                     isSelected = currentDestination == "group_page",
@@ -80,10 +88,11 @@ fun BottomMenuBar(navController: NavController) {
 
 @Composable
 fun BottomMenuItem(
-    iconRes: Int,
+    iconRes: Int? = null,
+    icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
     contentDescription: String,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -102,12 +111,21 @@ fun BottomMenuItem(
                 .padding(10.dp),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                painter = painterResource(id = iconRes),
-                contentDescription = contentDescription,
-                tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(32.dp)
-            )
+            if (iconRes != null) {
+                Icon(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = contentDescription,
+                    tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(32.dp)
+                )
+            } else if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = contentDescription,
+                    tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
         }
     }
 }

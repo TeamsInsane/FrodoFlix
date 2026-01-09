@@ -2,6 +2,7 @@ package com.frodo.frodoflix.database
 
 import android.net.Uri
 import android.util.Log
+import androidx.compose.runtime.setValue
 import com.frodo.frodoflix.data.Group
 import com.frodo.frodoflix.data.GroupMember
 import com.frodo.frodoflix.data.Message
@@ -11,9 +12,11 @@ import com.frodo.frodoflix.data.UserCard
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ServerValue
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
+import com.google.firebase.messaging.FirebaseMessaging
 import io.github.cdimascio.dotenv.dotenv
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -157,12 +160,16 @@ class FrodoDatabase {
     }
 
     suspend fun deleteRating(username: String, movieID: Int, scope: CoroutineScope) {
-        val snapshot = database.getReference("movies").child(movieID.toString()).get().await()
-        val ratingList = snapshot.children.mapNotNull { it.getValue(Rating::class.java) }.toMutableList()
+        scope.launch(Dispatchers.IO) {
+            database.getReference("user_ratings").child(username).child(movieID.toString()).removeValue()
 
-        ratingList.removeIf { it.username == username }
+            val snapshot = database.getReference("movies").child(movieID.toString()).get().await()
+            val ratingList = snapshot.children.mapNotNull { it.getValue(Rating::class.java) }.toMutableList()
 
-        saveRating(ratingList, movieID, scope)
+            ratingList.removeIf { it.username == username }
+
+            database.getReference("movies").child(movieID.toString()).setValue(ratingList)
+        }
     }
 
     suspend fun getWatchList(username: String): List<Int> {
@@ -175,8 +182,15 @@ class FrodoDatabase {
         }
     }
 
-    fun saveRating(ratingList: MutableList<Rating>, movieID: Int, scope: CoroutineScope) {
+    fun saveRating(rating: Rating, movieID: Int, username: String, scope: CoroutineScope) {
         scope.launch(Dispatchers.IO) {
+            database.getReference("user_ratings").child(username).child(movieID.toString()).setValue(rating)
+
+            val snapshot = database.getReference("movies").child(movieID.toString()).get().await()
+            val ratingList = snapshot.children.mapNotNull { it.getValue(Rating::class.java) }.toMutableList()
+            ratingList.removeIf { it.username == username }
+            ratingList.add(rating)
+
             database.getReference("movies").child(movieID.toString()).setValue(ratingList)
         }
     }
@@ -300,6 +314,24 @@ class FrodoDatabase {
 
                 override fun onCancelled(error: DatabaseError) {}
             })
+
+            val oldUserRatingsRef = database.getReference("user_ratings").child(oldUsername)
+            oldUserRatingsRef.get().addOnSuccessListener { userRatingsSnapshot ->
+                if (userRatingsSnapshot.exists()) {
+                    val ratingsData = userRatingsSnapshot.value as? Map<*, *>
+                    if (ratingsData != null) {
+                        val newRatingsData = ratingsData.mapValues {
+                            val ratingMap = it.value as Map<*, *>
+                            ratingMap.plus("username" to newUsername)
+                        }
+
+                        val newUserRatingsRef = database.getReference("user_ratings").child(newUsername)
+                        newUserRatingsRef.setValue(newRatingsData).addOnSuccessListener {
+                            oldUserRatingsRef.removeValue()
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -331,7 +363,7 @@ class FrodoDatabase {
                 .getReference("users")
                 .orderByChild("username")
                 .startAt(query)
-                .endAt(query + "\uf8ff")
+                .endAt(query + "")
                 .limitToFirst(limit)
                 .get()
                 .await()
@@ -380,9 +412,53 @@ class FrodoDatabase {
             "/followers/$targetName/$myName" to null,
             "/following/$myName/$targetName" to null,
             "/users/$targetName/followersCount" to ServerValue.increment(-1),
-            "/users/$myName/followingCount" to ServerValue.increment(-1)
+            "/users/$myName/followingCount" to ServerValue.increment(-1),
         )
 
         database.getReference().updateChildren(updates)
+    }
+
+    suspend fun getFollowing(username: String): List<String> {
+        return try {
+            val followingSnapshot = database.getReference("following").child(username).get().await()
+            followingSnapshot.children.mapNotNull { it.key }
+        } catch (e: Exception) {
+            Log.e("Firebase", "Error getting following list", e)
+            emptyList()
+        }
+    }
+
+    suspend fun getUserRatings(username: String): List<Rating> {
+        return try {
+            val userRatingsSnapshot = database.getReference("user_ratings").child(username).get().await()
+            userRatingsSnapshot.children.mapNotNull { it.getValue(Rating::class.java) }
+        } catch (e: Exception) {
+            Log.e("Firebase", "Error getting user ratings", e)
+            emptyList()
+        }
+    }
+
+    fun subscribeToGroupTopic(groupId: String) {
+        FirebaseMessaging.getInstance()
+            .subscribeToTopic("group_$groupId")
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("FCM", "Subscribed to topic group_$groupId")
+                } else {
+                    Log.e("FCM", "Failed to subscribe to topic group_$groupId")
+                }
+            }
+    }
+
+    fun unsubscribeFromGroupTopic(groupId: String) {
+        FirebaseMessaging.getInstance()
+            .unsubscribeFromTopic("group_$groupId")
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("FCM", "Unsubscribed to topic group_$groupId")
+                } else {
+                    Log.e("FCM", "Failed to unsubscribe to topic group_$groupId")
+                }
+            }
     }
 }

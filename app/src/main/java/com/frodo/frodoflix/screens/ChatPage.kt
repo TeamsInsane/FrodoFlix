@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImagePainter
@@ -138,7 +139,8 @@ fun MessageBubble(
                 Text(
                     text = message.username,
                     fontSize = 12.sp,
-                    color = textColor
+                    color = textColor,
+                    fontWeight = FontWeight.SemiBold
                 )
                 if (matchResult != null) {
                     val movieId = matchResult.destructured.component1()
@@ -152,6 +154,15 @@ fun MessageBubble(
                         color = textColor
                     )
                 }
+
+                val sdf = java.text.SimpleDateFormat("hh:mm a", java.util.Locale.getDefault())
+                val time = sdf.format(java.util.Date(message.timestamp))
+                Text(
+                    text = time,
+                    fontSize = 12.sp,
+                    color = textColor,
+                    modifier = Modifier.align(Alignment.End)
+                )
             }
         }
     }
