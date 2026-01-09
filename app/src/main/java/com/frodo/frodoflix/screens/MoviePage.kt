@@ -1,17 +1,16 @@
 package com.frodo.frodoflix.screens
 
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,21 +20,27 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -47,7 +52,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -56,7 +61,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
@@ -66,7 +70,6 @@ import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Actor
 import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.data.Rating
-import com.frodo.frodoflix.staticitems.BackToPreviousScreen
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 import org.json.JSONArray
 import org.json.JSONObject
@@ -83,163 +86,231 @@ fun DisplayMoviePage(sharedViewModel: SharedViewModel) {
     val navController = sharedViewModel.navController ?: return
 
     if (movie == null) {
-        Log.d("movie", "NULLLLL!")
+        Log.d("movie", "Movie is null")
         return
     }
 
     LaunchedEffect(true) {
-        data = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/movie/${movie.id}?language=en-US", "") as? JSONObject
+        data = TMDB.getDataFromTMDB(
+            "https://api.themoviedb.org/3/movie/${movie.id}?language=en-US",
+            ""
+        ) as? JSONObject
     }
 
     if (data == null) {
-        Log.d("movie", "TUDDNULL")
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
         return
     }
 
     val nonNullData = data as JSONObject
 
     LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
         item {
-            BackToPreviousScreen(navController)
-            DisplayMovieBanner(nonNullData.getString("backdrop_path"), sharedViewModel, movie)
-
-            // Title Text
-            Text(
-                text = movie.title,
-                fontSize = 28.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
-                fontWeight = FontWeight.Bold
+            // Hero Section with Backdrop
+            ModernMovieHero(
+                backdropPath = nonNullData.getString("backdrop_path"),
+                posterPath = movie.posterUrl,
+                title = movie.title,
+                rating = nonNullData.getString("vote_average").toDouble(),
+                navController = navController,
+                sharedViewModel = sharedViewModel,
+                movie = movie
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Rating, Duration, Release Date
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Rating
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Filled.Star,
-                        contentDescription = "Star",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(16.dp)
-                    )
+            // Movie Info Section
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                // Title
+                Text(
+                    text = movie.title,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
 
-                    Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                    Text(
-                        text = BigDecimal(nonNullData.getString("vote_average").toDouble()).setScale(1, RoundingMode.HALF_EVEN).toString() + "/10",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                // Meta Info Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Rating Badge
+                    Surface(
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Star,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = BigDecimal(nonNullData.getString("vote_average").toDouble())
+                                    .setScale(1, RoundingMode.HALF_EVEN).toString(),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+
+                    // Runtime
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(R.drawable.timelapse),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "${nonNullData.getString("runtime")} min",
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    // Release Date
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(R.drawable.calendar_month),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = movie.releaseDate.take(4),
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
 
-                // Duration
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(R.drawable.timelapse),
-                        contentDescription = "Duration Icon",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "${nonNullData.getString("runtime")} min",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Release Date
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(R.drawable.calendar_month),
-                        contentDescription = "Release Date Icon",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = movie.releaseDate,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                // Overview
+                Text(
+                    text = nonNullData.getString("overview"),
+                    fontSize = 14.sp,
+                    lineHeight = 22.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Action Buttons
+                ModernActionButtons(sharedViewModel, navController, movie)
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Description Text
-            Text(
-                text = nonNullData.getString("overview"),
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp)
-            )
+            // Cast Section
+            Column {
+                Row(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "🎭",
+                        fontSize = 22.sp,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text(
+                        text = "Cast",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
 
-            RateWatchlistButton(sharedViewModel, navController, movie)
+                Spacer(modifier = Modifier.height(12.dp))
 
-            HorizontalDivider(thickness = 2.dp)
+                CastSection(movie.id)
+            }
 
-            // Cast Section Title
-            Text(
-                text = "Cast",
-                fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-                fontWeight = FontWeight.Bold
-            )
+            Spacer(modifier = Modifier.height(24.dp))
 
-            CastData(movie.id)
+            // Ratings Section
+            Column {
+                Row(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "⭐",
+                        fontSize = 22.sp,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text(
+                        text = "Reviews",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
 
-            HorizontalDivider(thickness = 2.dp)
+                Spacer(modifier = Modifier.height(12.dp))
 
+                ModernRatingsSection(sharedViewModel)
+            }
 
-            // Rating Section Title
-            Text(
-                text = "Ratings",
-                fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-                fontWeight = FontWeight.Bold
-            )
-
-            DisplayRatings(sharedViewModel)
-
-            Spacer(modifier = Modifier.height(50.dp))
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
 
-
 @Composable
-fun DisplayMovieBanner(bannerPath: String, sharedViewModel: SharedViewModel, movie: Movie) {
-    Box(modifier = Modifier.fillMaxWidth()) {
+fun ModernMovieHero(
+    backdropPath: String,
+    posterPath: String,
+    title: String,
+    rating: Double,
+    navController: androidx.navigation.NavController,
+    sharedViewModel: SharedViewModel,
+    movie: Movie
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(500.dp)
+    ) {
+        // Backdrop Image
         SubcomposeAsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data("https://image.tmdb.org/t/p/original/$bannerPath")
+                .data("https://image.tmdb.org/t/p/original/$backdropPath")
                 .crossfade(true)
                 .build(),
-            contentDescription = "Movie banner",
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(16f / 9f),
+            contentDescription = title,
+            modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         ) {
-            // Progress indicator
             when (painter.state) {
                 is AsyncImagePainter.State.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                    )
                 }
                 is AsyncImagePainter.State.Success -> {
                     SubcomposeAsyncImageContent()
@@ -248,133 +319,197 @@ fun DisplayMovieBanner(bannerPath: String, sharedViewModel: SharedViewModel, mov
             }
         }
 
-        val favList by sharedViewModel.favList.collectAsState()
-        val isInFavList = favList.contains(movie.id)
-
-        val watchedList by sharedViewModel.watchedList.collectAsState()
-        val isInWatchedList = watchedList.contains(movie.id)
-
-        Row(
+        // Gradient Overlay
+        Box(
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.3f),
+                            Color.Black.copy(alpha = 0.95f),
+                            MaterialTheme.colorScheme.background
+                        )
+                    )
+                )
+        )
+
+        // Back Button
+        IconButton(
+            onClick = { navController.popBackStack() },
+            modifier = Modifier
+                .padding(16.dp)
+                .background(Color.Black.copy(alpha = 0.5f), CircleShape)
         ) {
             Icon(
-                painter = painterResource(R.drawable.circle_gray),
-                contentDescription = "Watched Icon",
-                tint = if (isInWatchedList) Color(0xFF4CAF50) else Color(0xFFE0E0E0),
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .clickable {
-                        sharedViewModel.updateWatchedlist(movieID = movie.id)
-                    }
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.White
             )
+        }
 
-            Icon(
-                imageVector = if (isInFavList) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                contentDescription = "Favorite Icon",
-                tint = Color.Red,
+        // Poster and Quick Actions at Bottom
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(20.dp),
+            verticalAlignment = Alignment.Bottom
+        ) {
+            // Poster
+            Card(
                 modifier = Modifier
-                    .padding(16.dp)
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .clickable {
-                        sharedViewModel.updateFavList(movieID = movie.id)
+                    .width(120.dp)
+                    .height(180.dp),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(8.dp)
+            ) {
+                SubcomposeAsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data("https://image.tmdb.org/t/p/w500/$posterPath")
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                ) {
+                    when (painter.state) {
+                        is AsyncImagePainter.State.Success -> {
+                            SubcomposeAsyncImageContent()
+                        }
+                        else -> {}
                     }
-            )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Quick Actions
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                val favList by sharedViewModel.favList.collectAsState()
+                val watchedList by sharedViewModel.watchedList.collectAsState()
+
+                // Favorite Button
+                FloatingActionButton(
+                    onClick = { sharedViewModel.updateFavList(movie.id) },
+                    containerColor = if (favList.contains(movie.id))
+                        Color.Red.copy(alpha = 0.9f)
+                    else
+                        Color.White.copy(alpha = 0.9f),
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(
+                        imageVector = if (favList.contains(movie.id))
+                            Icons.Filled.Favorite
+                        else
+                            Icons.Outlined.FavoriteBorder,
+                        contentDescription = "Favorite",
+                        tint = if (favList.contains(movie.id))
+                            Color.White
+                        else
+                            Color.Red
+                    )
+                }
+
+                // Watched Button
+                FloatingActionButton(
+                    onClick = { sharedViewModel.updateWatchedlist(movie.id) },
+                    containerColor = if (watchedList.contains(movie.id))
+                        Color(0xFF4CAF50).copy(alpha = 0.9f)
+                    else
+                        Color.White.copy(alpha = 0.9f),
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.circle_gray),
+                        contentDescription = "Watched",
+                        tint = if (watchedList.contains(movie.id))
+                            Color.White
+                        else
+                            Color(0xFF4CAF50)
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-fun RateWatchlistButton(sharedViewModel: SharedViewModel, navController: NavController, movie: Movie) {
+fun ModernActionButtons(
+    sharedViewModel: SharedViewModel,
+    navController: androidx.navigation.NavController,
+    movie: Movie
+) {
+    val starsRated = remember { mutableIntStateOf(-1) }
+    val watchlist by sharedViewModel.watchlist.collectAsState()
     var showShareDialog by remember { mutableStateOf(false) }
 
+    LaunchedEffect(true) {
+        starsRated.intValue = sharedViewModel.getStarsRated()
+    }
+
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp, bottom = 16.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-
-        val starsRated = remember { mutableIntStateOf(-1) }
-
-        LaunchedEffect(true) {
-            starsRated.intValue = sharedViewModel.getStarsRated()
-        }
-
+        // Rate Button
         Button(
-            onClick = {
-                navController.navigate("rate_movie")
-            },
+            onClick = { navController.navigate("rate_movie") },
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (starsRated.intValue != -1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ),
-            shape = MaterialTheme.shapes.medium,
-            modifier = Modifier.padding(horizontal = 8.dp)
+                containerColor = if (starsRated.intValue != -1)
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.surfaceVariant
+            )
         ) {
             Icon(
                 imageVector = Icons.Filled.Star,
-                contentDescription = "star icon",
-                tint = MaterialTheme.colorScheme.onPrimary,
+                contentDescription = null,
                 modifier = Modifier.size(20.dp)
             )
-
             Spacer(modifier = Modifier.width(8.dp))
-
             Text(
                 text = if (starsRated.intValue != -1) "Rated: ${starsRated.intValue}" else "Rate",
                 fontWeight = FontWeight.SemiBold
             )
         }
 
-        //Watchlist button
-        val watchlist by sharedViewModel.watchlist.collectAsState()
-        val isInWatchlist = watchlist.contains(movie.id)
-
-        Button(
-            onClick = {
-                sharedViewModel.updateWatchlist(movie.id)
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isInWatchlist) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ),
-            shape = MaterialTheme.shapes.medium,
-            modifier = Modifier.padding(horizontal = 8.dp)
+        // Watchlist Button
+        OutlinedButton(
+            onClick = { sharedViewModel.updateWatchlist(movie.id) },
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = if (watchlist.contains(movie.id))
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                else
+                    Color.Transparent
+            )
         ) {
             Icon(
-                imageVector = if (isInWatchlist) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                contentDescription = "watchlist icon",
-                tint = MaterialTheme.colorScheme.onPrimary,
+                painter = painterResource(
+                    id = if (watchlist.contains(movie.id))
+                        R.drawable.bookmark_filled
+                    else
+                        R.drawable.bookmark_outline
+                ),
+                contentDescription = null,
                 modifier = Modifier.size(20.dp)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = if (isInWatchlist) "In Watchlist" else "Add to Watchlist",
-                fontWeight = FontWeight.SemiBold
             )
         }
 
-        Button(
+        // Share Button
+        OutlinedButton(
             onClick = { showShareDialog = true },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ),
-            shape = MaterialTheme.shapes.medium,
-            modifier = Modifier.padding(horizontal = 8.dp)
+            shape = RoundedCornerShape(16.dp)
         ) {
             Icon(
                 imageVector = Icons.Filled.Share,
-                contentDescription = "Share icon",
+                contentDescription = "Share",
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -383,187 +518,190 @@ fun RateWatchlistButton(sharedViewModel: SharedViewModel, navController: NavCont
     if (showShareDialog) {
         ShareMovieDialog(
             sharedViewModel = sharedViewModel,
-            onDismiss = {showShareDialog = false}
+            onDismiss = { showShareDialog = false }
         )
     }
 }
 
-
 @Composable
-fun CastData(movieID: Int) {
+fun CastSection(movieID: Int) {
     var castData by remember { mutableStateOf<JSONArray?>(null) }
 
     LaunchedEffect(true) {
-        castData = TMDB.getDataFromTMDB("https://api.themoviedb.org/3/movie/$movieID/credits?language=en-US", "cast") as JSONArray?
+        castData = TMDB.getDataFromTMDB(
+            "https://api.themoviedb.org/3/movie/$movieID/credits?language=en-US",
+            "cast"
+        ) as JSONArray?
     }
 
-    ReadCastData(castData)
-}
-
-@Composable
-fun ReadCastData(data: JSONArray?) {
-    if (data == null) {
-        return
-    }
-
-    LazyRow(
-        modifier = Modifier.padding(horizontal = 8.dp)
-    ) {
-        items(data.length()) { index ->
-            val item = data.getJSONObject(index)
-
-            val name = item.getString("name")
-            val character = item.getString("character")
-            val profilePath = item.getString("profile_path")
-
-            val actor = Actor(name, character, profilePath)
-            DisplayActor(actor)
+    if (castData != null) {
+        LazyRow(
+            modifier = Modifier.padding(start = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items((0 until minOf(castData!!.length(), 10)).map { index ->
+                val item = castData!!.getJSONObject(index)
+                Actor(
+                    item.getString("name"),
+                    item.getString("character"),
+                    item.getString("profile_path")
+                )
+            }) { actor ->
+                ModernActorCard(actor)
+            }
+            item {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
         }
     }
 }
 
 @Composable
-fun DisplayActor(actor: Actor) {
-    Column (
-        modifier = Modifier
-            .width(150.dp)
-            .padding(8.dp),
+fun ModernActorCard(actor: Actor) {
+    Column(
+        modifier = Modifier.width(100.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
+        Card(
             modifier = Modifier
-                .width(140.dp)
-                .height(200.dp)
+                .size(100.dp),
+            shape = CircleShape,
+            elevation = CardDefaults.cardElevation(4.dp)
         ) {
             SubcomposeAsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data("https://image.tmdb.org/t/p/w500/${actor.profilePath}")
                     .crossfade(true)
                     .build(),
-                contentDescription = "${actor.name} profile picture",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(MaterialTheme.shapes.medium),
+                contentDescription = actor.name,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
             ) {
-                // Progress indicator
                 when (painter.state) {
                     is AsyncImagePainter.State.Loading -> {
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.align(Alignment.Center).size(24.dp)
+                            )
+                        }
                     }
-
                     is AsyncImagePainter.State.Success -> {
                         SubcomposeAsyncImageContent()
                     }
-
                     else -> {}
                 }
             }
         }
 
-        //Actor name
         Text(
             text = actor.name,
-            fontSize = 20.sp,
-            modifier = Modifier.padding(top = 8.dp),
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            fontWeight = FontWeight.SemiBold
+            modifier = Modifier.padding(top = 8.dp),
+            color = MaterialTheme.colorScheme.onSurface
         )
 
-        //Character name
         Text(
             text = actor.character,
-            fontSize = 16.sp,
-            modifier = Modifier.padding(top = 8.dp),
+            fontSize = 11.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 2.dp)
         )
     }
 }
 
 @Composable
-fun DisplayRatings(sharedViewModel: SharedViewModel) {
+fun ModernRatingsSection(sharedViewModel: SharedViewModel) {
     val ratingList = remember { mutableStateListOf<Rating>() }
 
     LaunchedEffect(true) {
         val fetchedRatingList = sharedViewModel.getRatingList()
         ratingList.clear()
-        for (rating in fetchedRatingList) {
-            ratingList.add(rating)
-        }
+        ratingList.addAll(fetchedRatingList)
     }
 
-    Column (
-        modifier = Modifier.padding(horizontal = 8.dp)
+    Column(
+        modifier = Modifier.padding(horizontal = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        for (rating in ratingList) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
+        ratingList.take(5).forEach { rating ->
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant
             ) {
-                // Profile Image
-                Image(
-                    painter = painterResource(id = R.drawable.frodo),
-                    contentDescription = "Profile Picture",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                )
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                // Username and Rating
-                Column {
+                Column(modifier = Modifier.padding(16.dp)) {
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "Review by ${rating.username}",
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.Bold
+                        // Avatar
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.primary,
+                                            MaterialTheme.colorScheme.tertiary
+                                        )
+                                    ),
+                                    shape = CircleShape
+                                )
+                                .padding(2.dp)
                         )
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
 
-                        repeat(rating.rating) {
-                            Icon(
-                                imageVector = Icons.Filled.Star,
-                                contentDescription = "Star",
-                                tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(16.dp)
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = rating.username,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            val date = Date(rating.timestamp)
+                            val format = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                            Text(
+                                text = format.format(date),
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 
+                        // Rating
+                        Row {
+                            repeat(rating.rating) {
+                                Icon(
+                                    imageVector = Icons.Filled.Star,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    // Timestamp
-                    val date = Date(rating.timestamp)
-                    val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-
-                    Text(
-                        text = format.format(date),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Comment
-                    Text(
-                        text = rating.comment,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
+                    if (rating.comment.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = rating.comment,
+                            fontSize = 13.sp,
+                            lineHeight = 20.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
-
-            HorizontalDivider(thickness = 1.dp)
         }
-
     }
 }
 
@@ -580,43 +718,51 @@ fun ShareMovieDialog(sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Share Movie") },
+        title = {
+            Text(
+                "Share Movie",
+                fontWeight = FontWeight.Bold
+            )
+        },
         text = {
             Column {
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     label = { Text("Search Groups") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                LazyColumn {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.heightIn(max = 300.dp)
+                ) {
                     items(filteredGroups) { group ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 6.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceVariant,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .padding(vertical = 6.dp, horizontal = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                        Surface(
+                            onClick = {
+                                sharedViewModel.selectedMovie?.let { movie ->
+                                    sharedViewModel.sendMessage(group.groupId, "$${movie.id}$")
+                                }
+                                sharedViewModel.navController?.navigate("chat_page/${group.groupId}")
+                                onDismiss()
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
-                            Text(text = group.groupName)
-                            IconButton(
-                                onClick = {
-                                    sharedViewModel.selectedMovie?.let { movie ->
-                                        sharedViewModel.sendMessage(group.groupId, "$${movie.id}$")
-                                    }
-                                    sharedViewModel.navController?.navigate("chat_page/${group.groupId}")
-                                    onDismiss()
-                                },
-                                modifier = Modifier.size(36.dp)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
+                                Text(
+                                    text = group.groupName,
+                                    modifier = Modifier.weight(1f),
+                                    fontWeight = FontWeight.SemiBold
+                                )
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.Send,
+                                    imageVector = Icons.Default.Send,
                                     contentDescription = "Send"
                                 )
                             }
@@ -626,7 +772,7 @@ fun ShareMovieDialog(sharedViewModel: SharedViewModel, onDismiss: () -> Unit) {
             }
         },
         confirmButton = {
-            Button(onClick = onDismiss) {
+            TextButton(onClick = onDismiss) {
                 Text("Cancel")
             }
         }

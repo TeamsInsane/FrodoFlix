@@ -5,7 +5,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,13 +20,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,14 +40,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.font.FontWeight.Companion.SemiBold
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,7 +59,7 @@ import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.data.UserCard
 import com.frodo.frodoflix.viewmodels.SharedViewModel
-import com.google.firebase.logger.Logger
+import kotlinx.coroutines.delay
 import org.json.JSONArray
 
 enum class SearchMode {
@@ -57,115 +67,51 @@ enum class SearchMode {
     USERS
 }
 
-@Composable
-fun SearchToggle(
-    selected: SearchMode,
-    onSelected: (SearchMode) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        // Movies half
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .clickable { onSelected(SearchMode.MOVIES) }
-                .background(
-                    if (selected == SearchMode.MOVIES)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.surfaceVariant
-                )
-                .padding(vertical = 12.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                "Movies",
-                fontWeight = SemiBold,
-                color = if (selected == SearchMode.MOVIES)
-                    MaterialTheme.colorScheme.onPrimary
-                else
-                    MaterialTheme.colorScheme.onSurface
-            )
-        }
-
-        // Users half
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .clickable { onSelected(SearchMode.USERS) }
-                .background(
-                    if (selected == SearchMode.USERS)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.surfaceVariant
-                )
-                .padding(vertical = 12.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                "Users",
-                fontWeight = SemiBold,
-                color = if (selected == SearchMode.USERS)
-                    MaterialTheme.colorScheme.onPrimary
-                else
-                    MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
-
-
-@Composable
-private fun ToggleItem(
-    text: String,
-    selected: Boolean,
-    modifier: Modifier,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = modifier
-            .clickable { onClick() }
-            .padding(vertical = 12.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .background(
-                if (selected) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.surfaceVariant
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            fontWeight = FontWeight.SemiBold,
-            color = if (selected)
-                MaterialTheme.colorScheme.onPrimary
-            else
-                MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchPage(sharedViewModel: SharedViewModel) {
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            // Modern Search Bar
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = 4.dp
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "Explore",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
 
+                    SearchToggle(
+                        selected = sharedViewModel.searchMode,
+                        onSelected = { sharedViewModel.searchMode = it }
+                    )
+                }
+            }
+        }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(innerPadding)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.background,
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
+                        )
+                    )
+                )
         ) {
-
-            SearchToggle(
-                selected = sharedViewModel.searchMode,
-                onSelected = { sharedViewModel.searchMode = it }
-            )
-
             when (sharedViewModel.searchMode) {
                 SearchMode.MOVIES -> MovieSearchContent(sharedViewModel)
                 SearchMode.USERS -> UserSearchContent(sharedViewModel)
@@ -175,20 +121,107 @@ fun SearchPage(sharedViewModel: SharedViewModel) {
 }
 
 @Composable
-fun MovieSearchContent(sharedViewModel: SharedViewModel) {
-    Text(
-        text = "Search for movies",
-        fontSize = 24.sp,
-        modifier = Modifier.padding(16.dp)
-    )
+fun SearchToggle(
+    selected: SearchMode,
+    onSelected: (SearchMode) -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp),
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Movies Tab
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .clickable { onSelected(SearchMode.MOVIES) }
+                    .background(
+                        if (selected == SearchMode.MOVIES)
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                                )
+                            )
+                        else
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.Transparent
+                                )
+                            ),
+                        shape = RoundedCornerShape(24.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "🎬 Movies",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = if (selected == SearchMode.MOVIES)
+                        MaterialTheme.colorScheme.onPrimary
+                    else
+                        MaterialTheme.colorScheme.onSurface
+                )
+            }
 
-    DisplayMoviesSearch(
-        sharedViewModel,
-        sharedViewModel.movieSearchPrompt
-    )
+            // Users Tab
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .clickable { onSelected(SearchMode.USERS) }
+                    .background(
+                        if (selected == SearchMode.USERS)
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                                    MaterialTheme.colorScheme.primary
+                                )
+                            )
+                        else
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.Transparent
+                                )
+                            ),
+                        shape = RoundedCornerShape(24.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "👥 Users",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = if (selected == SearchMode.USERS)
+                        MaterialTheme.colorScheme.onPrimary
+                    else
+                        MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+    }
 }
 
+@Composable
+fun MovieSearchContent(sharedViewModel: SharedViewModel) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        ModernSearchBar(
+            value = sharedViewModel.movieSearchPrompt,
+            onValueChange = { sharedViewModel.movieSearchPrompt = it },
+            placeholder = "Search for movies..."
+        )
 
+        DisplayMoviesSearch(sharedViewModel, sharedViewModel.movieSearchPrompt)
+    }
+}
 
 @Composable
 fun UserSearchContent(sharedViewModel: SharedViewModel) {
@@ -196,57 +229,100 @@ fun UserSearchContent(sharedViewModel: SharedViewModel) {
     var searchedUsers by remember { mutableStateOf<List<UserCard>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
 
-    Text(
-        text = "Search for users",
-        fontSize = 24.sp,
-        modifier = Modifier.padding(16.dp)
-    )
-
-    Row(
-        modifier = Modifier.padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        OutlinedTextField(
+    Column(modifier = Modifier.fillMaxSize()) {
+        ModernSearchBar(
             value = userName,
             onValueChange = {
                 userName = it
                 sharedViewModel.userSearchPrompt = it
             },
-            label = { Text("Name of user...") },
-            singleLine = true,
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
+            placeholder = "Search for users..."
         )
-    }
 
-    // Launch search when username changes
-    LaunchedEffect(userName) {
-        if (userName.isNotBlank()) {
-            isLoading = true
+        LaunchedEffect(userName) {
+            if (userName.isNotBlank()) {
+                isLoading = true
+                delay(300)
+                sharedViewModel.searchUsers(userName, limit = 20) { users ->
+                    searchedUsers = users
+                    isLoading = false
+                }
+            } else {
+                searchedUsers = emptyList()
+            }
+        }
 
-            sharedViewModel.searchUsers(userName, limit = 20) { users ->
-                searchedUsers = users
-                isLoading = false
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
             }
         } else {
-            searchedUsers = emptyList()
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(searchedUsers) { user ->
+                    ModernUserCard(user) {
+                        sharedViewModel.selectedUser = user
+                        sharedViewModel.navController?.navigate("user_page")
+                    }
+                }
+            }
         }
     }
+}
 
-    if (isLoading) {
-        Text(
-            "Loading...",
-            modifier = Modifier.padding(16.dp)
-        )
-    }
+@Composable
+fun ModernSearchBar(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        shadowElevation = 2.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(24.dp)
+            )
 
-    LazyColumn {
-        items(searchedUsers) { user ->
-            UserRowItem(user) {
-                sharedViewModel.selectedUser = user
-                sharedViewModel.navController?.navigate("user_page")
-            }
+            TextField(
+                value = value,
+                onValueChange = onValueChange,
+                placeholder = {
+                    Text(
+                        text = placeholder,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
@@ -255,179 +331,272 @@ fun UserSearchContent(sharedViewModel: SharedViewModel) {
 fun DisplayMoviesSearch(sharedViewModel: SharedViewModel, savedMovieName: String) {
     var movieName by remember { mutableStateOf(savedMovieName) }
     var movies by remember { mutableStateOf<JSONArray?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(movieName) {
         if (movieName.isNotEmpty()) {
-            kotlinx.coroutines.delay(300)
+            isLoading = true
+            delay(300)
             movies = TMDB.getDataFromTMDB(
                 "https://api.themoviedb.org/3/search/movie?query=$movieName&include_adult=false&language=en-US&page=1",
                 "results"
             ) as JSONArray?
+            isLoading = false
         } else {
             movies = null
         }
     }
 
-    Row(
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        OutlinedTextField(
-            value = movieName,
-            onValueChange = {
-                movieName = it
-                sharedViewModel.movieSearchPrompt = movieName
-            },
-            label = { Text("Name of the movie ...") },
-            singleLine = true,
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-        )
-    }
-
-    if (movies != null) {
+    if (isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    } else if (movies != null) {
         val nonNullMovies = movies as JSONArray
-        SplitSearchedMovies(nonNullMovies, sharedViewModel)
+        ModernMoviesGrid(nonNullMovies, sharedViewModel)
+    } else if (movieName.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "🎬",
+                    fontSize = 64.sp
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Search for movies",
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
     }
 }
 
 @Composable
-fun SplitSearchedMovies(movies: JSONArray, sharedViewModel: SharedViewModel) {
+fun ModernMoviesGrid(movies: JSONArray, sharedViewModel: SharedViewModel) {
     val movieList = (0 until movies.length()).map { index ->
         val item = movies.getJSONObject(index)
-
-        val id = item.getString("id").toInt()
-        val overview = item.getString("overview")
-        val title = item.getString("title")
-        val imageUrl = item.getString("poster_path")
-        val popularity = item.getDouble("popularity")
-        val releaseDate = item.getString("release_date")
-
-        Movie(id, title, overview, imageUrl, releaseDate, popularity)
+        Movie(
+            id = item.getString("id").toInt(),
+            title = item.getString("title"),
+            overview = item.getString("overview"),
+            posterUrl = item.getString("poster_path"),
+            releaseDate = item.getString("release_date"),
+            popularity = item.getDouble("popularity")
+        )
     }
 
     val sortedMovies = movieList.sortedByDescending { it.popularity }
 
-    val groupedMovies = sortedMovies.chunked(3)
-
     LazyColumn(
-        modifier = Modifier.padding(8.dp)
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(groupedMovies) { rowMovies ->
-            Row (
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start
-            ){
-                for (movie in rowMovies) {
-                    DisplaySearchedMovie(movie, sharedViewModel)
+        items(sortedMovies.chunked(3)) { rowMovies ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                rowMovies.forEach { movie ->
+                    ModernSearchMovieCard(
+                        movie = movie,
+                        sharedViewModel = sharedViewModel,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                // Fill empty spaces in incomplete rows
+                repeat(3 - rowMovies.size) {
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
         }
     }
-
 }
 
 @Composable
-fun DisplaySearchedMovie(movie: Movie, sharedViewModel: SharedViewModel) {
-    Column (
-        modifier = Modifier
-            .width((LocalConfiguration.current.screenWidthDp / 3 - 8).dp)
-            .padding(8.dp)
-            .padding(bottom = 0.dp)
+fun ModernSearchMovieCard(
+    movie: Movie,
+    sharedViewModel: SharedViewModel,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .aspectRatio(0.68f)
             .clickable {
                 sharedViewModel.selectedMovie = movie
                 sharedViewModel.navController?.navigate("movie_page")
             },
-        horizontalAlignment = Alignment.CenterHorizontally
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
-
-        Box(
-            modifier = Modifier
-                .width((LocalConfiguration.current.screenWidthDp / 3 - 2 * 8).dp)
-                .height(180.dp)
-        ) {
+        Box {
             SubcomposeAsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data("https://image.tmdb.org/t/p/w500/${movie.posterUrl}")
                     .crossfade(true)
                     .build(),
-                contentDescription = "$movie.title poster",
-                modifier = Modifier.fillMaxWidth()
+                contentDescription = movie.title,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
             ) {
-                // Progress indicator
                 when (painter.state) {
                     is AsyncImagePainter.State.Loading -> {
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .size(24.dp)
+                            )
+                        }
                     }
-
                     is AsyncImagePainter.State.Success -> {
                         SubcomposeAsyncImageContent()
                     }
-
                     else -> {}
                 }
             }
-        }
 
-        //Movie title
-        Text(
-            text = movie.title,
-            fontSize = 16.sp,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+            // Gradient overlay
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.9f)
+                            )
+                        )
+                    )
+            )
+
+            // Title
+            Text(
+                text = movie.title,
+                color = Color.White,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(8.dp)
+            )
+        }
     }
 }
 
 @Composable
-fun UserRowItem(
+fun ModernUserCard(
     user: UserCard,
     onClick: () -> Unit
 ) {
-    Card(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal =  18.dp, vertical = 8.dp)
             .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        shadowElevation = 2.dp
     ) {
         Row(
             modifier = Modifier
-                .padding(4.dp),
-            verticalAlignment = CenterVertically
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            // Avatar with gradient border
+            Box {
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.tertiary
+                                )
+                            ),
+                            shape = CircleShape
+                        )
+                        .padding(3.dp)
+                )
 
-            AsyncImage(
-                model = user.profileImageUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape)
-            )
+                AsyncImage(
+                    model = user.profileImageUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(54.dp)
+                        .clip(CircleShape)
+                        .align(Alignment.Center)
+                )
+            }
 
-            Column(
-                modifier = Modifier
-                    .padding(start = 16.dp)
-                    .weight(1f)
-            ) {
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = user.username,
-                    fontWeight = SemiBold,
-                    fontSize = 18.sp
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Text(
                     text = user.description,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    maxLines = 1
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 4.dp)
                 )
+
+                Row(
+                    modifier = Modifier.padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "${user.followersCount}",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = " followers",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "${user.followingCount}",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = " following",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
         }
     }

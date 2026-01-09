@@ -1,12 +1,10 @@
 package com.frodo.frodoflix.screens.profile
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,40 +12,33 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.frodo.frodoflix.R
 import com.frodo.frodoflix.viewmodels.SharedViewModel
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 
 @Composable
 fun Profile(sharedViewModel: SharedViewModel) {
@@ -56,429 +47,273 @@ fun Profile(sharedViewModel: SharedViewModel) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
-
         Column(
             modifier = Modifier
-                .padding(innerPadding)
-                .padding(horizontal = 20.dp)
                 .fillMaxSize()
-        ) {
-            ProfileTopBar(navController)
-            ProfileHeader(sharedViewModel)
-            ProfileStats(sharedViewModel)
-            Spacer(modifier = Modifier.height(24.dp))
-            ProfileActions(sharedViewModel, navController)
-        }
-    }
-}
-
-@Composable
-private fun ProfileTopBar(navController: NavController) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 12.dp),
-        horizontalArrangement = Arrangement.End
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.settings),
-            contentDescription = "Settings",
-            modifier = Modifier
-                .size(28.dp)
-                .clickable { navController.navigate("settings") }
-        )
-    }
-}
-
-@Composable
-private fun ProfileHeader(sharedViewModel: SharedViewModel) {
-
-    val username = sharedViewModel.getUsername()
-    val lastOnline = sharedViewModel.getLastOnlineTime()
-
-    val profileImageUrl =
-        sharedViewModel.profileImageUrl.collectAsState().value
-
-    var showDialog by remember { mutableStateOf(false) }
-    var urlInput by remember { mutableStateOf("") }
-
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        AsyncImage(
-            model = profileImageUrl ?: R.drawable.user,
-            contentDescription = "Profile picture",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
-                .clickable {
-                    showDialog = true
-                }
-        )
-
-        if (showDialog) {
-            AlertDialog(
-                onDismissRequest = { showDialog = false },
-                title = { Text("Profile image URL") },
-                text = {
-                    TextField(
-                        value = urlInput,
-                        onValueChange = { urlInput = it },
-                        placeholder = { Text("https://...") }
+                .padding(innerPadding)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            MaterialTheme.colorScheme.background,
+                            MaterialTheme.colorScheme.background
+                        )
                     )
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            sharedViewModel.setProfileImageUrl(urlInput)
-                            showDialog = false
-                        }
-                    ) { Text("OK") }
+                )
+        ) {
+            // Header with Settings
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                IconButton(
+                    onClick = { navController.navigate("settings") },
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant,
+                            shape = CircleShape
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
                 }
-            )
+            }
+
+            // Profile Section
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Avatar with gradient border
+                Box {
+                    Box(
+                        modifier = Modifier
+                            .size(124.dp)
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.primary,
+                                        MaterialTheme.colorScheme.tertiary
+                                    )
+                                ),
+                                shape = CircleShape
+                            )
+                            .padding(4.dp)
+                    )
+
+                    val profileImageUrl = "https://sm.ign.com/ign_ap/review/s/sekiro-sha/sekiro-shadows-die-twice-review_3sf1.jpg"
+                    AsyncImage(
+                        model = profileImageUrl,
+                        contentDescription = "Profile picture",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(116.dp)
+                            .clip(CircleShape)
+                            .align(Alignment.Center)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Username
+                Text(
+                    text = sharedViewModel.getUsername(),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                // Last online
+                Text(
+                    text = "Last online • ${sharedViewModel.getLastOnlineTime()}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Stats
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    StatCard(
+                        count = sharedViewModel.getFollowers(),
+                        label = "Followers",
+                        onClick = { /* Navigate to followers */ }
+                    )
+                    StatCard(
+                        count = sharedViewModel.getFollowing(),
+                        label = "Following",
+                        onClick = { /* Navigate to following */ }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Action Cards
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                val favCount = sharedViewModel.favList.collectAsState().value.size
+                val watchCount = sharedViewModel.watchlist.collectAsState().value.size
+                val watchedCount = sharedViewModel.watchedList.collectAsState().value.size
+
+                ProfileActionCard(
+                    icon = Icons.Default.Favorite,
+                    title = "Favourite movies",
+                    count = favCount,
+                    iconColor = Color.Red,
+                    onClick = { navController.navigate("fav_page") }
+                )
+
+                ProfileActionCard(
+                    icon = Icons.Default.Star,
+                    title = "Watchlist",
+                    count = watchCount,
+                    iconColor = Color(0xFFFFD700),
+                    onClick = { navController.navigate("watch_list") }
+                )
+
+                ProfileActionCard(
+                    icon = Icons.Default.Star,
+                    title = "Watched",
+                    count = watchedCount,
+                    iconColor = Color(0xFF4CAF50),
+                    onClick = { navController.navigate("watched_list") }
+                )
+
+                ProfileActionCard(
+                    icon = Icons.Default.Star,
+                    title = "Favourite genres",
+                    count = null,
+                    iconColor = MaterialTheme.colorScheme.primary,
+                    onClick = { navController.navigate("favourite_genres") }
+                )
+
+                Spacer(modifier = Modifier.height(100.dp))
+            }
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = username,
-            style = MaterialTheme.typography.titleLarge,
-            fontSize = 28.sp
-        )
-
-        Text(
-            text = "Last online • $lastOnline",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-        )
     }
 }
 
-
 @Composable
-private fun ProfileStats(sharedViewModel: SharedViewModel) {
-    val followers = sharedViewModel.getFollowers()
-    val following = sharedViewModel.getFollowing()
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 20.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        StatItem("Followers", followers) {
-            sharedViewModel.navController?.navigate("followers")
-        }
-        StatItem("Following", following) {
-            sharedViewModel.navController?.navigate("following")
-        }
-    }
-}
-
-@Composable
-private fun StatItem(
-    label: String,
+fun StatCard(
     count: Int,
+    label: String,
     onClick: () -> Unit
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable { onClick() }
+    Surface(
+        modifier = Modifier.clickable { onClick() },
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
-        Text(
-            text = count.toString(),
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-        )
-        Text(
-            text = label,
-            fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-        )
+        Column(
+            modifier = Modifier
+                .width(140.dp)
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = count.toString(),
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = label,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
     }
 }
 
 @Composable
-private fun ProfileActions(
-    sharedViewModel: SharedViewModel,
-    navController: NavController
-) {
-    val favCount = sharedViewModel.favList.collectAsState().value.size
-    val watchCount = sharedViewModel.watchlist.collectAsState().value.size
-    val watchedCount = sharedViewModel.watchedList.collectAsState().value.size
-
-    // Column with weight spacer to push buttons to bottom
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp)
-    ) {
-        Spacer(modifier = Modifier.weight(1f)) // pushes buttons down
-
-        ProfileButton("Favourite movies", favCount) {
-            navController.navigate("fav_page")
-        }
-
-        ProfileButton("Watchlist", watchCount) {
-            navController.navigate("watch_list")
-        }
-
-        ProfileButton("Watched", watchedCount) {
-            navController.navigate("watched_list")
-        }
-
-        ProfileButton("Favourite genres") {
-            navController.navigate("favourite_genres")
-        }
-
-        Spacer(modifier = Modifier.height(24.dp)) // extra space from bottom
-    }
-}
-
-
-@Composable
-private fun ProfileButton(
+fun ProfileActionCard(
+    icon: ImageVector,
     title: String,
-    count: Int? = null,
+    count: Int?,
+    iconColor: Color,
     onClick: () -> Unit
 ) {
-    Button(
-        onClick = onClick,
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
-            .padding(vertical = 6.dp),
-        shape = RoundedCornerShape(16.dp),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 6.dp,
-            pressedElevation = 2.dp,
-            disabledElevation = 0.dp
-        ),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
-        )
+            .clickable { onClick() },
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        shadowElevation = 2.dp
     ) {
-        Text(
-            text = if (count != null) "$title • $count" else title,
-            style = MaterialTheme.typography.bodyLarge
-        )
-    }
-}
-
-
-@Composable
-fun DisplaySettingsIcon(navController: NavController) {
-    // Top Row with Settings Icon
-    Row(
-        modifier = Modifier
-            .padding(top = 16.dp)
-            .fillMaxWidth(),
-    ) {
-        Spacer(modifier = Modifier.weight(1f))
-
-        Icon(
-            painter = painterResource(id = R.drawable.settings),
-            contentDescription = "Settings",
-            tint = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.size(32.dp)
-                .clickable {
-                    navController.navigate("settings")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Icon with colored background
+            Surface(
+                color = iconColor.copy(alpha = 0.15f),
+                shape = CircleShape,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconColor,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
-        )
-    }
-}
+            }
 
-@Composable
-fun DisplayProfileIcon() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.frodo),
-            contentDescription = "Profile Picture",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(150.dp)
-                .clip(CircleShape)
-                .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
-        )
-    }
-}
+            Spacer(modifier = Modifier.width(16.dp))
 
-@Composable
-fun DisplayUsernameAndOnlineText(sharedViewModel: SharedViewModel) {
-    val lastOnlineTime = sharedViewModel.getLastOnlineTime()
-    val username = sharedViewModel.getUsername()
+            // Title
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                if (count != null) {
+                    Text(
+                        text = "$count items",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+            }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 100.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = username,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 40.sp,
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        Text(
-            text = "Last Online: $lastOnlineTime",
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 22.sp,
-            style = MaterialTheme.typography.bodyLarge
-        )
-    }
-}
-
-
-@Composable
-fun DisplayFavMoviesButton(sharedViewModel: SharedViewModel, navController: NavController) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 2.dp, bottom = 2.dp),
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        //Favourite movies button
-        Button(
-            onClick = {
-                navController.navigate("fav_page")
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.surfaceDim,
-                contentColor = MaterialTheme.colorScheme.primary
-            ),
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
-                .fillMaxWidth()
-                .height(50.dp)
-                .clip(MaterialTheme.shapes.medium),
-            contentPadding = PaddingValues(0.dp)
-        ) {
-
-            val favMoviesCount = sharedViewModel.favList.collectAsState().value.size
-
-            Text(
-                text = "Favourite movies: $favMoviesCount",
-                fontSize = 22.sp,
-            )
-        }
-    }
-}
-
-
-//Display watch list button
-@Composable
-fun DisplayWatchList(sharedViewModel: SharedViewModel, navController: NavController) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 2.dp),
-        horizontalArrangement = Arrangement.Center,
-    ) {
-
-        Button(
-            onClick = {
-                navController.navigate("watch_list")
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.surfaceDim,
-                contentColor = MaterialTheme.colorScheme.primary
-            ),
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
-                .fillMaxWidth()
-                .height(50.dp)
-                .clip(MaterialTheme.shapes.medium),
-            contentPadding = PaddingValues(0.dp)
-        ) {
-
-            val watchListCount = sharedViewModel.watchlist.collectAsState().value.size
-
-            Text(
-                text = "Watch list: $watchListCount",
-                fontSize = 22.sp
-            )
-        }
-    }
-}
-
-//Display watched list button
-@Composable
-fun DisplayWatchedList(sharedViewModel: SharedViewModel, navController: NavController) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 32.dp),
-        horizontalArrangement = Arrangement.Center,
-    ) {
-
-        Button(
-            onClick = {
-                navController.navigate("watched_list")
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.surfaceDim,
-                contentColor = MaterialTheme.colorScheme.primary
-            ),
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
-                .fillMaxWidth()
-                .height(50.dp)
-                .clip(MaterialTheme.shapes.medium),
-            contentPadding = PaddingValues(0.dp)
-        ) {
-
-            val watchedListCount = sharedViewModel.watchedList.collectAsState().value.size
-
-            Text(
-                text = "Watched list: $watchedListCount",
-                fontSize = 22.sp
-            )
-        }
-    }
-}
-
-//Display favorite genres button
-@Composable
-fun DisplayFavouriteGenres(navController : NavController) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 2.dp, bottom = 2.dp),
-        horizontalArrangement = Arrangement.Center,
-    ) {
-
-        Button(
-            onClick = {
-                navController.navigate("favourite_genres")
-
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.primary
-            ),
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
-                .fillMaxWidth()
-                .height(50.dp)
-                .clip(MaterialTheme.shapes.medium),
-            contentPadding = PaddingValues(0.dp)
-        ) {
-            Text(
-                text = "Favourite genres",
-                fontSize = 22.sp
-            )
+            // Arrow
+            Surface(
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                shape = CircleShape,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "→",
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
         }
     }
 }
