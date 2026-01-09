@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
@@ -40,13 +41,15 @@ fun CreateGroup(viewModel: SharedViewModel) {
             OutlinedTextField(
                 value = groupName,
                 onValueChange = { groupName = it },
-                label = { Text("Group Name") },
+                shape = RoundedCornerShape(16.dp),
+                label = { Text("Group name") },
                 modifier = Modifier.fillMaxWidth()
             )
             OutlinedTextField(
                 value = groupDescription,
                 onValueChange = { groupDescription = it },
-                label = { Text("Group Description") },
+                shape = RoundedCornerShape(16.dp),
+                label = { Text("Group description") },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))

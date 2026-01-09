@@ -56,6 +56,7 @@ fun JoinGroup(viewModel: SharedViewModel) {
                     viewModel.searchGroups(it)
                 },
                 label = { Text("Search for groups") },
+                shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))

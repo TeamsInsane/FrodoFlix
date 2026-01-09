@@ -49,6 +49,7 @@ import com.frodo.frodoflix.data.Movie
 import com.frodo.frodoflix.staticitems.BackToPreviousScreen
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 import org.json.JSONObject
+import java.text.SimpleDateFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -155,11 +156,11 @@ fun MessageBubble(
                     )
                 }
 
-                val sdf = java.text.SimpleDateFormat("hh:mm a", java.util.Locale.getDefault())
+                val sdf = SimpleDateFormat("yyyy-MM-dd, hh:mm a", java.util.Locale.getDefault())
                 val time = sdf.format(java.util.Date(message.timestamp))
                 Text(
                     text = time,
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                     color = textColor,
                     modifier = Modifier.align(Alignment.End)
                 )
