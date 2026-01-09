@@ -1,5 +1,6 @@
 package com.frodo.frodoflix.database
 
+import android.net.Uri
 import android.util.Log
 import com.frodo.frodoflix.data.Group
 import com.frodo.frodoflix.data.GroupMember
@@ -301,6 +302,25 @@ class FrodoDatabase {
             })
         }
     }
+
+    fun saveProfileImageUrl(username: String, url: String) {
+        database
+            .getReference("users")
+            .child(username)
+            .child("profileImageUrl")
+            .setValue(url)
+    }
+
+    suspend fun getProfileImageUrl(username: String): String? {
+        return database
+            .getReference("users")
+            .child(username)
+            .child("profileImageUrl")
+            .get()
+            .await()
+            .getValue(String::class.java)
+    }
+
 
     suspend fun searchUsers(
         query: String,

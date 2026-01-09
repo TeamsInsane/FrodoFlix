@@ -75,8 +75,8 @@ class SharedViewModel : ViewModel() {
 
     var searchMode by mutableStateOf(SearchMode.MOVIES)
 
-    private val _profileImageUri = MutableStateFlow<Uri?>(null)
-    val profileImageUri: StateFlow<Uri?> = _profileImageUri
+    private val _profileImageUrl = MutableStateFlow<String?>(null)
+    val profileImageUrl: StateFlow<String?> = _profileImageUrl
     fun sendMessage(groupId: String, content: String) {
         val username = currentUser?.username ?: return
         val message = Message(groupId, username, content, Date().time)
@@ -104,6 +104,9 @@ class SharedViewModel : ViewModel() {
         }
 
         viewModelScope.launch {
+            _profileImageUrl.value =
+                databaseReference.getProfileImageUrl(currentUser.username)
+
             val favList = databaseReference.getFavList(currentUser.username)
             currentUser.favlist = favList
             _favList.update { favList }
@@ -498,6 +501,13 @@ class SharedViewModel : ViewModel() {
         }
     }
 
+    fun setProfileImageUrl(url: String) {
+        val username = currentUser?.username ?: return
+
+        _profileImageUrl.value = url
+        databaseReference.saveProfileImageUrl(username, url)
+    }
+
     fun saveLastOnlineTime(time: Long) {
         try {
             with(this.sharedPreferences.edit()) {
@@ -546,7 +556,5 @@ class SharedViewModel : ViewModel() {
     }
 
 
-    fun setProfileImage(uri: Uri) {
-        _profileImageUri.value = uri
-    }
+
 }

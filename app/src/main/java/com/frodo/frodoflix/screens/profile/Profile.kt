@@ -40,6 +40,14 @@ import com.frodo.frodoflix.viewmodels.SharedViewModel
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 @Composable
 fun Profile(sharedViewModel: SharedViewModel) {
@@ -84,18 +92,15 @@ private fun ProfileTopBar(navController: NavController) {
 
 @Composable
 private fun ProfileHeader(sharedViewModel: SharedViewModel) {
+
     val username = sharedViewModel.getUsername()
     val lastOnline = sharedViewModel.getLastOnlineTime()
 
-    val profileImageUri = sharedViewModel.profileImageUri.collectAsState().value
+    val profileImageUrl =
+        sharedViewModel.profileImageUrl.collectAsState().value
 
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let {
-            sharedViewModel.setProfileImage(it)
-        }
-    }
+    var showDialog by remember { mutableStateOf(false) }
+    var urlInput by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -103,7 +108,7 @@ private fun ProfileHeader(sharedViewModel: SharedViewModel) {
     ) {
 
         AsyncImage(
-            model = profileImageUri ?: R.drawable.user, // fallback slika
+            model = profileImageUrl ?: R.drawable.user,
             contentDescription = "Profile picture",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -111,9 +116,31 @@ private fun ProfileHeader(sharedViewModel: SharedViewModel) {
                 .clip(CircleShape)
                 .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
                 .clickable {
-                    imagePickerLauncher.launch("image/*")
+                    showDialog = true
                 }
         )
+
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text("Profile image URL") },
+                text = {
+                    TextField(
+                        value = urlInput,
+                        onValueChange = { urlInput = it },
+                        placeholder = { Text("https://...") }
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            sharedViewModel.setProfileImageUrl(urlInput)
+                            showDialog = false
+                        }
+                    ) { Text("OK") }
+                }
+            )
+        }
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -130,6 +157,7 @@ private fun ProfileHeader(sharedViewModel: SharedViewModel) {
         )
     }
 }
+
 
 @Composable
 private fun ProfileStats(sharedViewModel: SharedViewModel) {

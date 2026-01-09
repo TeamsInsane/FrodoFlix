@@ -11,4 +11,6 @@ data class User(
     var watchedlist: List<Int> = emptyList(),
     val followersCount: Int = 0,
     val followingCount: Int = 0,
+    var profileImageUrl: String? = null
+
 )
