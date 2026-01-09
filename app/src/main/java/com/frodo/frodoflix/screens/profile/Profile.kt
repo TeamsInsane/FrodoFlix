@@ -13,9 +13,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
@@ -44,24 +46,21 @@ import com.frodo.frodoflix.viewmodels.SharedViewModel
 fun Profile(sharedViewModel: SharedViewModel) {
     val navController = sharedViewModel.navController ?: return
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            MaterialTheme.colorScheme.background,
-                            MaterialTheme.colorScheme.background
-                        )
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.background
                     )
                 )
-        ) {
-            // Header with Settings
+            )
+    ) {
+        // Header with Settings
+        item {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -83,8 +82,10 @@ fun Profile(sharedViewModel: SharedViewModel) {
                     )
                 }
             }
+        }
 
-            // Profile Section
+        // Profile Section
+        item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -157,10 +158,14 @@ fun Profile(sharedViewModel: SharedViewModel) {
                     )
                 }
             }
+        }
 
+        item {
             Spacer(modifier = Modifier.height(32.dp))
+        }
 
-            // Action Cards
+        // Action Cards
+        item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -307,10 +312,11 @@ fun ProfileActionCard(
                 modifier = Modifier.size(32.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "→",
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.primary
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Arrow",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
