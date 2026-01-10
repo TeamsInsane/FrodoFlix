@@ -330,15 +330,6 @@ fun SectionHeader(
                 fontWeight = FontWeight.Bold
             )
         }
-
-        TextButton(onClick = onSeeMoreClick) {
-            Text(
-                text = "See more →",
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
     }
 }
 
