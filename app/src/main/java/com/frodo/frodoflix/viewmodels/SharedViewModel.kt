@@ -37,10 +37,10 @@ import android.net.Uri
 
 
 class SharedViewModel : ViewModel() {
-    var selectedMovie: Movie? = null
-    var selectedUser: UserCard? = null
-    var movieSearchPrompt: String = ""
-    var userSearchPrompt: String = ""
+    var selectedMovie by mutableStateOf<Movie?>(null)
+    var selectedUser by mutableStateOf<UserCard?>(null)
+    var movieSearchPrompt by mutableStateOf("")
+    var userSearchPrompt by mutableStateOf("")
 
     var navController: NavController? = null
     private val databaseReference = FrodoDatabase()

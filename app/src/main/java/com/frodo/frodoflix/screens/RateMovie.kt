@@ -244,7 +244,7 @@ fun DisplaySaveReview(sharedViewModel: SharedViewModel, selectedRating: Int, com
                     }
                 }
 
-                sharedViewModel.navController?.navigate("movie_page")
+                sharedViewModel.navController?.popBackStack()
             }
         ) {
             Text(

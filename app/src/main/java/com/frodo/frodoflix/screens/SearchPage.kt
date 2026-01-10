@@ -225,30 +225,27 @@ fun MovieSearchContent(sharedViewModel: SharedViewModel) {
 
 @Composable
 fun UserSearchContent(sharedViewModel: SharedViewModel) {
-    var userName by remember { mutableStateOf(sharedViewModel.userSearchPrompt) }
     var searchedUsers by remember { mutableStateOf<List<UserCard>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         ModernSearchBar(
-            value = userName,
-            onValueChange = {
-                userName = it
-                sharedViewModel.userSearchPrompt = it
-            },
+            value = sharedViewModel.userSearchPrompt,
+            onValueChange = { sharedViewModel.userSearchPrompt = it },
             placeholder = "Search for users..."
         )
 
-        LaunchedEffect(userName) {
-            if (userName.isNotBlank()) {
+        LaunchedEffect(sharedViewModel.userSearchPrompt) {
+            if (sharedViewModel.userSearchPrompt.isNotBlank()) {
                 isLoading = true
                 delay(300)
-                sharedViewModel.searchUsers(userName, limit = 20) { users ->
+                sharedViewModel.searchUsers(sharedViewModel.userSearchPrompt, limit = 20) { users ->
                     searchedUsers = users
                     isLoading = false
                 }
             } else {
                 searchedUsers = emptyList()
+                isLoading = false
             }
         }
 
@@ -259,6 +256,8 @@ fun UserSearchContent(sharedViewModel: SharedViewModel) {
             ) {
                 CircularProgressIndicator()
             }
+        } else if (sharedViewModel.userSearchPrompt.isEmpty()) {
+            EmptySearchPlaceholder(icon = "👥", text = "Search for users")
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -272,6 +271,27 @@ fun UserSearchContent(sharedViewModel: SharedViewModel) {
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun EmptySearchPlaceholder(icon: String, text: String) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = icon,
+                fontSize = 64.sp
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = text,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -329,21 +349,21 @@ fun ModernSearchBar(
 
 @Composable
 fun DisplayMoviesSearch(sharedViewModel: SharedViewModel, savedMovieName: String) {
-    var movieName by remember { mutableStateOf(savedMovieName) }
     var movies by remember { mutableStateOf<JSONArray?>(null) }
     var isLoading by remember { mutableStateOf(false) }
 
-    LaunchedEffect(movieName) {
-        if (movieName.isNotEmpty()) {
+    LaunchedEffect(savedMovieName) {
+        if (savedMovieName.isNotEmpty()) {
             isLoading = true
             delay(300)
             movies = TMDB.getDataFromTMDB(
-                "https://api.themoviedb.org/3/search/movie?query=$movieName&include_adult=false&language=en-US&page=1",
+                "https://api.themoviedb.org/3/search/movie?query=$savedMovieName&include_adult=false&language=en-US&page=1",
                 "results"
             ) as JSONArray?
             isLoading = false
         } else {
             movies = null
+            isLoading = false
         }
     }
 
@@ -354,27 +374,11 @@ fun DisplayMoviesSearch(sharedViewModel: SharedViewModel, savedMovieName: String
         ) {
             CircularProgressIndicator()
         }
+    } else if (savedMovieName.isEmpty()) {
+        EmptySearchPlaceholder(icon = "🎬", text = "Search for movies")
     } else if (movies != null) {
         val nonNullMovies = movies as JSONArray
         ModernMoviesGrid(nonNullMovies, sharedViewModel)
-    } else if (movieName.isEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "🎬",
-                    fontSize = 64.sp
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Search for movies",
-                    fontSize = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
     }
 }
 
