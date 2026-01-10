@@ -1,8 +1,8 @@
 package com.frodo.frodoflix.viewmodels
 
+import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +34,13 @@ import java.util.Base64
 import java.util.Date
 import java.util.Locale
 import android.net.Uri
+import io.github.cdimascio.dotenv.dotenv
+import java.io.IOException
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 
 
 class SharedViewModel : ViewModel() {
@@ -80,6 +87,11 @@ class SharedViewModel : ViewModel() {
 
     private val _profileImageUrl = MutableStateFlow<String?>(null)
     val profileImageUrl: StateFlow<String?> = _profileImageUrl
+
+    private val dotenv = dotenv {
+        directory = "/assets"
+        filename = "env"
+    }
   
     fun fetchActivityFeed() {
         viewModelScope.launch {
@@ -575,6 +587,48 @@ class SharedViewModel : ViewModel() {
         }
     }
 
+    suspend fun getProfileImageUrl(username: String): String? {
+        return databaseReference.getProfileImageUrl(username)
+    }
 
+    fun uploadProfilePicture(uri: Uri, context: Context) {
+        val API_KEY = dotenv["SUPABASE_PUBLISHABLE_KEY"]
+        val username = currentUser?.username ?: return
 
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val client = OkHttpClient()
+
+                val inputStream = context.contentResolver.openInputStream(uri) ?: run {
+                    Log.e("Upload", "Failed to open input stream from uri")
+                    return@launch
+                }
+                val fileBytes = inputStream.readBytes()
+                inputStream.close()
+
+                val url = "https://noqadewovgqldnuggbbq.supabase.co/storage/v1/object/frodo_bucket/$username.jpg"
+                val mediaType = context.contentResolver.getType(uri)?.toMediaTypeOrNull()
+                val requestBody = fileBytes.toRequestBody(mediaType)
+
+                val request = Request.Builder()
+                    .url(url)
+                    .post(requestBody)
+                    .addHeader("apikey", "$API_KEY")
+                    .build()
+
+                client.newCall(request).execute().use { response ->
+                    if (response.isSuccessful) {
+                        val publicUrl = "https://noqadewovgqldnuggbbq.supabase.co/storage/v1/object/public/frodo_bucket/$username.jpg"
+                        withContext(Dispatchers.Main) {
+                            setProfileImageUrl(publicUrl)
+                        }
+                    } else {
+                        Log.e("Upload", "Upload failed: ${response.message} ${response.body?.string()}")
+                    }
+                }
+            } catch (e: IOException) {
+                Log.e("Upload", "Upload failed with exception", e)
+            }
+        }
+    }
 }

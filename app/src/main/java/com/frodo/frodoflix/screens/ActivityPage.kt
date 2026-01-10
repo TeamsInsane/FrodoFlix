@@ -30,6 +30,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import androidx.compose.ui.platform.LocalContext
+import coil.compose.rememberAsyncImagePainter
 import com.frodo.frodoflix.R
 import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Movie
@@ -91,6 +92,7 @@ fun ActivityPage(sharedViewModel: SharedViewModel) {
 
             items(ratings) { rating ->
                 var movie by remember { mutableStateOf<Movie?>(null) }
+                var profileImageUrl by remember { mutableStateOf<String?>(null) }
 
                 LaunchedEffect(rating.movieId) {
                     val movieDetails = TMDB.getDataFromTMDB(
@@ -107,9 +109,14 @@ fun ActivityPage(sharedViewModel: SharedViewModel) {
                     }
                 }
 
+                LaunchedEffect(rating.username) {
+                    profileImageUrl = sharedViewModel.getProfileImageUrl(rating.username)
+                }
+
                 ModernActivityCard(
                     rating = rating,
                     movie = movie,
+                    profileImageUrl = profileImageUrl,
                     sharedViewModel = sharedViewModel
                 )
             }
@@ -153,6 +160,7 @@ fun EmptyActivityState() {
 fun ModernActivityCard(
     rating: com.frodo.frodoflix.data.Rating,
     movie: Movie?,
+    profileImageUrl: String?,
     sharedViewModel: SharedViewModel
 ) {
     Surface(
@@ -189,7 +197,7 @@ fun ModernActivityCard(
                     )
 
                     Image(
-                        painter = painterResource(id = R.drawable.frodo),
+                        painter = rememberAsyncImagePainter(profileImageUrl),
                         contentDescription = "Profile Picture",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
