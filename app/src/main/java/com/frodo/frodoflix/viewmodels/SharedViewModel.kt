@@ -531,11 +531,17 @@ class SharedViewModel : ViewModel() {
         }
     }
 
-    fun setProfileImageUrl(url: String) {
+    fun setProfileImageUrl(url: String, isNewUpload: Boolean = false) {
         val username = currentUser?.username ?: return
 
-        _profileImageUrl.value = url
-        databaseReference.saveProfileImageUrl(username, url)
+        val finalUrl = if (isNewUpload) {
+            "$url?t=${System.currentTimeMillis()}"
+        } else {
+            url
+        }
+
+        _profileImageUrl.value = finalUrl
+        databaseReference.saveProfileImageUrl(username, finalUrl)
     }
 
     fun saveLastOnlineTime(time: Long) {
@@ -614,13 +620,15 @@ class SharedViewModel : ViewModel() {
                     .url(url)
                     .post(requestBody)
                     .addHeader("apikey", "$API_KEY")
+                    .addHeader("x-upsert", "true")
                     .build()
 
                 client.newCall(request).execute().use { response ->
                     if (response.isSuccessful) {
+                        Log.d("Upload","Upload successful")
                         val publicUrl = "https://noqadewovgqldnuggbbq.supabase.co/storage/v1/object/public/frodo_bucket/$username.jpg"
                         withContext(Dispatchers.Main) {
-                            setProfileImageUrl(publicUrl)
+                            setProfileImageUrl(publicUrl, isNewUpload = true)
                         }
                     } else {
                         Log.e("Upload", "Upload failed: ${response.message} ${response.body?.string()}")
