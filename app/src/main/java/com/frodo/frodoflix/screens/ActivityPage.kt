@@ -218,7 +218,7 @@ fun ModernActivityCard(
                     )
 
                     val date = Date(rating.timestamp)
-                    val format = SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault())
+                    val format = SimpleDateFormat("MMM dd yyyy, hh:mm a", Locale.getDefault())
 
                     Text(
                         text = format.format(date),

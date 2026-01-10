@@ -1,19 +1,23 @@
 package com.frodo.frodoflix.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
@@ -42,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
+import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.frodo.frodoflix.api.TMDB
 import com.frodo.frodoflix.data.Message
@@ -123,26 +128,39 @@ fun MessageBubble(
     val textColor = if (isCurrentUser) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
     val movieIdPattern = """\$(.*?)\$""".toRegex()
     val matchResult = movieIdPattern.find(message.content)
+    var profileImageUrl by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(message.username) {
+        profileImageUrl = sharedViewModel.getProfileImageUrl(message.username)
+    }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
-        horizontalArrangement = if (isCurrentUser) Arrangement.End else Arrangement.Start
+        horizontalArrangement = if (isCurrentUser) Arrangement.End else Arrangement.Start,
+        verticalAlignment = Alignment.Bottom
     ) {
+        if (!isCurrentUser) {
+            ProfilePicture(profileImageUrl)
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+
         Box(
             modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(12.dp))
                 .background(bubbleColor)
                 .padding(8.dp)
         ) {
             Column {
-                Text(
-                    text = message.username,
-                    fontSize = 12.sp,
-                    color = textColor,
-                    fontWeight = FontWeight.SemiBold
-                )
+                if (!isCurrentUser) {
+                    Text(
+                        text = message.username,
+                        fontSize = 12.sp,
+                        color = textColor,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
                 if (matchResult != null) {
                     val movieId = matchResult.destructured.component1()
                     SharedMovie(
@@ -156,7 +174,7 @@ fun MessageBubble(
                     )
                 }
 
-                val sdf = SimpleDateFormat("yyyy-MM-dd, hh:mm a", java.util.Locale.getDefault())
+                val sdf = SimpleDateFormat("MMM dd yyyy, hh:mm a", java.util.Locale.getDefault())
                 val time = sdf.format(java.util.Date(message.timestamp))
                 Text(
                     text = time,
@@ -166,7 +184,24 @@ fun MessageBubble(
                 )
             }
         }
+
+        if (isCurrentUser) {
+            Spacer(modifier = Modifier.width(8.dp))
+            ProfilePicture(profileImageUrl)
+        }
     }
+}
+
+@Composable
+fun ProfilePicture(profileImageUrl: String?) {
+    Image(
+        painter = rememberAsyncImagePainter(profileImageUrl),
+        contentDescription = "Profile Picture",
+        contentScale = ContentScale.Crop,
+        modifier = Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+    )
 }
 
 @Composable

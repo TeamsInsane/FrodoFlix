@@ -524,7 +524,7 @@ class SharedViewModel : ViewModel() {
         val lastOnline = this.sharedPreferences.getLong("lastOnline", 0)
 
         return if (lastOnline > 0) {
-            val formatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+            val formatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
             formatter.format(lastOnline)
         } else {
             "Never"
