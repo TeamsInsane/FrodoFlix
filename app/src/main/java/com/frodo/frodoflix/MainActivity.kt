@@ -23,9 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,9 +31,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.frodo.frodoflix.screens.ActivityPage
 import com.frodo.frodoflix.screens.ChatPage
-import com.frodo.frodoflix.screens.GroupPage
 import com.frodo.frodoflix.screens.CreateGroup
 import com.frodo.frodoflix.screens.DisplayMoviePage
+import com.frodo.frodoflix.screens.GroupPage
 import com.frodo.frodoflix.screens.HomePage
 import com.frodo.frodoflix.screens.JoinGroup
 import com.frodo.frodoflix.screens.RateMovie
@@ -48,14 +46,14 @@ import com.frodo.frodoflix.screens.profile.Profile
 import com.frodo.frodoflix.screens.profile.SettingsScreen
 import com.frodo.frodoflix.screens.registration.LoginPage
 import com.frodo.frodoflix.screens.registration.RegisterPage
+import com.frodo.frodoflix.screens.user.DisplayUserPage
 import com.frodo.frodoflix.staticitems.BottomMenuBar
 import com.frodo.frodoflix.ui.theme.FrodoFlixTheme
-import com.frodo.frodoflix.screens.user.DisplayUserPage
 import com.frodo.frodoflix.viewmodels.LifecycleViewModel
 import com.frodo.frodoflix.viewmodels.SharedViewModel
 
 class MainActivity : ComponentActivity() {
-    private lateinit var sharedViewModel: SharedViewModel
+    private val sharedViewModel: SharedViewModel by viewModels()
     private lateinit var navController : NavHostController
     private val lifecycleViewModel: LifecycleViewModel by viewModels()
     private var hasBeenPaused = false
@@ -93,7 +91,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            sharedViewModel = viewModel()
             sharedViewModel.initializeGenresViewModel(this)
             navController = rememberNavController()
             sharedViewModel.navController = navController
